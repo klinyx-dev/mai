@@ -27,7 +27,7 @@ Represents a time range owned by a specific assignee that provides bookable supp
 - end time
 - assignee (owner of the slot)
 - created_by (actor who created the slot)
-- status: active | booked | cancelled
+- status: available | booked | cancelled
 
 Notes:
 - The assignee is the owner of the time
