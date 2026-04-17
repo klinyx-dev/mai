@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 This repository is currently spec-first. The source of truth lives in [`docs/functional_spec.md`](./docs/functional_spec.md) and [`docs/technical_spec.md`](./docs/technical_spec.md). 
 
-Implementation is expected to start as a Rust crate with a layout close to `scheduler_core/{domain,commands,validation,state,layout,application,adapters}`. 
+Implementation is expected to start as a Rust crate with a layout close to `core/{domain,commands,validation,state,layout,application,adapters}`. 
 
 Put architectural decisions and major changes under `docs/`, and keep agent workflow artifacts in `.agents/{rules,plans,memory}`.
 
