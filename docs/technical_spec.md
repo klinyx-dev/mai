@@ -70,7 +70,7 @@ No platform-dependent behavior
 ## 3. High-level Model Structure
 
 ```rust
-scheduler_core/
+core/
 ├── domain/
 │   ├── ids.rs
 │   ├── actor.rs
