@@ -1,5 +1,5 @@
 use crate::application::command_result::CommandResult;
-use crate::application::errors::{BusinessRuleError, ReferentialError, StructuralError};
+use crate::application::errors::{ReferentialError, StructuralError};
 use crate::commands::add_appointment::AddAppointmentCommand;
 use crate::commands::add_slot::AddSlotCommand;
 use crate::commands::cancel_slot::CancelSlotCommand;
@@ -10,6 +10,19 @@ use crate::domain::enums::SlotStatus;
 use crate::domain::slot::Slot;
 use crate::domain::time_range::TimeRange;
 use crate::state::schedule_state::ScheduleState;
+use crate::validation::appointment_validation::{
+    ensure_appointment_exists, 
+    ensure_no_appointment_for_slot, 
+    ensure_title_not_empty,
+};
+use crate::validation::invariants::validate_slot_appointment_invariants;
+use crate::validation::slot_validation::{
+    ensure_no_overlap_for_assignee, 
+    ensure_slot_exists, 
+    ensure_slot_is_available,
+    ensure_slot_is_cancellable, 
+    ensure_slot_is_deletable,
+};
 
 #[derive(Clone, Debug, Default)]
 pub struct SchedulerService {
@@ -35,70 +48,42 @@ impl SchedulerService {
         let time = TimeRange::new(cmd.start, cmd.end)
             .map_err(|_| StructuralError::InvalidTimeRange)?;
         let slot = Slot::new(cmd.slot_id.clone(), time, cmd.assignee_id, cmd.created_by);
-        
+
+        ensure_no_overlap_for_assignee(&self.state, &slot)?;
         self.state.slots.insert(cmd.slot_id, slot);
+        validate_slot_appointment_invariants(&self.state)?;
         Ok(())
     }
 
     pub fn delete_slot(&mut self, cmd: DeleteSlotCommand) -> CommandResult {
-        let slot = self
-            .state
-            .slots
-            .get(&cmd.slot_id)
-            .ok_or(ReferentialError::SlotNotFound)?;
-
-        if slot.status == SlotStatus::Booked {
-            return Err(BusinessRuleError::CannotDeleteBookedSlot.into());
-        }
+        let slot = ensure_slot_exists(&self.state, &cmd.slot_id)?;
+        ensure_slot_is_deletable(slot)?;
 
         self.state.slots.remove(&cmd.slot_id);
+        validate_slot_appointment_invariants(&self.state)?;
         Ok(())
     }
 
     pub fn cancel_slot(&mut self, cmd: CancelSlotCommand) -> CommandResult {
+        let slot = ensure_slot_exists(&self.state, &cmd.slot_id)?;
+        ensure_slot_is_cancellable(slot)?;
+
         let slot = self
             .state
             .slots
             .get_mut(&cmd.slot_id)
             .ok_or(ReferentialError::SlotNotFound)?;
+        slot.status = SlotStatus::Cancelled;
 
-        match slot.status {
-            SlotStatus::Available => {
-                slot.status = SlotStatus::Cancelled;
-                Ok(())
-            }
-            
-            SlotStatus::Booked | SlotStatus::Cancelled => {
-                Err(BusinessRuleError::SlotNotAvailable.into())
-            }
-        }
+        validate_slot_appointment_invariants(&self.state)?;
+        Ok(())
     }
 
     pub fn add_appointment(&mut self, cmd: AddAppointmentCommand) -> CommandResult {
-        if cmd.title.trim().is_empty() {
-            return Err(StructuralError::EmptyTitle.into());
-        }
-
-        let slot = self
-            .state
-            .slots
-            .get(&cmd.slot_id)
-            .ok_or(ReferentialError::SlotNotFound)?;
-
-        match slot.status {
-            SlotStatus::Available => {}
-            SlotStatus::Booked => return Err(BusinessRuleError::SlotAlreadyBooked.into()),
-            SlotStatus::Cancelled => return Err(BusinessRuleError::SlotCancelled.into()),
-        }
-
-        if self
-            .state
-            .appointments
-            .values()
-            .any(|appointment| appointment.slot_id == cmd.slot_id)
-        {
-            return Err(BusinessRuleError::AppointmentAlreadyExistsForSlot.into());
-        }
+        ensure_title_not_empty(&cmd.title)?;
+        let slot = ensure_slot_exists(&self.state, &cmd.slot_id)?;
+        ensure_slot_is_available(slot)?;
+        ensure_no_appointment_for_slot(&self.state, &cmd.slot_id)?;
 
         let appointment = Appointment::new(
             cmd.appointment_id.clone(),
@@ -117,22 +102,16 @@ impl SchedulerService {
             .ok_or(ReferentialError::SlotNotFound)?;
         slot.status = SlotStatus::Booked;
 
+        validate_slot_appointment_invariants(&self.state)?;
         Ok(())
     }
 
     pub fn delete_appointment(&mut self, cmd: DeleteAppointmentCommand) -> CommandResult {
-        let appointment = self
-            .state
-            .appointments
-            .get(&cmd.appointment_id)
-            .ok_or(ReferentialError::AppointmentNotFound)?;
+        let appointment = ensure_appointment_exists(&self.state, &cmd.appointment_id)?;
 
         let slot_id = appointment.slot_id.clone();
 
-        self.state
-            .slots
-            .get(&slot_id)
-            .ok_or(ReferentialError::SlotNotFound)?;
+        ensure_slot_exists(&self.state, &slot_id)?;
 
         self.state.appointments.remove(&cmd.appointment_id);
 
@@ -143,6 +122,7 @@ impl SchedulerService {
             .ok_or(ReferentialError::SlotNotFound)?;
         slot.status = SlotStatus::Available;
 
+        validate_slot_appointment_invariants(&self.state)?;
         Ok(())
     }
 }
@@ -150,7 +130,9 @@ impl SchedulerService {
 #[cfg(test)]
 mod tests {
     use super::SchedulerService;
-    use crate::application::errors::{BusinessRuleError, ReferentialError, SchedulerError};
+    use crate::application::errors::{
+        BusinessRuleError, ReferentialError, SchedulerError, StructuralError,
+    };
     use crate::commands::add_appointment::AddAppointmentCommand;
     use crate::commands::add_slot::AddSlotCommand;
     use crate::commands::cancel_slot::CancelSlotCommand;
@@ -274,6 +256,44 @@ mod tests {
         assert_eq!(
             result.expect_err("missing appointment must fail"),
             SchedulerError::Referential(ReferentialError::AppointmentNotFound)
+        );
+    }
+
+    #[test]
+    fn rejects_overlapping_slots_for_same_assignee() {
+        let mut service = SchedulerService::new();
+
+        service.add_slot(add_slot_cmd("slot-1")).unwrap();
+        let result = service.add_slot(AddSlotCommand {
+            slot_id: SlotId::new("slot-2"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 9, 30, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
+            assignee_id: ActorId::new("assignee-1"),
+            created_by: ActorId::new("creator-2"),
+        });
+
+        assert_eq!(
+            result.expect_err("overlapping slot should fail"),
+            SchedulerError::Business(BusinessRuleError::SlotOverlap)
+        );
+    }
+
+    #[test]
+    fn rejects_blank_appointment_title() {
+        let mut service = SchedulerService::new();
+        service.add_slot(add_slot_cmd("slot-1")).unwrap();
+
+        let result = service.add_appointment(AddAppointmentCommand {
+            appointment_id: AppointmentId::new("appt-1"),
+            slot_id: SlotId::new("slot-1"),
+            invitee_ids: vec![ActorId::new("invitee-1")],
+            title: "   ".to_string(),
+            created_by: ActorId::new("creator-1"),
+        });
+
+        assert_eq!(
+            result.expect_err("blank title must fail"),
+            SchedulerError::Structural(StructuralError::EmptyTitle)
         );
     }
 }
