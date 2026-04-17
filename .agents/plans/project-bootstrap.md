@@ -25,7 +25,7 @@ Verification:
 - Run `cargo fmt --all --check`
 
 ### Task 2: Define the foundational domain types
-- Implement typed IDs, `ActorRef`, `TimeRange`, `SlotStatus`, `Slot`, `Appointment`, and `WeekRange`.
+- Implement typed `IDs`, `ActorRef`, `TimeRange`, `SlotStatus`, `Slot`, `Appointment`, and `WeekRange`.
 - Centralize invariant-friendly constructors for types that require validation.
 
 Acceptance criteria:
