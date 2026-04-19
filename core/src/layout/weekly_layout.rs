@@ -1,7 +1,12 @@
 use chrono::{Datelike, Duration, NaiveDate};
 use serde::{Deserialize, Serialize};
 
+use crate::domain::enums::SlotStatus;
+use crate::domain::slot::Slot;
 use crate::domain::week::WeekRange;
+use crate::layout::clipping::clip_time_range_to_week;
+use crate::layout::output::SlotLayoutNode;
+use crate::state::schedule_state::ScheduleState;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WeeklyLayoutQuery {
@@ -26,10 +31,83 @@ pub fn day_start_from_week(week_start: NaiveDate, day_index: u8) -> Option<Naive
     Some(week_start + Duration::days(i64::from(day_index)))
 }
 
+pub fn project_slot_layout_nodes(
+    state: &ScheduleState,
+    query: &WeeklyLayoutQuery,
+) -> Vec<SlotLayoutNode> {
+    let week = week_range_from_anchor(query.anchor_date);
+    let mut nodes = state
+        .slots
+        .values()
+        .filter_map(|slot| slot_to_layout_node(slot, &week))
+        .collect::<Vec<_>>();
+
+    nodes.sort_by(|left, right| {
+        (
+            left.day_index,
+            left.start_minute,
+            left.end_minute,
+            left.slot_id.as_str(),
+        )
+            .cmp(&(
+                right.day_index,
+                right.start_minute,
+                right.end_minute,
+                right.slot_id.as_str(),
+            ))
+    });
+
+    nodes
+}
+
+fn slot_to_layout_node(slot: &Slot, week: &WeekRange) -> Option<SlotLayoutNode> {
+    if slot.status != SlotStatus::Available {
+        return None;
+    }
+
+    let week_clipped = clip_time_range_to_week(&slot.time, week)?;
+    let day = week_clipped.start.date_naive();
+    let day_start = day.and_hms_opt(0, 0, 0)?.and_utc();
+    let day_end = day_start + Duration::days(1);
+    let clipped_end_at_day = week_clipped.end > day_end;
+    let visible_end = if clipped_end_at_day {
+        day_end
+    } else {
+        week_clipped.end
+    };
+    let day_index = (day - week.start).num_days() as u8;
+    let start_minute = minutes_since_day_start(week_clipped.start, day_start)?;
+    let end_minute = minutes_since_day_start(visible_end, day_start)?;
+
+    Some(SlotLayoutNode {
+        slot_id: slot.id.clone(),
+        day_index,
+        start_minute,
+        end_minute,
+        clipped_start: week_clipped.clipped_start,
+        clipped_end: week_clipped.clipped_end || clipped_end_at_day,
+    })
+}
+
+fn minutes_since_day_start(
+    timestamp: chrono::DateTime<chrono::Utc>,
+    day_start: chrono::DateTime<chrono::Utc>,
+) -> Option<u16> {
+    let minutes = (timestamp - day_start).num_minutes();
+    u16::try_from(minutes).ok()
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{day_start_from_week, week_range_from_anchor};
-    use chrono::{Datelike, NaiveDate};
+    use super::{
+        WeeklyLayoutQuery, day_start_from_week, project_slot_layout_nodes, week_range_from_anchor,
+    };
+    use crate::domain::enums::SlotStatus;
+    use crate::domain::ids::{ActorId, SlotId};
+    use crate::domain::slot::Slot;
+    use crate::domain::time_range::TimeRange;
+    use crate::state::schedule_state::ScheduleState;
+    use chrono::{Datelike, NaiveDate, TimeZone, Utc};
 
     #[test]
     fn computes_monday_aligned_week_for_midweek_anchor() {
@@ -90,5 +168,167 @@ mod tests {
 
         assert_eq!(day_start_from_week(week_start, 7), None);
         assert_eq!(day_start_from_week(week_start, u8::MAX), None);
+    }
+
+    #[test]
+    fn projects_only_available_slots_in_visible_week() {
+        let mut state = ScheduleState::new();
+        state.slots.insert(
+            SlotId::new("available-visible"),
+            slot(
+                "available-visible",
+                SlotStatus::Available,
+                Utc.with_ymd_and_hms(2026, 1, 7, 9, 15, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            ),
+        );
+        state.slots.insert(
+            SlotId::new("booked-visible"),
+            slot(
+                "booked-visible",
+                SlotStatus::Booked,
+                Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 12, 0, 0).unwrap(),
+            ),
+        );
+        state.slots.insert(
+            SlotId::new("cancelled-visible"),
+            slot(
+                "cancelled-visible",
+                SlotStatus::Cancelled,
+                Utc.with_ymd_and_hms(2026, 1, 7, 13, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 14, 0, 0).unwrap(),
+            ),
+        );
+        state.slots.insert(
+            SlotId::new("available-outside"),
+            slot(
+                "available-outside",
+                SlotStatus::Available,
+                Utc.with_ymd_and_hms(2026, 1, 13, 9, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 13, 10, 0, 0).unwrap(),
+            ),
+        );
+
+        let nodes = project_slot_layout_nodes(
+            &state,
+            &WeeklyLayoutQuery {
+                anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+            },
+        );
+
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].slot_id, SlotId::new("available-visible"));
+        assert_eq!(nodes[0].day_index, 2);
+        assert_eq!(nodes[0].start_minute, 9 * 60 + 15);
+        assert_eq!(nodes[0].end_minute, 10 * 60);
+        assert!(!nodes[0].clipped_start);
+        assert!(!nodes[0].clipped_end);
+    }
+
+    #[test]
+    fn applies_week_and_day_clipping_flags_and_offsets() {
+        let mut state = ScheduleState::new();
+        state.slots.insert(
+            SlotId::new("cross-week-start"),
+            slot(
+                "cross-week-start",
+                SlotStatus::Available,
+                Utc.with_ymd_and_hms(2026, 1, 4, 23, 30, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 5, 1, 0, 0).unwrap(),
+            ),
+        );
+        state.slots.insert(
+            SlotId::new("cross-day"),
+            slot(
+                "cross-day",
+                SlotStatus::Available,
+                Utc.with_ymd_and_hms(2026, 1, 8, 23, 30, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 9, 1, 0, 0).unwrap(),
+            ),
+        );
+
+        let nodes = project_slot_layout_nodes(
+            &state,
+            &WeeklyLayoutQuery {
+                anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+            },
+        );
+
+        assert_eq!(nodes.len(), 2);
+
+        assert_eq!(nodes[0].slot_id, SlotId::new("cross-week-start"));
+        assert_eq!(nodes[0].day_index, 0);
+        assert_eq!(nodes[0].start_minute, 0);
+        assert_eq!(nodes[0].end_minute, 60);
+        assert!(nodes[0].clipped_start);
+        assert!(!nodes[0].clipped_end);
+
+        assert_eq!(nodes[1].slot_id, SlotId::new("cross-day"));
+        assert_eq!(nodes[1].day_index, 3);
+        assert_eq!(nodes[1].start_minute, 23 * 60 + 30);
+        assert_eq!(nodes[1].end_minute, 24 * 60);
+        assert!(!nodes[1].clipped_start);
+        assert!(nodes[1].clipped_end);
+    }
+
+    #[test]
+    fn returns_deterministic_order_for_equivalent_slots() {
+        let mut state = ScheduleState::new();
+        state.slots.insert(
+            SlotId::new("slot-b"),
+            slot(
+                "slot-b",
+                SlotStatus::Available,
+                Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            ),
+        );
+        state.slots.insert(
+            SlotId::new("slot-a"),
+            slot(
+                "slot-a",
+                SlotStatus::Available,
+                Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            ),
+        );
+        state.slots.insert(
+            SlotId::new("slot-c"),
+            slot(
+                "slot-c",
+                SlotStatus::Available,
+                Utc.with_ymd_and_hms(2026, 1, 7, 8, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+            ),
+        );
+
+        let nodes = project_slot_layout_nodes(
+            &state,
+            &WeeklyLayoutQuery {
+                anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+            },
+        );
+
+        let ordered_ids = nodes
+            .iter()
+            .map(|node| node.slot_id.as_str().to_string())
+            .collect::<Vec<_>>();
+        assert_eq!(ordered_ids, vec!["slot-c", "slot-a", "slot-b"]);
+    }
+
+    fn slot(
+        id: &str,
+        status: SlotStatus,
+        start: chrono::DateTime<Utc>,
+        end: chrono::DateTime<Utc>,
+    ) -> Slot {
+        Slot::with_status(
+            SlotId::new(id),
+            TimeRange::new(start, end).unwrap(),
+            ActorId::new("assignee-1"),
+            ActorId::new("creator-1"),
+            status,
+        )
     }
 }
