@@ -15,6 +15,7 @@ pub struct WeeklyLayoutQuery {
 
 pub const DAYS_PER_WEEK: i64 = 7;
 
+/// Computes the week range (Monday to Sunday) that contains the given anchor date.
 pub fn week_range_from_anchor(anchor_date: NaiveDate) -> WeekRange {
     let days_from_monday = i64::from(anchor_date.weekday().num_days_from_monday());
     let week_start = anchor_date - Duration::days(days_from_monday);
@@ -23,6 +24,7 @@ pub fn week_range_from_anchor(anchor_date: NaiveDate) -> WeekRange {
     WeekRange::new(week_start, week_end).expect("week bounds are always valid")
 }
 
+/// Computes the start date of the given day index within the week (0 = Monday, 6 = Sunday).
 pub fn day_start_from_week(week_start: NaiveDate, day_index: u8) -> Option<NaiveDate> {
     if day_index > 6 {
         return None;
