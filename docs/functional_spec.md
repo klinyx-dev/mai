@@ -120,6 +120,7 @@ System must:
 System must:
 - Show all appointments within the visible week
 - Position appointments based on their slot time
+- Treat appointments with missing slot references as invalid and exclude them from layout output under invariant assumptions
 
 ### FR-4: Add Slot
 System must:

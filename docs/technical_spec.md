@@ -96,6 +96,11 @@ core/
 │   └── reducers.rs
 ├── layout/
 │   ├── weekly_layout.rs
+│   ├── weekly_layout/
+│   │   ├── query.rs
+│   │   ├── position.rs
+│   │   ├── projection.rs
+│   │   └── tests.rs
 │   ├── overlap.rs
 │   ├── clipping.rs
 │   └── output.rs
@@ -111,7 +116,7 @@ core/
 This separation matters:
 - **domain**: core entities and value objects
 - **commands**: input contracts for mutations
-- **valdiation**: business rule enforcement
+- **validation**: business rule enforcement
 - **state**: canonical in-memory schedule representation
 - **layout**: weekly semantic layout computation
 - **application**: orchestration layer for commands and queries
@@ -408,7 +413,7 @@ This directly matches the current business rules in the functional spec
 ### 8.2 Booking flow
 When adding an appointment:
 1. Verify slot exists
-2. Verify slot status = `Avaialable`
+2. Verify slot status = `Available`
 3. Verify no appointment already references slot
 4. Create appointment
 5. Update slot status to `Booked`
@@ -424,7 +429,7 @@ When deleting an appointment:
 1. Verify appointment exists
 2. Load referenced slot
 3. Delete appointment
-4. Update slot status to `Avaialable`
+4. Update slot status to `Available`
 
 Also atomic
 
@@ -549,9 +554,10 @@ This gives the UI enough semantic positioning data without hardcoding pixels
 
 ### 10.5 Visible data filtering
 Layout query rules:
-- include only slots in visible week where status = `Avaialable`
+- include only slots in visible week where status = `Available`
 - exclude Booked and Cancelled slots from slot node output
 - include appointments whose referenced slot falls within visible week
+- appointments with invalid/missing slot references are excluded by invariant assumptions
 
 This follows FR-2 and FR-3 in the functional spec
 

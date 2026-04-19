@@ -59,6 +59,7 @@ Acceptance criteria:
 
 Likely files:
 - `core/src/layout/weekly_layout.rs`
+- `core/src/layout/weekly_layout/query.rs`
 - `core/src/layout/clipping.rs`
 
 Verification:
@@ -75,6 +76,8 @@ Acceptance criteria:
 
 Likely files:
 - `core/src/layout/weekly_layout.rs`
+- `core/src/layout/weekly_layout/projection.rs`
+- `core/src/layout/weekly_layout/position.rs`
 - `core/src/layout/output.rs`
 
 Verification:
@@ -92,6 +95,8 @@ Acceptance criteria:
 
 Likely files:
 - `core/src/layout/weekly_layout.rs`
+- `core/src/layout/weekly_layout/projection.rs`
+- `core/src/layout/weekly_layout/position.rs`
 
 Verification:
 - Tests for inclusion/exclusion by week and deterministic order.
@@ -122,7 +127,7 @@ Acceptance criteria:
 - Booked/cancelled slots never leak into slot nodes.
 
 Likely files:
-- `core/src/layout/weekly_layout.rs` (test module)
+- `core/src/layout/weekly_layout/tests.rs`
 - optional dedicated test file under `core/tests/`
 
 Verification:

@@ -67,6 +67,12 @@ Commit checkpoint:
 
 ### Task 6: Build the weekly layout engine
 - Implement `WeeklyLayoutQuery`, layout nodes, week filtering, minute offsets, clipping flags, and deterministic sorting.
+- Keep `layout/weekly_layout` modularized for readability:
+  - `weekly_layout.rs` (public entry + re-exports)
+  - `weekly_layout/query.rs` (week boundaries + query types)
+  - `weekly_layout/position.rs` (shared time-to-layout positioning helpers)
+  - `weekly_layout/projection.rs` (slot + appointment projection)
+  - `weekly_layout/tests.rs` (layout unit tests)
 - Exclude booked and cancelled slots from slot-node output while still including appointments.
 
 Acceptance criteria:
