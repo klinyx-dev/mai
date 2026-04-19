@@ -1,13 +1,6 @@
-use crate::application::errors::{
-    BusinessRuleError, 
-    ReferentialError, 
-    StructuralError
-};
+use crate::application::errors::{BusinessRuleError, ReferentialError, StructuralError};
 use crate::domain::appointment::Appointment;
-use crate::domain::ids::{
-    AppointmentId, 
-    SlotId
-};
+use crate::domain::ids::{AppointmentId, SlotId};
 use crate::state::schedule_state::ScheduleState;
 
 pub fn ensure_title_not_empty(title: &str) -> Result<(), StructuralError> {

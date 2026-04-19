@@ -11,17 +11,12 @@ use crate::domain::slot::Slot;
 use crate::domain::time_range::TimeRange;
 use crate::state::schedule_state::ScheduleState;
 use crate::validation::appointment_validation::{
-    ensure_appointment_exists, 
-    ensure_no_appointment_for_slot, 
-    ensure_title_not_empty,
+    ensure_appointment_exists, ensure_no_appointment_for_slot, ensure_title_not_empty,
 };
 use crate::validation::invariants::validate_slot_appointment_invariants;
 use crate::validation::slot_validation::{
-    ensure_no_overlap_for_assignee, 
-    ensure_slot_exists, 
-    ensure_slot_is_available,
-    ensure_slot_is_cancellable, 
-    ensure_slot_is_deletable,
+    ensure_no_overlap_for_assignee, ensure_slot_exists, ensure_slot_is_available,
+    ensure_slot_is_cancellable, ensure_slot_is_deletable,
 };
 
 #[derive(Clone, Debug, Default)]
@@ -45,8 +40,8 @@ impl SchedulerService {
     }
 
     pub fn add_slot(&mut self, cmd: AddSlotCommand) -> CommandResult {
-        let time = TimeRange::new(cmd.start, cmd.end)
-            .map_err(|_| StructuralError::InvalidTimeRange)?;
+        let time =
+            TimeRange::new(cmd.start, cmd.end).map_err(|_| StructuralError::InvalidTimeRange)?;
         let slot = Slot::new(cmd.slot_id.clone(), time, cmd.assignee_id, cmd.created_by);
 
         ensure_no_overlap_for_assignee(&self.state, &slot)?;
@@ -93,7 +88,9 @@ impl SchedulerService {
             cmd.created_by,
         );
 
-        self.state.appointments.insert(cmd.appointment_id, appointment);
+        self.state
+            .appointments
+            .insert(cmd.appointment_id, appointment);
 
         let slot = self
             .state
