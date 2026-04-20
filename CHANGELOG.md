@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.1] - 2026-04-20
+### Fixed
+- Restored generated-package smoke validation in CI by tracking `core/tests/generated_package_smoke.mjs` (previously ignored by `.gitignore`, causing `MODULE_NOT_FOUND` in `core/tests/run_generated_package_smoke.sh`).
+
 ## [0.1.0] - 2026-04-20
 ### Added
 - Phase 1 headless scheduling core with typed domain models, command APIs, deterministic validation, and weekly layout projection.
