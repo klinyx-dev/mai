@@ -356,6 +356,147 @@ fn appointment_projection_is_deterministically_sorted() {
     assert_eq!(ordered_ids, vec!["appt-c", "appt-a", "appt-b"]);
 }
 
+#[test]
+fn projections_are_identical_across_insertion_orders() {
+    let query = WeeklyLayoutQuery {
+        anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+    };
+
+    let mut state_a = ScheduleState::new();
+    state_a.slots.insert(
+        SlotId::new("slot-available"),
+        slot(
+            "slot-available",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 7, 8, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+        ),
+    );
+    state_a.slots.insert(
+        SlotId::new("slot-booked"),
+        slot(
+            "slot-booked",
+            SlotStatus::Booked,
+            Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+        ),
+    );
+    state_a.slots.insert(
+        SlotId::new("slot-cancelled"),
+        slot(
+            "slot-cancelled",
+            SlotStatus::Cancelled,
+            Utc.with_ymd_and_hms(2026, 1, 7, 12, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 13, 0, 0).unwrap(),
+        ),
+    );
+    state_a.appointments.insert(
+        AppointmentId::new("appt-1"),
+        appointment("appt-1", "slot-booked"),
+    );
+
+    let mut state_b = ScheduleState::new();
+    state_b.appointments.insert(
+        AppointmentId::new("appt-1"),
+        appointment("appt-1", "slot-booked"),
+    );
+    state_b.slots.insert(
+        SlotId::new("slot-cancelled"),
+        slot(
+            "slot-cancelled",
+            SlotStatus::Cancelled,
+            Utc.with_ymd_and_hms(2026, 1, 7, 12, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 13, 0, 0).unwrap(),
+        ),
+    );
+    state_b.slots.insert(
+        SlotId::new("slot-booked"),
+        slot(
+            "slot-booked",
+            SlotStatus::Booked,
+            Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+        ),
+    );
+    state_b.slots.insert(
+        SlotId::new("slot-available"),
+        slot(
+            "slot-available",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 7, 8, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+        ),
+    );
+
+    let slots_a = project_slot_layout_nodes(&state_a, &query);
+    let appointments_a = project_appointment_layout_nodes(&state_a, &query);
+
+    let slots_b = project_slot_layout_nodes(&state_b, &query);
+    let appointments_b = project_appointment_layout_nodes(&state_b, &query);
+
+    assert_eq!(slots_a, slots_b);
+    assert_eq!(appointments_a, appointments_b);
+}
+
+#[test]
+fn slot_projection_never_leaks_booked_or_cancelled_slots() {
+    let mut state = ScheduleState::new();
+    state.slots.insert(
+        SlotId::new("available-1"),
+        slot(
+            "available-1",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 6, 9, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 6, 10, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("booked-1"),
+        slot(
+            "booked-1",
+            SlotStatus::Booked,
+            Utc.with_ymd_and_hms(2026, 1, 6, 10, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 6, 11, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("cancelled-1"),
+        slot(
+            "cancelled-1",
+            SlotStatus::Cancelled,
+            Utc.with_ymd_and_hms(2026, 1, 6, 11, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 6, 12, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("available-2"),
+        slot(
+            "available-2",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 6, 12, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 6, 13, 0, 0).unwrap(),
+        ),
+    );
+    state.appointments.insert(
+        AppointmentId::new("appt-booked"),
+        appointment("appt-booked", "booked-1"),
+    );
+
+    let nodes = project_slot_layout_nodes(
+        &state,
+        &WeeklyLayoutQuery {
+            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        },
+    );
+
+    let projected_ids = nodes
+        .iter()
+        .map(|node| node.slot_id.as_str().to_string())
+        .collect::<Vec<_>>();
+
+    assert_eq!(projected_ids, vec!["available-1", "available-2"]);
+}
+
 fn slot(
     id: &str,
     status: SlotStatus,
