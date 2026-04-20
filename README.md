@@ -5,6 +5,7 @@ mai is a scheduler library.
 ## Workspace
 - `core/`: Rust headless scheduling core crate.
 - `docs/adapter_payload_examples.md`: adapter-facing JSON payload examples.
+- `docs/wasm_adapter_usage.md`: end-to-end WASM adapter usage notes (JSON command/query flow).
 
 ## Stable DTO Boundary
 Import public DTOs from the crate root (example: `mai::AddSlotCommand`, `mai::WeeklyLayoutQuery`, `mai::WeeklyLayout`, `mai::SchedulerError`) to avoid relying on internal module paths.

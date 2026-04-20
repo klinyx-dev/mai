@@ -2,6 +2,8 @@
 
 These examples show the stable JSON-string contract for the WASM adapter boundary.
 
+For an end-to-end integration flow (init, mutate, query, and error handling), see `docs/wasm_adapter_usage.md`.
+
 The boundary is envelope-based:
 - mutations use `{"command": "...", "payload": ...}`
 - queries use `{"query": "...", "payload": ...}`

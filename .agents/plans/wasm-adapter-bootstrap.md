@@ -67,6 +67,11 @@ Verification:
 - Extend docs with example JS/TS or JSON request/response flows.
 - Keep examples aligned with `docs/adapter_payload_examples.md`.
 
+Decision recorded:
+- Keep canonical payload shapes in `docs/adapter_payload_examples.md`.
+- Add consumer-oriented integration flow notes in `docs/wasm_adapter_usage.md`.
+- Document constructor + mutation/query call pattern around `execute_command_json` and `execute_query_json`.
+
 Acceptance criteria:
 - A consumer can see how to initialize adapter state, submit a command, and read weekly layout output.
 
