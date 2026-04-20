@@ -96,6 +96,11 @@ core/
 │   └── reducers.rs
 ├── layout/
 │   ├── weekly_layout.rs
+│   ├── weekly_layout/
+│   │   ├── query.rs
+│   │   ├── position.rs
+│   │   ├── projection.rs
+│   │   └── tests.rs
 │   ├── overlap.rs
 │   ├── clipping.rs
 │   └── output.rs
@@ -111,7 +116,7 @@ core/
 This separation matters:
 - **domain**: core entities and value objects
 - **commands**: input contracts for mutations
-- **valdiation**: business rule enforcement
+- **validation**: business rule enforcement
 - **state**: canonical in-memory schedule representation
 - **layout**: weekly semantic layout computation
 - **application**: orchestration layer for commands and queries
@@ -408,7 +413,7 @@ This directly matches the current business rules in the functional spec
 ### 8.2 Booking flow
 When adding an appointment:
 1. Verify slot exists
-2. Verify slot status = `Avaialable`
+2. Verify slot status = `Available`
 3. Verify no appointment already references slot
 4. Create appointment
 5. Update slot status to `Booked`
@@ -424,7 +429,7 @@ When deleting an appointment:
 1. Verify appointment exists
 2. Load referenced slot
 3. Delete appointment
-4. Update slot status to `Avaialable`
+4. Update slot status to `Available`
 
 Also atomic
 
@@ -549,9 +554,10 @@ This gives the UI enough semantic positioning data without hardcoding pixels
 
 ### 10.5 Visible data filtering
 Layout query rules:
-- include only slots in visible week where status = `Avaialable`
+- include only slots in visible week where status = `Available`
 - exclude Booked and Cancelled slots from slot node output
 - include appointments whose referenced slot falls within visible week
+- appointments with invalid/missing slot references are excluded by invariant assumptions
 
 This follows FR-2 and FR-3 in the functional spec
 
@@ -600,19 +606,77 @@ Reason:
 - easy WASM interop
 - persistence support later
 
-### 12.2 WASM-ready API
-For web use, expose a narrow exported API through wasm-bindgen later
+### 12.2 WASM adapter boundary (current baseline)
+The adapter boundary is JSON-string based and envelope-driven.
 
-Do not leak complex Rust internals across the WASM boundary if not necessary
+Requests:
+- command envelope: `{"command":"<name>","payload":{...}}`
+- query envelope: `{"query":"<name>","payload":{...}}`
 
-Prefer serializable request/response DTOs
+Responses:
+- success: `{"status":"success","data":...}`
+- error: `{"status":"error","error":{...}}`
 
-Example strategy:
-- JS sends JSON command payload
-- Rust parses into typed command
-- Rust returns JSON result/error
-  
-This keeps the adapter simple
+Error payload must use adapter-safe shape:
+
+```rust
+pub struct WasmAdapterError {
+    pub category: WasmErrorCategory, // structural | referential | business | contract
+    pub code: String,                // machine-readable snake_case code
+    pub message: String,             // human-readable message
+}
+```
+
+Malformed JSON at the boundary must map to:
+- `category = contract`
+- `code = invalid_json`
+
+This keeps adapter behavior parseable and deterministic for JS/TS consumers.
+
+### 12.3 WASM export layer
+The adapter wrapper should be exposed through `wasm-bindgen` without changing core business logic.
+
+Export requirements:
+- Export a constructible adapter state wrapper around `WasmSchedulerAdapter`.
+- Export mutation and query entrypoints that accept `&str` JSON and return JSON `String`.
+- Preserve the existing JSON envelope contract exactly (no shape drift).
+- Do not duplicate validation or state-transition rules in exported functions.
+- Keep wasm-specific code confined to adapter module boundaries.
+
+Verification requirements:
+- Rust tests for adapter wrapper behavior remain green.
+- Add a web-consumer smoke example/test that calls exported methods and asserts response shape.
+
+### 12.4 WASM package consumption layer (completed)
+This step makes the adapter straightforward to consume from JS tooling.
+
+Goals:
+- Build a distributable wasm package shape for web consumers.
+- Verify the generated package can be initialized and imported from JS.
+- Keep the runtime contract unchanged from the current JSON envelope boundary.
+
+Requirements:
+- Define one supported packaging tool/command for near-term consumption:
+  - `wasm-pack build --target web --out-dir pkg --out-name mai`
+- Treat generated `pkg/` output as the package contract for docs/smoke checks:
+  - `pkg/mai.js` (ES module glue with default `init`)
+  - `pkg/mai_bg.wasm` (WASM binary)
+  - `pkg/mai.d.ts` (TypeScript declarations)
+  - `pkg/package.json` (generated package metadata)
+- Verify consumer import pattern around generated package output (`init` + exported class):
+  - `import init, { WasmBindgenAdapter } from "./pkg/mai.js"`
+  - `await init()`
+- Add a package-level smoke path that proves a JS consumer can:
+  - initialize the wasm module
+  - construct `WasmBindgenAdapter`
+  - issue at least one command and one query
+  - parse success/error envelopes
+- Keep packaging concerns in adapter/build layers, not in domain/application modules.
+
+Non-goals:
+- No UI rendering layer.
+- No change to request/response JSON shapes.
+- No new business rules.
 
 ## 13. Testing Strategy
 
@@ -774,41 +838,50 @@ Deliver:
 - JS/TS integration contract
 - example usage from frontend
 
-## 19. Open Technical Decisions
-These should be locked before implementation to avoid churn
+Near-term sequencing:
+- TM6a: adapter contract + state wrapper + adapter-safe error mapping (completed)
+- TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (completed)
+- TM6c: package/build verification for real JS consumption (completed on 2026-04-20)
+- TM7: actor lookup boundary + optional actor-reference validation (next)
+
+### TM7: Actor boundary and validation collaborator
+Deliver:
+- an application-layer actor lookup collaborator trait
+- optional assignee/creator existence checks behind that collaborator
+- deterministic actor-reference validation errors mapped through existing error envelopes
+- no persistence or registry coupling introduced in domain/layout modules
+
+## 19. Locked Technical Decisions (Accepted 2026-04-20)
+These decisions are fixed for the near-term implementation and release baseline.
 
 ### 19.1 Slot status naming
-Current functional spec is inconsistent between active and available
-
-Technical spec should standardize on:
+Standardize status terminology to:
 - Available
 - Booked
 - Cancelled
 
-### 19.2 ID ownership
-Decide whether IDs are:
-- generated outside the core and passed in, or
-- generated by the core
+`Active` is treated as descriptive language only, not a status value.
 
-Near-term recommendation:
-- generated outside the core
-- core remains deterministic and simpler
+### 19.2 ID ownership
+IDs are generated outside the core and passed into commands/DTOs.
+
+Rationale:
+- keeps core deterministic
+- avoids hidden ID generation side effects
 
 ### 19.3 Actor existence validation
-The functional spec says assignee/creator should exist, but the current core does not define an actor repository
+Actor IDs are accepted as opaque references in Phase 1.
 
-Near-term recommendation:
-- treat actor IDs as valid opaque references
-- do not implement actor registry validation inside the core yet
-- if needed later, introduce a collaborator trait for actor existence checks
+Near-term rule:
+- no actor registry validation inside the core
+- if needed later, introduce a collaborator trait at adapter/application boundary
 
 ### 19.4 Cancelled slot retention
-Decide whether cancelled slots remain in state forever or can be garbage-collected externally
+Cancelled slots remain in canonical state by default.
 
-Near-term recommendation:
-- keep them in state
-- exclude them from availability/layout
-- allow higher layers to archive/purge later
+Near-term rule:
+- exclude cancelled slots from availability/layout
+- allow archival or purge in higher layers outside core invariants
 
 ## 20. Acceptance Criteria for the Technical Spec
 The implementation satisfies this technical spec when:

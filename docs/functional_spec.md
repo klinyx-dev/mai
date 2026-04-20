@@ -120,14 +120,14 @@ System must:
 System must:
 - Show all appointments within the visible week
 - Position appointments based on their slot time
+- Treat appointments with missing slot references as invalid and exclude them from layout output under invariant assumptions
 
 ### FR-4: Add Slot
 System must:
 - Accept (start, end, assignee, created_by)
 - Validate:
   - start < end
-  - assignee exists
-  - created_by exists
+  - assignee and created_by are valid opaque actor references
   - no overlap with other active slots for the same assignee
 
 ### FR-5: Delete Slot

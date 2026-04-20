@@ -9,7 +9,10 @@ pub fn ensure_slot_exists<'a>(
     state: &'a ScheduleState,
     slot_id: &SlotId,
 ) -> Result<&'a Slot, ReferentialError> {
-    state.slots.get(slot_id).ok_or(ReferentialError::SlotNotFound)
+    state
+        .slots
+        .get(slot_id)
+        .ok_or(ReferentialError::SlotNotFound)
 }
 
 pub fn ensure_slot_is_available(slot: &Slot) -> Result<(), BusinessRuleError> {
@@ -24,7 +27,7 @@ pub fn ensure_slot_is_deletable(slot: &Slot) -> Result<(), BusinessRuleError> {
     if slot.status == SlotStatus::Booked {
         return Err(BusinessRuleError::CannotDeleteBookedSlot);
     }
-    
+
     Ok(())
 }
 
@@ -32,7 +35,7 @@ pub fn ensure_slot_is_cancellable(slot: &Slot) -> Result<(), BusinessRuleError> 
     if slot.status != SlotStatus::Available {
         return Err(BusinessRuleError::SlotNotAvailable);
     }
-    
+
     Ok(())
 }
 
@@ -80,13 +83,13 @@ mod tests {
             Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
         )
         .unwrap();
-        
+
         let b = TimeRange::new(
             Utc.with_ymd_and_hms(2026, 1, 5, 9, 30, 0).unwrap(),
             Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
         )
         .unwrap();
-        
+
         let c = TimeRange::new(
             Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
             Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),

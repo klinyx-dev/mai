@@ -32,6 +32,7 @@ cargo make test
 cargo make fmt
 cargo make clippy
 cargo make wasm-check
+cargo make wasm-smoke
 cargo make ci
 ```
 

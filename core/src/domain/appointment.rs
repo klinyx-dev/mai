@@ -1,4 +1,3 @@
-
 use serde::{Deserialize, Serialize};
 
 use crate::domain::ids::{ActorId, AppointmentId, SlotId};

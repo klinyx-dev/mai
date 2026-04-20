@@ -1,19 +1,11 @@
 use std::collections::HashSet;
 
-use crate::application::errors::{
-    BusinessRuleError, 
-    ReferentialError, 
-    SchedulerError
-};
+use crate::application::errors::{BusinessRuleError, ReferentialError, SchedulerError};
 use crate::state::schedule_state::ScheduleState;
 
 pub fn validate_slot_appointment_invariants(state: &ScheduleState) -> Result<(), SchedulerError> {
     let mut appointment_ids: Vec<_> = state.appointments.keys().cloned().collect();
-    appointment_ids.sort_by(
-        |a, b| a
-            .as_str()
-            .cmp(b.as_str())
-    );
+    appointment_ids.sort_by(|a, b| a.as_str().cmp(b.as_str()));
 
     let mut seen_slot_ids = HashSet::new();
 
