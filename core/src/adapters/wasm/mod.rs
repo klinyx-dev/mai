@@ -158,9 +158,18 @@ pub struct WasmBindgenAdapter {
     inner: WasmSchedulerAdapter,
 }
 
+impl Default for WasmBindgenAdapter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen::prelude::wasm_bindgen)]
 impl WasmBindgenAdapter {
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen::prelude::wasm_bindgen(constructor))]
+    #[cfg_attr(
+        target_arch = "wasm32",
+        wasm_bindgen::prelude::wasm_bindgen(constructor)
+    )]
     pub fn new() -> Self {
         Self {
             inner: WasmSchedulerAdapter::new(),

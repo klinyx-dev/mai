@@ -44,7 +44,8 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
             }
         }"#,
     );
-    let weekly_query_json: serde_json::Value = serde_json::from_str(&weekly_query_response).unwrap();
+    let weekly_query_json: serde_json::Value =
+        serde_json::from_str(&weekly_query_response).unwrap();
     assert_eq!(weekly_query_json["status"], "success");
     assert_eq!(weekly_query_json["data"]["week_start"], "2026-05-04");
     assert_eq!(
@@ -69,6 +70,8 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
         serde_json::from_str(&duplicate_booking_response).unwrap();
     assert_eq!(duplicate_booking_json["status"], "error");
     assert_eq!(duplicate_booking_json["error"]["category"], "business");
-    assert_eq!(duplicate_booking_json["error"]["code"], "slot_already_booked");
+    assert_eq!(
+        duplicate_booking_json["error"]["code"],
+        "slot_already_booked"
+    );
 }
-

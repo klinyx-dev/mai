@@ -179,6 +179,25 @@ args = [
   "wasm32-unknown-unknown",
 ]
 
+[tasks.wasm-smoke]
+description = "Run generated wasm package smoke validation in container"
+dependencies = ["build-image"]
+command = "podman"
+args = [
+  "run",
+  "--rm",
+  "-v", "${HOST_MOUNT}:${WORKSPACE_DIR}",
+  "-v", "${CARGO_REGISTRY_VOL}:${CARGO_HOME_IN_CONTAINER}/registry",
+  "-v", "${CARGO_GIT_VOL}:${CARGO_HOME_IN_CONTAINER}/git",
+  "-v", "${TARGET_VOL}:${WORKSPACE_DIR}/target",
+  "-e", "CARGO_TARGET_DIR=${WORKSPACE_DIR}/target",
+  "-w", "${WORKSPACE_DIR}",
+  "${IMAGE_NAME}",
+  "bash",
+  "-lc",
+  "core/tests/run_generated_package_smoke.sh",
+]
+
 [tasks.ci]
 description = "Run full validation flow"
-dependencies = ["fmt", "clippy", "test", "wasm-check"]
+dependencies = ["fmt", "clippy", "test", "wasm-check", "wasm-smoke"]

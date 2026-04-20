@@ -2,10 +2,10 @@ use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
     AddAppointmentCommand, AddSlotCommand, BusinessRuleError, SchedulerError, WeeklyLayoutQuery,
     adapters::wasm::{
-        WasmAdapterError, WasmErrorCategory,
-        WasmCommandRequest, WasmCommandResponse, WasmMutationSuccess, WasmQueryRequest,
-        WasmQueryResponse, WasmSchedulerAdapter, WasmBindgenAdapter, parse_command_request, parse_query_request,
-        render_command_response, render_query_response,
+        WasmAdapterError, WasmBindgenAdapter, WasmCommandRequest, WasmCommandResponse,
+        WasmErrorCategory, WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse,
+        WasmSchedulerAdapter, parse_command_request, parse_query_request, render_command_response,
+        render_query_response,
     },
 };
 

@@ -647,8 +647,8 @@ Verification requirements:
 - Rust tests for adapter wrapper behavior remain green.
 - Add a web-consumer smoke example/test that calls exported methods and asserts response shape.
 
-### 12.4 WASM package consumption layer (next step)
-After exports exist, the next step is to make the adapter straightforward to consume from JS tooling.
+### 12.4 WASM package consumption layer (completed)
+This step makes the adapter straightforward to consume from JS tooling.
 
 Goals:
 - Build a distributable wasm package shape for web consumers.
@@ -841,7 +841,7 @@ Deliver:
 Near-term sequencing:
 - TM6a: adapter contract + state wrapper + adapter-safe error mapping (completed)
 - TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (completed)
-- TM6c: package/build verification for real JS consumption (next)
+- TM6c: package/build verification for real JS consumption (completed on 2026-04-20)
 
 ## 19. Open Technical Decisions
 These should be locked before implementation to avoid churn
