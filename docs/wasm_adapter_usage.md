@@ -16,6 +16,24 @@ Current wasm-bindgen export wrapper (`core/src/adapters/wasm/mod.rs`) exposes:
 
 When bound through `wasm-bindgen`, JavaScript should call equivalent methods with JSON strings.
 
+## Package Build Contract (TM6c Task 1)
+
+Near-term supported package build path:
+
+```bash
+wasm-pack build --target web --out-dir pkg --out-name mai
+```
+
+Expected generated output contract:
+- `pkg/mai.js`
+- `pkg/mai_bg.wasm`
+- `pkg/mai.d.ts`
+- `pkg/package.json`
+
+Notes:
+- This is the single documented build contract for JS consumption in this repo.
+- Runtime JSON request/response envelopes remain unchanged.
+
 ### Typical JS import style
 
 ```ts

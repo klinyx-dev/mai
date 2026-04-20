@@ -656,8 +656,16 @@ Goals:
 - Keep the runtime contract unchanged from the current JSON envelope boundary.
 
 Requirements:
-- Configure the crate so wasm packaging produces a usable JS-facing artifact.
-- Verify consumer import pattern around generated package output (`init` + exported class).
+- Define one supported packaging tool/command for near-term consumption:
+  - `wasm-pack build --target web --out-dir pkg --out-name mai`
+- Treat generated `pkg/` output as the package contract for docs/smoke checks:
+  - `pkg/mai.js` (ES module glue with default `init`)
+  - `pkg/mai_bg.wasm` (WASM binary)
+  - `pkg/mai.d.ts` (TypeScript declarations)
+  - `pkg/package.json` (generated package metadata)
+- Verify consumer import pattern around generated package output (`init` + exported class):
+  - `import init, { WasmBindgenAdapter } from "./pkg/mai.js"`
+  - `await init()`
 - Add a package-level smoke path that proves a JS consumer can:
   - initialize the wasm module
   - construct `WasmBindgenAdapter`
