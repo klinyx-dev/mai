@@ -214,6 +214,8 @@ fn referential_error_code(error: &ReferentialError) -> &'static str {
     match error {
         ReferentialError::SlotNotFound => "slot_not_found",
         ReferentialError::AppointmentNotFound => "appointment_not_found",
+        ReferentialError::AssigneeNotFound => "assignee_not_found",
+        ReferentialError::CreatorNotFound => "creator_not_found",
     }
 }
 

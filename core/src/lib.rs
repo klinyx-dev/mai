@@ -7,8 +7,8 @@ pub mod state;
 pub mod validation;
 
 pub use application::{
-    BusinessRuleError, CommandResult, ReferentialError, SchedulerError, SchedulerService,
-    StructuralError,
+    ActorLookup, BusinessRuleError, CommandResult, ReferentialError, SchedulerError,
+    SchedulerService, StructuralError,
 };
 pub use commands::{
     AddAppointmentCommand, AddSlotCommand, CancelSlotCommand, DeleteAppointmentCommand,

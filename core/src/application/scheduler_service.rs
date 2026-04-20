@@ -1,3 +1,4 @@
+use crate::application::ActorLookup;
 use crate::application::command_result::CommandResult;
 use crate::application::errors::{ReferentialError, StructuralError};
 use crate::commands::add_appointment::AddAppointmentCommand;
@@ -22,21 +23,58 @@ use crate::validation::slot_validation::{
     ensure_no_overlap_for_assignee, ensure_slot_exists, ensure_slot_is_available,
     ensure_slot_is_cancellable, ensure_slot_is_deletable,
 };
+use std::fmt;
+use std::sync::Arc;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct SchedulerService {
     state: ScheduleState,
+    actor_lookup: Option<Arc<dyn ActorLookup>>,
+}
+
+impl fmt::Debug for SchedulerService {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SchedulerService")
+            .field("state", &self.state)
+            .field("actor_lookup_configured", &self.actor_lookup.is_some())
+            .finish()
+    }
 }
 
 impl SchedulerService {
     pub fn new() -> Self {
         Self {
             state: ScheduleState::new(),
+            actor_lookup: None,
         }
     }
 
     pub fn from_state(state: ScheduleState) -> Self {
-        Self { state }
+        Self {
+            state,
+            actor_lookup: None,
+        }
+    }
+
+    pub fn with_actor_lookup(actor_lookup: Arc<dyn ActorLookup>) -> Self {
+        Self {
+            state: ScheduleState::new(),
+            actor_lookup: Some(actor_lookup),
+        }
+    }
+
+    pub fn from_state_with_actor_lookup(
+        state: ScheduleState,
+        actor_lookup: Option<Arc<dyn ActorLookup>>,
+    ) -> Self {
+        Self {
+            state,
+            actor_lookup,
+        }
+    }
+
+    pub fn set_actor_lookup(&mut self, actor_lookup: Option<Arc<dyn ActorLookup>>) {
+        self.actor_lookup = actor_lookup;
     }
 
     pub fn state(&self) -> &ScheduleState {
@@ -44,6 +82,9 @@ impl SchedulerService {
     }
 
     pub fn add_slot(&mut self, cmd: AddSlotCommand) -> CommandResult {
+        self.ensure_actor_exists(&cmd.assignee_id, ReferentialError::AssigneeNotFound)?;
+        self.ensure_actor_exists(&cmd.created_by, ReferentialError::CreatorNotFound)?;
+
         let time =
             TimeRange::new(cmd.start, cmd.end).map_err(|_| StructuralError::InvalidTimeRange)?;
         let slot = Slot::new(cmd.slot_id.clone(), time, cmd.assignee_id, cmd.created_by);
@@ -79,6 +120,8 @@ impl SchedulerService {
     }
 
     pub fn add_appointment(&mut self, cmd: AddAppointmentCommand) -> CommandResult {
+        self.ensure_actor_exists(&cmd.created_by, ReferentialError::CreatorNotFound)?;
+
         ensure_title_not_empty(&cmd.title)?;
         let slot = ensure_slot_exists(&self.state, &cmd.slot_id)?;
         ensure_slot_is_available(slot)?;
@@ -139,11 +182,25 @@ impl SchedulerService {
             appointments,
         }
     }
+
+    fn ensure_actor_exists(
+        &self,
+        actor_id: &crate::domain::ActorId,
+        error: ReferentialError,
+    ) -> CommandResult {
+        if let Some(actor_lookup) = &self.actor_lookup
+            && !actor_lookup.actor_exists(actor_id)
+        {
+            return Err(error.into());
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::SchedulerService;
+    use crate::application::actor_lookup::ActorLookup;
     use crate::application::errors::{
         BusinessRuleError, ReferentialError, SchedulerError, StructuralError,
     };
@@ -156,6 +213,24 @@ mod tests {
     use crate::domain::ids::{ActorId, AppointmentId, SlotId};
     use crate::layout::WeeklyLayoutQuery;
     use chrono::{TimeZone, Utc};
+    use std::collections::HashSet;
+    use std::sync::Arc;
+
+    #[derive(Clone, Debug, Default)]
+    struct TestActorLookup {
+        existing: HashSet<ActorId>,
+    }
+
+    impl ActorLookup for TestActorLookup {
+        fn actor_exists(&self, actor_id: &ActorId) -> bool {
+            self.existing.contains(actor_id)
+        }
+    }
+
+    fn actor_lookup(ids: &[&str]) -> Arc<dyn ActorLookup> {
+        let existing = ids.iter().map(|id| ActorId::new(*id)).collect();
+        Arc::new(TestActorLookup { existing })
+    }
 
     fn add_slot_cmd(slot_id: &str) -> AddSlotCommand {
         AddSlotCommand {
@@ -337,6 +412,62 @@ mod tests {
         assert_eq!(
             layout.appointments[0].appointment_id,
             AppointmentId::new("appt-1")
+        );
+    }
+
+    #[test]
+    fn add_slot_rejects_missing_assignee_when_lookup_is_enabled() {
+        let mut service = SchedulerService::with_actor_lookup(actor_lookup(&["creator-1"]));
+
+        let result = service.add_slot(add_slot_cmd("slot-1"));
+
+        assert_eq!(
+            result.expect_err("missing assignee should fail"),
+            SchedulerError::Referential(ReferentialError::AssigneeNotFound)
+        );
+    }
+
+    #[test]
+    fn add_slot_rejects_missing_creator_when_lookup_is_enabled() {
+        let mut service = SchedulerService::with_actor_lookup(actor_lookup(&["assignee-1"]));
+
+        let result = service.add_slot(add_slot_cmd("slot-1"));
+
+        assert_eq!(
+            result.expect_err("missing creator should fail"),
+            SchedulerError::Referential(ReferentialError::CreatorNotFound)
+        );
+    }
+
+    #[test]
+    fn add_appointment_rejects_missing_creator_when_lookup_is_enabled() {
+        let mut service =
+            SchedulerService::with_actor_lookup(actor_lookup(&["assignee-1", "creator-1"]));
+        service.add_slot(add_slot_cmd("slot-1")).unwrap();
+
+        let result = service.add_appointment(add_appointment_cmd("appt-1", "slot-1"));
+
+        assert_eq!(
+            result.expect_err("missing appointment creator should fail"),
+            SchedulerError::Referential(ReferentialError::CreatorNotFound)
+        );
+    }
+
+    #[test]
+    fn actor_validation_is_skipped_when_lookup_is_not_configured() {
+        let mut service = SchedulerService::new();
+
+        let result = service.add_slot(AddSlotCommand {
+            slot_id: SlotId::new("slot-unknown-actors"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 13, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 14, 0, 0).unwrap(),
+            assignee_id: ActorId::new("missing-assignee"),
+            created_by: ActorId::new("missing-creator"),
+        });
+
+        assert!(
+            result.is_ok(),
+            "behavior should remain unchanged without lookup"
         );
     }
 }

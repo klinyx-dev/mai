@@ -15,6 +15,10 @@ pub enum ReferentialError {
     SlotNotFound,
     #[error("appointment not found")]
     AppointmentNotFound,
+    #[error("assignee not found")]
+    AssigneeNotFound,
+    #[error("creator not found")]
+    CreatorNotFound,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
