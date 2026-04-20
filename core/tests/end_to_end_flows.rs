@@ -1,6 +1,6 @@
 use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
-    AddAppointmentCommand, AddSlotCommand, ActorId, AppointmentId, CancelSlotCommand,
+    ActorId, AddAppointmentCommand, AddSlotCommand, AppointmentId, CancelSlotCommand,
     SchedulerError, SchedulerService, SlotId, WeeklyLayoutQuery,
 };
 
@@ -113,12 +113,16 @@ fn overlapping_slots_different_assignees_are_allowed() {
     });
 
     assert_eq!(layout.slots.len(), 2);
-    assert!(layout
-        .slots
-        .iter()
-        .any(|node| node.slot_id == SlotId::new("slot-1")));
-    assert!(layout
-        .slots
-        .iter()
-        .any(|node| node.slot_id == SlotId::new("slot-2")));
+    assert!(
+        layout
+            .slots
+            .iter()
+            .any(|node| node.slot_id == SlotId::new("slot-1"))
+    );
+    assert!(
+        layout
+            .slots
+            .iter()
+            .any(|node| node.slot_id == SlotId::new("slot-2"))
+    );
 }

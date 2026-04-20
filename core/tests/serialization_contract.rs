@@ -1,11 +1,11 @@
 use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
-    adapters::wasm::{
-        parse_command_request, parse_query_request, render_command_response, render_query_response,
-        WasmCommandRequest, WasmCommandResponse, WasmMutationSuccess, WasmQueryRequest,
-        WasmQueryResponse,
-    },
     AddAppointmentCommand, AddSlotCommand, BusinessRuleError, SchedulerError, WeeklyLayoutQuery,
+    adapters::wasm::{
+        WasmCommandRequest, WasmCommandResponse, WasmMutationSuccess, WasmQueryRequest,
+        WasmQueryResponse, WasmSchedulerAdapter, parse_command_request, parse_query_request,
+        render_command_response, render_query_response,
+    },
 };
 
 #[test]
@@ -178,5 +178,119 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
     assert_eq!(
         serde_json::from_str::<serde_json::Value>(&rendered_query).unwrap()["error"]["detail"],
         "SlotAlreadyBooked"
+    );
+}
+
+#[test]
+fn wasm_adapter_wrapper_applies_mutations_via_json_entrypoint() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "assignee_id":"doctor-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+
+    let response = adapter.execute_command_json(add_slot_json).unwrap();
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "success");
+    assert_eq!(payload["data"], "applied");
+}
+
+#[test]
+fn wasm_adapter_wrapper_maps_business_error_for_duplicate_booking() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "assignee_id":"doctor-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let add_appointment_json = r#"{
+        "command":"add_appointment",
+        "payload":{
+            "appointment_id":"appt-9001",
+            "slot_id":"slot-1001",
+            "invitee_ids":["patient-77"],
+            "title":"Follow-up Consultation",
+            "created_by":"staff-3"
+        }
+    }"#;
+    let duplicate_appointment_json = r#"{
+        "command":"add_appointment",
+        "payload":{
+            "appointment_id":"appt-9002",
+            "slot_id":"slot-1001",
+            "invitee_ids":["patient-88"],
+            "title":"Second Booking Attempt",
+            "created_by":"staff-3"
+        }
+    }"#;
+
+    adapter.execute_command_json(add_slot_json).unwrap();
+    adapter.execute_command_json(add_appointment_json).unwrap();
+
+    let response = adapter
+        .execute_command_json(duplicate_appointment_json)
+        .unwrap();
+
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "error");
+    assert_eq!(payload["error"]["kind"], "Business");
+    assert_eq!(payload["error"]["detail"], "SlotAlreadyBooked");
+}
+
+#[test]
+fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "assignee_id":"doctor-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let add_appointment_json = r#"{
+        "command":"add_appointment",
+        "payload":{
+            "appointment_id":"appt-9001",
+            "slot_id":"slot-1001",
+            "invitee_ids":["patient-77"],
+            "title":"Follow-up Consultation",
+            "created_by":"staff-3"
+        }
+    }"#;
+    let query_json = r#"{
+        "query":"weekly_layout",
+        "payload":{
+            "anchor_date":"2026-05-07"
+        }
+    }"#;
+
+    adapter.execute_command_json(add_slot_json).unwrap();
+    adapter.execute_command_json(add_appointment_json).unwrap();
+
+    let response = adapter.execute_query_json(query_json).unwrap();
+
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "success");
+    assert_eq!(payload["data"]["week_start"], "2026-05-04");
+    assert_eq!(
+        payload["data"]["appointments"][0]["appointment_id"],
+        "appt-9001"
     );
 }

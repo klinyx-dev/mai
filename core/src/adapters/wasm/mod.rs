@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     AddAppointmentCommand, AddSlotCommand, CancelSlotCommand, DeleteAppointmentCommand,
-    DeleteSlotCommand, SchedulerError, WeeklyLayout, WeeklyLayoutQuery,
+    DeleteSlotCommand, SchedulerError, SchedulerService, WeeklyLayout, WeeklyLayoutQuery,
 };
 
 /// Serialized mutation envelope for the WASM boundary.
@@ -43,6 +43,56 @@ pub enum WasmResponse<T> {
 
 pub type WasmCommandResponse = WasmResponse<WasmMutationSuccess>;
 pub type WasmQueryResponse = WasmResponse<WeeklyLayout>;
+
+#[derive(Clone, Debug, Default)]
+pub struct WasmSchedulerAdapter {
+    service: SchedulerService,
+}
+
+impl WasmSchedulerAdapter {
+    pub fn new() -> Self {
+        Self {
+            service: SchedulerService::new(),
+        }
+    }
+
+    pub fn execute_command(&mut self, request: WasmCommandRequest) -> WasmCommandResponse {
+        let result = match request {
+            WasmCommandRequest::AddSlot(cmd) => self.service.add_slot(cmd),
+            WasmCommandRequest::DeleteSlot(cmd) => self.service.delete_slot(cmd),
+            WasmCommandRequest::CancelSlot(cmd) => self.service.cancel_slot(cmd),
+            WasmCommandRequest::AddAppointment(cmd) => self.service.add_appointment(cmd),
+            WasmCommandRequest::DeleteAppointment(cmd) => self.service.delete_appointment(cmd),
+        };
+
+        match result {
+            Ok(()) => WasmCommandResponse::Success {
+                data: WasmMutationSuccess::Applied,
+            },
+            Err(error) => WasmCommandResponse::Error { error },
+        }
+    }
+
+    pub fn execute_query(&self, request: WasmQueryRequest) -> WasmQueryResponse {
+        match request {
+            WasmQueryRequest::WeeklyLayout(query) => WasmQueryResponse::Success {
+                data: self.service.get_weekly_layout(query),
+            },
+        }
+    }
+
+    pub fn execute_command_json(&mut self, input: &str) -> Result<String, serde_json::Error> {
+        let request = parse_command_request(input)?;
+        let response = self.execute_command(request);
+        render_command_response(&response)
+    }
+
+    pub fn execute_query_json(&self, input: &str) -> Result<String, serde_json::Error> {
+        let request = parse_query_request(input)?;
+        let response = self.execute_query(request);
+        render_query_response(&response)
+    }
+}
 
 pub fn parse_command_request(input: &str) -> Result<WasmCommandRequest, serde_json::Error> {
     serde_json::from_str(input)
