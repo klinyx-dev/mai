@@ -61,6 +61,14 @@ Verification:
   - execute weekly query
   - parse success/error response envelopes
 
+Decision recorded:
+- Added integration smoke test `core/tests/wasm_web_smoke.rs`.
+- Test uses `WasmBindgenAdapter` exactly as a web consumer would:
+  - construct adapter
+  - send JSON command/query envelopes
+  - parse JSON responses
+  - assert both success and business-error envelope shapes.
+
 Acceptance criteria:
 - A consumer-facing flow is runnable or copy-pasteable and consistent with docs.
 
