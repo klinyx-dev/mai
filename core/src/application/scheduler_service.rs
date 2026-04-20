@@ -9,6 +9,10 @@ use crate::domain::appointment::Appointment;
 use crate::domain::enums::SlotStatus;
 use crate::domain::slot::Slot;
 use crate::domain::time_range::TimeRange;
+use crate::layout::weekly_layout::{
+    project_appointment_layout_nodes, project_slot_layout_nodes, week_range_from_anchor,
+};
+use crate::layout::{WeeklyLayout, WeeklyLayoutQuery};
 use crate::state::schedule_state::ScheduleState;
 use crate::validation::appointment_validation::{
     ensure_appointment_exists, ensure_no_appointment_for_slot, ensure_title_not_empty,
@@ -122,6 +126,19 @@ impl SchedulerService {
         validate_slot_appointment_invariants(&self.state)?;
         Ok(())
     }
+
+    pub fn get_weekly_layout(&self, query: WeeklyLayoutQuery) -> WeeklyLayout {
+        let week = week_range_from_anchor(query.anchor_date);
+        let slots = project_slot_layout_nodes(&self.state, &query);
+        let appointments = project_appointment_layout_nodes(&self.state, &query);
+
+        WeeklyLayout {
+            week_start: week.start,
+            week_end: week.end,
+            slots,
+            appointments,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -137,6 +154,7 @@ mod tests {
     use crate::commands::delete_slot::DeleteSlotCommand;
     use crate::domain::enums::SlotStatus;
     use crate::domain::ids::{ActorId, AppointmentId, SlotId};
+    use crate::layout::WeeklyLayoutQuery;
     use chrono::{TimeZone, Utc};
 
     fn add_slot_cmd(slot_id: &str) -> AddSlotCommand {
@@ -291,6 +309,34 @@ mod tests {
         assert_eq!(
             result.expect_err("blank title must fail"),
             SchedulerError::Structural(StructuralError::EmptyTitle)
+        );
+    }
+
+    #[test]
+    fn get_weekly_layout_returns_projected_nodes() {
+        let mut service = SchedulerService::new();
+        service.add_slot(add_slot_cmd("slot-1")).unwrap();
+        service
+            .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
+            .unwrap();
+
+        let layout = service.get_weekly_layout(WeeklyLayoutQuery {
+            anchor_date: chrono::NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        });
+
+        assert_eq!(
+            layout.week_start,
+            chrono::NaiveDate::from_ymd_opt(2026, 1, 5).unwrap()
+        );
+        assert_eq!(
+            layout.week_end,
+            chrono::NaiveDate::from_ymd_opt(2026, 1, 12).unwrap()
+        );
+        assert!(layout.slots.is_empty());
+        assert_eq!(layout.appointments.len(), 1);
+        assert_eq!(
+            layout.appointments[0].appointment_id,
+            AppointmentId::new("appt-1")
         );
     }
 }
