@@ -1,6 +1,7 @@
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-#[derive(Clone, Debug, PartialEq, Eq, Error)]
+#[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
 pub enum StructuralError {
     #[error("invalid time range")]
     InvalidTimeRange,
@@ -8,7 +9,7 @@ pub enum StructuralError {
     EmptyTitle,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Error)]
+#[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
 pub enum ReferentialError {
     #[error("slot not found")]
     SlotNotFound,
@@ -16,7 +17,7 @@ pub enum ReferentialError {
     AppointmentNotFound,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Error)]
+#[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
 pub enum BusinessRuleError {
     #[error("slot overlaps with an existing active slot for the same assignee")]
     SlotOverlap,
@@ -32,7 +33,8 @@ pub enum BusinessRuleError {
     AppointmentAlreadyExistsForSlot,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Error)]
+#[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
+#[serde(tag = "kind", content = "detail")]
 pub enum SchedulerError {
     #[error(transparent)]
     Structural(#[from] StructuralError),
