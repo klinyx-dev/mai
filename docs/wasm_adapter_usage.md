@@ -16,6 +16,15 @@ Current wasm-bindgen export wrapper (`core/src/adapters/wasm/mod.rs`) exposes:
 
 When bound through `wasm-bindgen`, JavaScript should call equivalent methods with JSON strings.
 
+### Typical JS import style
+
+```ts
+import init, { WasmBindgenAdapter } from "./pkg/mai.js";
+
+await init();
+const adapter = new WasmBindgenAdapter();
+```
+
 ## Compatibility Contract (TM6b)
 
 The JS-facing boundary must remain JSON-only:
