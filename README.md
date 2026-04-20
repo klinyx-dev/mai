@@ -54,4 +54,5 @@ cargo build
 cargo test
 cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
+core/tests/run_generated_package_smoke.sh
 ```

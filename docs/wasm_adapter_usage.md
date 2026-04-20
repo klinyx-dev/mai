@@ -34,6 +34,22 @@ Notes:
 - This is the single documented build contract for JS consumption in this repo.
 - Runtime JSON request/response envelopes remain unchanged.
 
+## Generated-Package Smoke Validation (TM6c Task 3)
+
+From the repository root:
+
+```bash
+core/tests/run_generated_package_smoke.sh
+```
+
+What this verifies:
+- package build succeeds via `wasm-pack`
+- expected generated files exist under `core/pkg/`
+- JavaScript can import `core/pkg/mai.js`
+- module initialization + adapter construction work
+- one command + one query round-trip through JSON envelopes
+- business error envelope parsing remains stable
+
 ### Typical JS import style
 
 ```ts
