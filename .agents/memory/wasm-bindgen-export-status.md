@@ -50,6 +50,4 @@ Track completion of TM6b: exporting the existing JSON adapter wrapper to web-con
   - error: `{ "status": "error", "error": { "category", "code", "message" } }`
 
 ## Notes
-- This memory supersedes the planning context from:
-  - `.agents/plans/wasm-adapter-bootstrap.md`
-  - `.agents/plans/wasm-bindgen-export.md`
+- This memory supersedes earlier wasm adapter planning context.

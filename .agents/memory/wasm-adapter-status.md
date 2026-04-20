@@ -4,7 +4,7 @@
 2026-04-20
 
 ## Scope Summary
-This memory captures the completed state of the WASM adapter bootstrap work and the immediate next step.
+This memory captures the completed state of the WASM adapter bootstrap work.
 
 ## Completed
 
@@ -47,16 +47,13 @@ This memory captures the completed state of the WASM adapter bootstrap work and 
 - Adapter and contract tests are passing in `core/tests/serialization_contract.rs`.
 - Full `cargo test` for `core` is passing after Task 3 implementation.
 
-## Remaining Near-Term Work
-- Implement `wasm-bindgen` export layer over `WasmSchedulerAdapter` (TM6b):
-  - export constructor
-  - export JSON command/query methods
-  - keep existing JSON contract unchanged
-- Add web-consumer smoke validation for exported methods.
+## Follow-up Milestones
+- TM6b export wrapper completion is tracked in:
+  - `.agents/memory/wasm-bindgen-export-status.md`
+- TM6c package consumption completion is tracked in:
+  - `.agents/memory/wasm-package-consumption-status.md`
 
 ## Primary References
-- Plan (completed bootstrap): `.agents/plans/wasm-adapter-bootstrap.md`
-- Plan (next step): `.agents/plans/wasm-bindgen-export.md`
 - Contract implementation: `core/src/adapters/wasm/mod.rs`
 - Contract examples: `docs/adapter_payload_examples.md`
 - Usage notes: `docs/wasm_adapter_usage.md`

@@ -56,3 +56,16 @@ cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
 core/tests/run_generated_package_smoke.sh
 ```
+
+## Release Baseline (`v0.1.0`)
+Contract guarantees for consumers:
+- JSON envelope contract remains stable for commands/queries and success/error responses.
+- `WasmBindgenAdapter` export surface stays JSON-only (`new`, `execute_command_json`, `execute_query_json`).
+- Generated package consumption path is validated through `core/tests/run_generated_package_smoke.sh`.
+
+Release readiness checklist:
+1. Ensure a clean git working tree.
+2. Run all commands in the `Commands` section successfully.
+3. Confirm GitHub Actions CI (`rust-quality` + `wasm-package-smoke`) is green.
+4. Confirm `CHANGELOG.md` includes the release entry.
+5. Create and push tag `v0.1.0`.

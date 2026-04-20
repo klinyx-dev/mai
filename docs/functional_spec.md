@@ -127,8 +127,7 @@ System must:
 - Accept (start, end, assignee, created_by)
 - Validate:
   - start < end
-  - assignee exists
-  - created_by exists
+  - assignee and created_by are valid opaque actor references
   - no overlap with other active slots for the same assignee
 
 ### FR-5: Delete Slot
