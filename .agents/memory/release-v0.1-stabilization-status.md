@@ -6,6 +6,10 @@
 ## Scope
 Capture completion of release hardening after TM6c to provide a tag-ready baseline for Rust and WASM consumers.
 
+## Release Execution
+- Annotated tag created: `v0.1.0` on commit `54fed86`.
+- Tag pushed to remote: `origin/v0.1.0`.
+
 ## Completed Outcomes
 
 1. Decision closure

@@ -29,5 +29,10 @@ Tests should mirror the technical spec: unit tests for invariants, service tests
 ## Commit & Pull Request Guidelines
 Git history currently uses short imperative subjects with optional prefixes such as `fix:` and `add:`. Keep commits focused and descriptive, for example `fix: reject booking cancelled slots`. PRs should link the relevant spec section, summarize behavioral changes, list validation/tests run, and include example payloads or screenshots when an adapter/UI is introduced.
 
+Release branch policy:
+- `main` is the stable release branch.
+- Release PRs must be merged into `main` before tagging.
+- Version tags (for example `v0.1.0`) must be created from commits already on `main`.
+
 ## Agent-Specific Instructions
 Read `.agents/rules/*.md` before editing code, docs, or commits. Load relevant skills from `.agents/skills/**/SKILL.md` or global agent skill directories when available, and mention applied skills explicitly as `Using skill: <skill-name>`. If a local rule conflicts with a skill, follow the local rule first.

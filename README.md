@@ -65,7 +65,8 @@ Contract guarantees for consumers:
 
 Release readiness checklist:
 1. Ensure a clean git working tree.
-2. Run all commands in the `Commands` section successfully.
-3. Confirm GitHub Actions CI (`rust-quality` + `wasm-package-smoke`) is green.
-4. Confirm `CHANGELOG.md` includes the release entry.
-5. Create and push tag `v0.1.0`.
+2. Merge release PR into `main` (`main` is the stable release branch).
+3. Run all commands in the `Commands` section successfully.
+4. Confirm GitHub Actions CI (`rust-quality` + `wasm-package-smoke`) is green on `main`.
+5. Confirm `CHANGELOG.md` includes the release entry.
+6. Create and push tag `v0.1.0` from the release commit on `main`.
