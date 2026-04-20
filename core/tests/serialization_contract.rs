@@ -4,7 +4,7 @@ use mai::{
     adapters::wasm::{
         WasmAdapterError, WasmErrorCategory,
         WasmCommandRequest, WasmCommandResponse, WasmMutationSuccess, WasmQueryRequest,
-        WasmQueryResponse, WasmSchedulerAdapter, parse_command_request, parse_query_request,
+        WasmQueryResponse, WasmSchedulerAdapter, WasmBindgenAdapter, parse_command_request, parse_query_request,
         render_command_response, render_query_response,
     },
 };
@@ -320,4 +320,37 @@ fn wasm_adapter_error_conversion_is_deterministic_for_business_errors() {
     assert_eq!(error.category, WasmErrorCategory::Business);
     assert_eq!(error.code, "cannot_delete_booked_slot");
     assert_eq!(error.message, "cannot delete a booked slot");
+}
+
+#[test]
+fn wasm_bindgen_wrapper_delegates_json_entrypoints() {
+    let mut adapter = WasmBindgenAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "assignee_id":"doctor-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let query_json = r#"{
+        "query":"weekly_layout",
+        "payload":{
+            "anchor_date":"2026-05-07"
+        }
+    }"#;
+
+    let command_response = adapter.execute_command_json(add_slot_json);
+    let query_response = adapter.execute_query_json(query_json);
+
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(&command_response).unwrap()["status"],
+        "success"
+    );
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(&query_response).unwrap()["status"],
+        "success"
+    );
 }

@@ -9,8 +9,8 @@ The boundary is JSON-in / JSON-out:
 
 ## Exported Adapter Surface
 
-Current Rust adapter wrapper (`core/src/adapters/wasm/mod.rs`) exposes:
-- `WasmSchedulerAdapter::new()`
+Current wasm-bindgen export wrapper (`core/src/adapters/wasm/mod.rs`) exposes:
+- `WasmBindgenAdapter::new()`
 - `execute_command_json(&str) -> String`
 - `execute_query_json(&str) -> String`
 
@@ -21,8 +21,7 @@ When bound through `wasm-bindgen`, JavaScript should call equivalent methods wit
 ### 1. Initialize adapter state
 
 ```ts
-// Actual constructor name depends on wasm-bindgen export naming.
-const adapter = new WasmSchedulerAdapter();
+const adapter = new WasmBindgenAdapter();
 ```
 
 ### 2. Add slot, then book appointment

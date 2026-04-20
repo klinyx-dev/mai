@@ -16,6 +16,14 @@ This follows TM6b in `docs/technical_spec.md` after completing the adapter contr
 - Export constructor + JSON entrypoints for command/query execution.
 - Keep method behavior as passthrough to existing adapter wrapper.
 
+Decision recorded:
+- Added `WasmBindgenAdapter` as the exported wrapper over `WasmSchedulerAdapter`.
+- Exported methods use JSON string IO only:
+  - `new()`
+  - `execute_command_json(&str) -> String`
+  - `execute_query_json(&str) -> String`
+- Added `wasm-bindgen` as a `wasm32` target-specific dependency in `core/Cargo.toml`.
+
 Acceptance criteria:
 - Web consumer can instantiate exported adapter and call two JSON methods.
 - Exported methods preserve current response envelopes.
