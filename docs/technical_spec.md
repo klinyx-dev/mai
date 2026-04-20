@@ -606,19 +606,46 @@ Reason:
 - easy WASM interop
 - persistence support later
 
-### 12.2 WASM-ready API
-For web use, expose a narrow exported API through wasm-bindgen later
+### 12.2 WASM adapter boundary (current baseline)
+The adapter boundary is JSON-string based and envelope-driven.
 
-Do not leak complex Rust internals across the WASM boundary if not necessary
+Requests:
+- command envelope: `{"command":"<name>","payload":{...}}`
+- query envelope: `{"query":"<name>","payload":{...}}`
 
-Prefer serializable request/response DTOs
+Responses:
+- success: `{"status":"success","data":...}`
+- error: `{"status":"error","error":{...}}`
 
-Example strategy:
-- JS sends JSON command payload
-- Rust parses into typed command
-- Rust returns JSON result/error
-  
-This keeps the adapter simple
+Error payload must use adapter-safe shape:
+
+```rust
+pub struct WasmAdapterError {
+    pub category: WasmErrorCategory, // structural | referential | business | contract
+    pub code: String,                // machine-readable snake_case code
+    pub message: String,             // human-readable message
+}
+```
+
+Malformed JSON at the boundary must map to:
+- `category = contract`
+- `code = invalid_json`
+
+This keeps adapter behavior parseable and deterministic for JS/TS consumers.
+
+### 12.3 WASM export layer (next step)
+The next implementation step is to expose the existing adapter wrapper through `wasm-bindgen` without changing core business logic.
+
+Export requirements:
+- Export a constructible adapter state wrapper around `WasmSchedulerAdapter`.
+- Export mutation and query entrypoints that accept `&str` JSON and return JSON `String`.
+- Preserve the existing JSON envelope contract exactly (no shape drift).
+- Do not duplicate validation or state-transition rules in exported functions.
+- Keep wasm-specific code confined to adapter module boundaries.
+
+Verification requirements:
+- Rust tests for adapter wrapper behavior remain green.
+- Add a web-consumer smoke example/test that calls exported methods and asserts response shape.
 
 ## 13. Testing Strategy
 
@@ -779,6 +806,10 @@ Deliver:
 - web-consumable exports
 - JS/TS integration contract
 - example usage from frontend
+
+Near-term sequencing:
+- TM6a: adapter contract + state wrapper + adapter-safe error mapping (completed)
+- TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (next)
 
 ## 19. Open Technical Decisions
 These should be locked before implementation to avoid churn
