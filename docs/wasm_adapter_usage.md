@@ -16,6 +16,18 @@ Current wasm-bindgen export wrapper (`core/src/adapters/wasm/mod.rs`) exposes:
 
 When bound through `wasm-bindgen`, JavaScript should call equivalent methods with JSON strings.
 
+## Compatibility Contract (TM6b)
+
+The JS-facing boundary must remain JSON-only:
+- input type: JSON string
+- output type: JSON string
+- payload schema: `docs/adapter_payload_examples.md` is canonical
+
+Stability notes:
+- exported constructor name: `WasmBindgenAdapter`
+- exported method names: `execute_command_json`, `execute_query_json`
+- no Rust internal DTO/module paths are required by JS consumers
+
 ## End-to-End Flow
 
 ### 1. Initialize adapter state

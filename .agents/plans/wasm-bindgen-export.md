@@ -36,6 +36,14 @@ Verification:
 - Ensure exported names and signatures are stable and documented.
 - Confirm no internal module paths/types leak into JS-facing contract.
 
+Decision recorded:
+- Locked compile-time signature guards for:
+  - `fn() -> WasmBindgenAdapter`
+  - `fn(&mut WasmBindgenAdapter, &str) -> String`
+  - `fn(&WasmBindgenAdapter, &str) -> String`
+- Documented explicit TM6b compatibility contract in `docs/wasm_adapter_usage.md`.
+- Kept payload schema source of truth in `docs/adapter_payload_examples.md` with no schema changes.
+
 Acceptance criteria:
 - JS/TS consumer only needs JSON strings and returned JSON strings.
 - Existing adapter payload docs remain valid with no schema change.

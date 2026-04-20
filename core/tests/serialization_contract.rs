@@ -354,3 +354,12 @@ fn wasm_bindgen_wrapper_delegates_json_entrypoints() {
         "success"
     );
 }
+
+#[test]
+fn wasm_bindgen_wrapper_public_signature_stays_json_only() {
+    let _constructor: fn() -> WasmBindgenAdapter = WasmBindgenAdapter::new;
+    let _command_api: fn(&mut WasmBindgenAdapter, &str) -> String =
+        WasmBindgenAdapter::execute_command_json;
+    let _query_api: fn(&WasmBindgenAdapter, &str) -> String =
+        WasmBindgenAdapter::execute_query_json;
+}
