@@ -633,8 +633,8 @@ Malformed JSON at the boundary must map to:
 
 This keeps adapter behavior parseable and deterministic for JS/TS consumers.
 
-### 12.3 WASM export layer (next step)
-The next implementation step is to expose the existing adapter wrapper through `wasm-bindgen` without changing core business logic.
+### 12.3 WASM export layer
+The adapter wrapper should be exposed through `wasm-bindgen` without changing core business logic.
 
 Export requirements:
 - Export a constructible adapter state wrapper around `WasmSchedulerAdapter`.
@@ -646,6 +646,29 @@ Export requirements:
 Verification requirements:
 - Rust tests for adapter wrapper behavior remain green.
 - Add a web-consumer smoke example/test that calls exported methods and asserts response shape.
+
+### 12.4 WASM package consumption layer (next step)
+After exports exist, the next step is to make the adapter straightforward to consume from JS tooling.
+
+Goals:
+- Build a distributable wasm package shape for web consumers.
+- Verify the generated package can be initialized and imported from JS.
+- Keep the runtime contract unchanged from the current JSON envelope boundary.
+
+Requirements:
+- Configure the crate so wasm packaging produces a usable JS-facing artifact.
+- Verify consumer import pattern around generated package output (`init` + exported class).
+- Add a package-level smoke path that proves a JS consumer can:
+  - initialize the wasm module
+  - construct `WasmBindgenAdapter`
+  - issue at least one command and one query
+  - parse success/error envelopes
+- Keep packaging concerns in adapter/build layers, not in domain/application modules.
+
+Non-goals:
+- No UI rendering layer.
+- No change to request/response JSON shapes.
+- No new business rules.
 
 ## 13. Testing Strategy
 
@@ -809,7 +832,8 @@ Deliver:
 
 Near-term sequencing:
 - TM6a: adapter contract + state wrapper + adapter-safe error mapping (completed)
-- TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (next)
+- TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (completed)
+- TM6c: package/build verification for real JS consumption (next)
 
 ## 19. Open Technical Decisions
 These should be locked before implementation to avoid churn
