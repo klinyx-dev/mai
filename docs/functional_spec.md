@@ -99,7 +99,7 @@ Implications:
 - Multi-resource scheduling
 - Drag & drop UI
 - Styling / theming
-- Advanced timezone handling
+- Advanced timezone handling (beyond adapter/query boundary normalization)
 
 ---
 
@@ -108,6 +108,7 @@ Implications:
 ### FR-1: Render Weekly View
 System must:
 - Accept anchor date
+- Accept optional query-boundary timezone metadata for week anchoring
 - Compute 7-day range
 - Return semantic layout data
 

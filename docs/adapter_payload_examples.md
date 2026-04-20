@@ -50,6 +50,18 @@ The boundary is envelope-based:
 }
 ```
 
+## Query Request: Weekly Layout with Timezone (TM8 planned)
+
+```json
+{
+  "query": "weekly_layout",
+  "payload": {
+    "anchor_date": "2026-05-07",
+    "timezone": "Europe/Paris"
+  }
+}
+```
+
 ## Mutation Success Response (`WasmCommandResponse`)
 
 ```json
@@ -127,6 +139,19 @@ The boundary is envelope-based:
     "category": "contract",
     "code": "invalid_json",
     "message": "expected `,` or `}` at line 1 column 49"
+  }
+}
+```
+
+## Contract Error Response (invalid timezone, TM8 planned)
+
+```json
+{
+  "status": "error",
+  "error": {
+    "category": "contract",
+    "code": "invalid_timezone",
+    "message": "invalid timezone value"
   }
 }
 ```

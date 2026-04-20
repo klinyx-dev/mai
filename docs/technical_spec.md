@@ -843,6 +843,7 @@ Near-term sequencing:
 - TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (completed)
 - TM6c: package/build verification for real JS consumption (completed on 2026-04-20)
 - TM7: actor lookup boundary + optional actor-reference validation (completed on 2026-04-20)
+- TM8: timezone-aware weekly query boundary normalization (next)
 
 ### TM7: Actor boundary and validation collaborator
 Deliver:
@@ -850,6 +851,13 @@ Deliver:
 - optional assignee/creator existence checks behind that collaborator
 - deterministic actor-reference validation errors mapped through existing error envelopes
 - no persistence or registry coupling introduced in domain/layout modules
+
+### TM8: Timezone boundary normalization for weekly queries
+Deliver:
+- timezone-aware weekly query payload at adapter boundary
+- deterministic normalization from boundary timezone input to UTC-effective week anchor
+- stable error mapping for invalid timezone input
+- no timezone conversion rules added inside domain/layout modules
 
 ## 19. Locked Technical Decisions (Accepted 2026-04-20)
 These decisions are fixed for the near-term implementation and release baseline.
