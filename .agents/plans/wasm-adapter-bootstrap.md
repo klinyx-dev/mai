@@ -18,6 +18,12 @@ This follows TM6 in `docs/technical_spec.md` and is the next near-term step afte
 - Standardize success/error payloads around existing DTOs and `SchedulerError`.
 - Record any contract decisions if they constrain future adapters.
 
+Decision recorded:
+- Use JSON strings at the exported WASM boundary, not wasm-bindgen-owned request structs.
+- Wrap mutations in `WasmCommandRequest` (`command` + `payload`) and queries in `WasmQueryRequest` (`query` + `payload`).
+- Wrap all responses in `WasmResponse<T>` with `status = success|error`.
+- Reuse core DTOs inside payloads and reuse `SchedulerError` unchanged inside error responses.
+
 Acceptance criteria:
 - One documented boundary format exists for commands, queries, and errors.
 - Contract does not leak internal module paths or mutable state.
