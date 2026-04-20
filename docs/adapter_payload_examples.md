@@ -105,6 +105,19 @@ The boundary is envelope-based:
 }
 ```
 
+## Referential Error Response Example (actor lookup enabled)
+
+```json
+{
+  "status": "error",
+  "error": {
+    "category": "referential",
+    "code": "creator_not_found",
+    "message": "creator not found"
+  }
+}
+```
+
 ## Contract Error Response (invalid JSON)
 
 ```json

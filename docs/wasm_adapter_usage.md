@@ -169,7 +169,7 @@ if (duplicateBooking.status === "error") {
 ## Error Categories
 
 - `structural`: invalid domain shape (example: `invalid_time_range`, `empty_title`)
-- `referential`: missing referenced entities (example: `slot_not_found`)
+- `referential`: missing referenced entities (example: `slot_not_found`, `assignee_not_found`, `creator_not_found`)
 - `business`: rule violations (example: `slot_already_booked`)
 - `contract`: adapter boundary problems (example: `invalid_json`)
 

@@ -842,7 +842,7 @@ Near-term sequencing:
 - TM6a: adapter contract + state wrapper + adapter-safe error mapping (completed)
 - TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (completed)
 - TM6c: package/build verification for real JS consumption (completed on 2026-04-20)
-- TM7: actor lookup boundary + optional actor-reference validation (next)
+- TM7: actor lookup boundary + optional actor-reference validation (completed on 2026-04-20)
 
 ### TM7: Actor boundary and validation collaborator
 Deliver:
