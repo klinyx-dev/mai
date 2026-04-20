@@ -50,6 +50,12 @@ Verification:
 - Convert internal errors into consistent adapter responses.
 - Preserve machine-readable error categories/codes.
 
+Decision recorded:
+- Introduce `WasmAdapterError { category, code, message }` as the only adapter error payload.
+- Map `SchedulerError` variants to deterministic snake_case codes.
+- Treat malformed JSON as `category = contract` with `code = invalid_json`.
+- Ensure JSON entrypoints always return serialized success/error envelopes (no transport-level parse errors).
+
 Acceptance criteria:
 - All mutation/query failures return stable, parseable error payloads.
 - Error mapping is deterministic and tested.

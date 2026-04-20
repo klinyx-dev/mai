@@ -90,14 +90,28 @@ The boundary is envelope-based:
 }
 ```
 
-## Error Response (`WasmResponse<_, SchedulerError>`)
+## Error Response (`WasmResponse<_, WasmAdapterError>`)
 
 ```json
 {
   "status": "error",
   "error": {
-    "kind": "Business",
-    "detail": "SlotAlreadyBooked"
+    "category": "business",
+    "code": "slot_already_booked",
+    "message": "slot is already booked"
+  }
+}
+```
+
+## Contract Error Response (invalid JSON)
+
+```json
+{
+  "status": "error",
+  "error": {
+    "category": "contract",
+    "code": "invalid_json",
+    "message": "expected `,` or `}` at line 1 column 49"
   }
 }
 ```

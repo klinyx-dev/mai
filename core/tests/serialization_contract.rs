@@ -2,6 +2,7 @@ use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
     AddAppointmentCommand, AddSlotCommand, BusinessRuleError, SchedulerError, WeeklyLayoutQuery,
     adapters::wasm::{
+        WasmAdapterError, WasmErrorCategory,
         WasmCommandRequest, WasmCommandResponse, WasmMutationSuccess, WasmQueryRequest,
         WasmQueryResponse, WasmSchedulerAdapter, parse_command_request, parse_query_request,
         render_command_response, render_query_response,
@@ -122,14 +123,17 @@ fn wasm_command_response_uses_shared_success_envelope() {
 #[test]
 fn wasm_error_response_wraps_scheduler_error() {
     let response = WasmCommandResponse::Error {
-        error: SchedulerError::Business(BusinessRuleError::SlotAlreadyBooked),
+        error: WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+            BusinessRuleError::SlotAlreadyBooked,
+        )),
     };
 
     let json = serde_json::to_value(&response).unwrap();
 
     assert_eq!(json["status"], "error");
-    assert_eq!(json["error"]["kind"], "Business");
-    assert_eq!(json["error"]["detail"], "SlotAlreadyBooked");
+    assert_eq!(json["error"]["category"], "business");
+    assert_eq!(json["error"]["code"], "slot_already_booked");
+    assert_eq!(json["error"]["message"], "slot is already booked");
 
     let restored: WasmCommandResponse = serde_json::from_value(json).unwrap();
     assert_eq!(restored, response);
@@ -167,7 +171,9 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
     })
     .unwrap();
     let rendered_query = render_query_response(&WasmQueryResponse::Error {
-        error: SchedulerError::Business(BusinessRuleError::SlotAlreadyBooked),
+        error: WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+            BusinessRuleError::SlotAlreadyBooked,
+        )),
     })
     .unwrap();
 
@@ -176,8 +182,8 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
         "success"
     );
     assert_eq!(
-        serde_json::from_str::<serde_json::Value>(&rendered_query).unwrap()["error"]["detail"],
-        "SlotAlreadyBooked"
+        serde_json::from_str::<serde_json::Value>(&rendered_query).unwrap()["error"]["code"],
+        "slot_already_booked"
     );
 }
 
@@ -195,7 +201,7 @@ fn wasm_adapter_wrapper_applies_mutations_via_json_entrypoint() {
         }
     }"#;
 
-    let response = adapter.execute_command_json(add_slot_json).unwrap();
+    let response = adapter.execute_command_json(add_slot_json);
     let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
 
     assert_eq!(payload["status"], "success");
@@ -236,18 +242,16 @@ fn wasm_adapter_wrapper_maps_business_error_for_duplicate_booking() {
         }
     }"#;
 
-    adapter.execute_command_json(add_slot_json).unwrap();
-    adapter.execute_command_json(add_appointment_json).unwrap();
+    adapter.execute_command_json(add_slot_json);
+    adapter.execute_command_json(add_appointment_json);
 
-    let response = adapter
-        .execute_command_json(duplicate_appointment_json)
-        .unwrap();
+    let response = adapter.execute_command_json(duplicate_appointment_json);
 
     let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
 
     assert_eq!(payload["status"], "error");
-    assert_eq!(payload["error"]["kind"], "Business");
-    assert_eq!(payload["error"]["detail"], "SlotAlreadyBooked");
+    assert_eq!(payload["error"]["category"], "business");
+    assert_eq!(payload["error"]["code"], "slot_already_booked");
 }
 
 #[test]
@@ -280,10 +284,10 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
         }
     }"#;
 
-    adapter.execute_command_json(add_slot_json).unwrap();
-    adapter.execute_command_json(add_appointment_json).unwrap();
+    adapter.execute_command_json(add_slot_json);
+    adapter.execute_command_json(add_appointment_json);
 
-    let response = adapter.execute_query_json(query_json).unwrap();
+    let response = adapter.execute_query_json(query_json);
 
     let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
 
@@ -293,4 +297,27 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
         payload["data"]["appointments"][0]["appointment_id"],
         "appt-9001"
     );
+}
+
+#[test]
+fn wasm_adapter_wrapper_maps_invalid_json_to_contract_error() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let malformed = r#"{"command":"add_slot","payload":{"slot_id":"slot-1""#;
+
+    let response = adapter.execute_command_json(malformed);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "error");
+    assert_eq!(payload["error"]["category"], "contract");
+    assert_eq!(payload["error"]["code"], "invalid_json");
+}
+
+#[test]
+fn wasm_adapter_error_conversion_is_deterministic_for_business_errors() {
+    let error = WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+        BusinessRuleError::CannotDeleteBookedSlot,
+    ));
+    assert_eq!(error.category, WasmErrorCategory::Business);
+    assert_eq!(error.code, "cannot_delete_booked_slot");
+    assert_eq!(error.message, "cannot delete a booked slot");
 }
