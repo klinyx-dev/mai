@@ -1,6 +1,7 @@
 use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
-    AddAppointmentCommand, AddSlotCommand, BusinessRuleError, SchedulerError, WeeklyLayoutQuery,
+    AddAppointmentCommand, AddSlotCommand, BusinessRuleError, ReferentialError, SchedulerError,
+    WeeklyLayoutQuery,
     adapters::wasm::{
         WasmAdapterError, WasmBindgenAdapter, WasmCommandRequest, WasmCommandResponse,
         WasmErrorCategory, WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse,
@@ -320,6 +321,16 @@ fn wasm_adapter_error_conversion_is_deterministic_for_business_errors() {
     assert_eq!(error.category, WasmErrorCategory::Business);
     assert_eq!(error.code, "cannot_delete_booked_slot");
     assert_eq!(error.message, "cannot delete a booked slot");
+}
+
+#[test]
+fn wasm_adapter_error_conversion_is_deterministic_for_referential_errors() {
+    let error = WasmAdapterError::from_scheduler_error(SchedulerError::Referential(
+        ReferentialError::CreatorNotFound,
+    ));
+    assert_eq!(error.category, WasmErrorCategory::Referential);
+    assert_eq!(error.code, "creator_not_found");
+    assert_eq!(error.message, "creator not found");
 }
 
 #[test]
