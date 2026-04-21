@@ -6,6 +6,13 @@ use crate::{
 };
 use crate::{BusinessRuleError, ReferentialError, SchedulerError, StructuralError};
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WasmWeeklyLayoutQuery {
+    pub anchor_date: chrono::NaiveDate,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timezone: Option<String>,
+}
+
 /// Serialized mutation envelope for the WASM boundary.
 ///
 /// JavaScript callers send this as JSON so the adapter can deserialize into
@@ -24,7 +31,7 @@ pub enum WasmCommandRequest {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "query", content = "payload", rename_all = "snake_case")]
 pub enum WasmQueryRequest {
-    WeeklyLayout(WeeklyLayoutQuery),
+    WeeklyLayout(WasmWeeklyLayoutQuery),
 }
 
 /// Stable mutation success marker for adapter consumers.
@@ -125,7 +132,11 @@ impl WasmSchedulerAdapter {
     pub fn execute_query(&self, request: WasmQueryRequest) -> WasmQueryResponse {
         match request {
             WasmQueryRequest::WeeklyLayout(query) => WasmQueryResponse::Success {
-                data: self.service.get_weekly_layout(query),
+                // TM8 Task 1: adapter contract accepts optional timezone.
+                // Normalization behavior is introduced in TM8 Task 2.
+                data: self.service.get_weekly_layout(WeeklyLayoutQuery {
+                    anchor_date: query.anchor_date,
+                }),
             },
         }
     }

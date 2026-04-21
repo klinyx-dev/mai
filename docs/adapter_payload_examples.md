@@ -50,7 +50,7 @@ The boundary is envelope-based:
 }
 ```
 
-## Query Request: Weekly Layout with Timezone (TM8 planned)
+## Query Request: Weekly Layout with Optional Timezone
 
 ```json
 {
@@ -143,7 +143,7 @@ The boundary is envelope-based:
 }
 ```
 
-## Contract Error Response (invalid timezone, TM8 planned)
+## Contract Error Response (invalid timezone, TM8 Task 3)
 
 ```json
 {

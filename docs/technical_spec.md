@@ -612,6 +612,9 @@ The adapter boundary is JSON-string based and envelope-driven.
 Requests:
 - command envelope: `{"command":"<name>","payload":{...}}`
 - query envelope: `{"query":"<name>","payload":{...}}`
+- TM8 Task 1 contract extension:
+  - `weekly_layout` payload accepts optional `timezone` (IANA TZ ID string)
+  - `anchor_date`-only payload remains valid for backward compatibility
 
 Responses:
 - success: `{"status":"success","data":...}`

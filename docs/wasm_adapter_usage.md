@@ -71,18 +71,18 @@ Stability notes:
 - exported method names: `execute_command_json`, `execute_query_json`
 - no Rust internal DTO/module paths are required by JS consumers
 
-## TM8 Planned Query Contract (Timezone Boundary)
+## TM8 Query Contract (Task 1 complete)
 
-Planned extension for weekly layout query payload:
-- optional `timezone` field at adapter/query boundary
-- accepted examples: IANA TZ IDs (example: `Europe/Paris`)
+Weekly layout query payload now accepts an optional `timezone` field at adapter boundary.
 
-Planned boundary behavior:
-- adapter normalizes timezone-aware query input before invoking core layout logic
-- invalid timezone values return a deterministic contract error (`invalid_timezone`)
+Current contract behavior:
+- existing payload without `timezone` remains valid
+- payload with `timezone` is accepted
 - JSON envelope shape remains unchanged
 
-Planned example:
+Normalization and invalid-timezone validation are introduced in TM8 Task 2/3.
+
+Example:
 
 ```ts
 const layoutResponse = JSON.parse(

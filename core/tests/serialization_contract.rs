@@ -5,8 +5,8 @@ use mai::{
     adapters::wasm::{
         WasmAdapterError, WasmBindgenAdapter, WasmCommandRequest, WasmCommandResponse,
         WasmErrorCategory, WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse,
-        WasmSchedulerAdapter, parse_command_request, parse_query_request, render_command_response,
-        render_query_response,
+        WasmSchedulerAdapter, WasmWeeklyLayoutQuery, parse_command_request, parse_query_request,
+        render_command_response, render_query_response,
     },
 };
 
@@ -93,14 +93,31 @@ fn wasm_command_request_uses_tagged_envelope() {
 
 #[test]
 fn wasm_query_request_uses_tagged_envelope() {
-    let request = WasmQueryRequest::WeeklyLayout(WeeklyLayoutQuery {
+    let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
         anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+        timezone: None,
     });
 
     let json = serde_json::to_value(&request).unwrap();
 
     assert_eq!(json["query"], "weekly_layout");
     assert_eq!(json["payload"]["anchor_date"], "2026-05-07");
+
+    let restored: WasmQueryRequest = serde_json::from_value(json).unwrap();
+    assert_eq!(restored, request);
+}
+
+#[test]
+fn wasm_query_request_accepts_optional_timezone() {
+    let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+        anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+        timezone: Some("Europe/Paris".to_string()),
+    });
+
+    let json = serde_json::to_value(&request).unwrap();
+    assert_eq!(json["query"], "weekly_layout");
+    assert_eq!(json["payload"]["anchor_date"], "2026-05-07");
+    assert_eq!(json["payload"]["timezone"], "Europe/Paris");
 
     let restored: WasmQueryRequest = serde_json::from_value(json).unwrap();
     assert_eq!(restored, request);
@@ -162,8 +179,9 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
     );
     assert_eq!(
         query,
-        WasmQueryRequest::WeeklyLayout(WeeklyLayoutQuery {
+        WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+            timezone: None,
         })
     );
 

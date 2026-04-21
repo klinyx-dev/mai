@@ -13,6 +13,12 @@ Add timezone-aware weekly query support at the adapter boundary while keeping co
 - Extend adapter query payload for `weekly_layout` with optional timezone field.
 - Keep backward compatibility for existing UTC-only callers.
 
+Decision recorded:
+- Added adapter-specific `WasmWeeklyLayoutQuery { anchor_date, timezone?: String }`.
+- `WasmQueryRequest::WeeklyLayout` now uses adapter payload type (not core `WeeklyLayoutQuery` directly).
+- Legacy payloads with only `anchor_date` remain valid (`timezone` is optional).
+- Timezone normalization/validation is intentionally deferred to Task 2/3.
+
 Acceptance criteria:
 - Existing payload remains valid.
 - New timezone payload shape is documented with examples.
