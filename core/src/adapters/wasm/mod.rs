@@ -1,15 +1,21 @@
 use chrono::{LocalResult, NaiveDate, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::{ActorId, BusinessRuleError, ReferentialError, SchedulerError, StructuralError};
 use crate::{
     AddAppointmentCommand, AddSlotCommand, CancelSlotCommand, DeleteAppointmentCommand,
     DeleteSlotCommand, SchedulerService, WeeklyLayout, WeeklyLayoutQuery,
 };
-use crate::{BusinessRuleError, ReferentialError, SchedulerError, StructuralError};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WasmWeeklyLayoutQuery {
     pub anchor_date: NaiveDate,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub assignee_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub visible_start_minute: Option<u16>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub visible_end_minute: Option<u16>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub timezone: Option<String>,
 }
@@ -141,10 +147,14 @@ impl WasmSchedulerAdapter {
     pub fn execute_query(&self, request: WasmQueryRequest) -> WasmQueryResponse {
         match request {
             WasmQueryRequest::WeeklyLayout(query) => match normalize_weekly_anchor_date(&query) {
-                Ok(anchor_date) => WasmQueryResponse::Success {
-                    data: self
-                        .service
-                        .get_weekly_layout(WeeklyLayoutQuery::new(anchor_date)),
+                Ok(anchor_date) => match self
+                    .service
+                    .get_weekly_layout_checked(core_weekly_query(anchor_date, &query))
+                {
+                    Ok(layout) => WasmQueryResponse::Success { data: layout },
+                    Err(error) => WasmQueryResponse::Error {
+                        error: WasmAdapterError::from_scheduler_error(error),
+                    },
                 },
                 Err(error) => WasmQueryResponse::Error { error },
             },
@@ -272,6 +282,15 @@ fn normalize_weekly_anchor_date(
 
     local_anchor_to_utc_date(query.anchor_date, timezone)
         .ok_or_else(WasmAdapterError::invalid_timezone)
+}
+
+fn core_weekly_query(anchor_date: NaiveDate, query: &WasmWeeklyLayoutQuery) -> WeeklyLayoutQuery {
+    WeeklyLayoutQuery {
+        anchor_date,
+        assignee_id: query.assignee_id.as_deref().map(ActorId::new),
+        visible_start_minute: query.visible_start_minute,
+        visible_end_minute: query.visible_end_minute,
+    }
 }
 
 fn local_anchor_to_utc_date(anchor_date: NaiveDate, timezone: chrono_tz::Tz) -> Option<NaiveDate> {
