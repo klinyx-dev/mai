@@ -318,6 +318,30 @@ mod tests {
     }
 
     #[test]
+    fn deleting_available_slot_removes_it_by_id() {
+        let mut service = SchedulerService::new();
+        service.add_slot(add_slot_cmd("slot-1")).unwrap();
+        service
+            .add_slot(AddSlotCommand {
+                slot_id: SlotId::new("slot-2"),
+                start: Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
+                end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+                assignee_id: ActorId::new("assignee-1"),
+                created_by: ActorId::new("creator-1"),
+            })
+            .unwrap();
+
+        service
+            .delete_slot(DeleteSlotCommand {
+                slot_id: SlotId::new("slot-1"),
+            })
+            .unwrap();
+
+        assert!(!service.state().slots.contains_key(&SlotId::new("slot-1")));
+        assert!(service.state().slots.contains_key(&SlotId::new("slot-2")));
+    }
+
+    #[test]
     fn cannot_book_cancelled_slot() {
         let mut service = SchedulerService::new();
         service.add_slot(add_slot_cmd("slot-1")).unwrap();
