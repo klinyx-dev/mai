@@ -465,6 +465,7 @@ impl SchedulerService {
     pub fn delete_appointment(&mut self, cmd: DeleteAppointmentCommand) -> Result<(), SchedulerError>;
 
     pub fn get_weekly_layout(&self, query: WeeklyLayoutQuery) -> WeeklyLayout;
+    pub fn get_weekly_layout_checked(&self, query: WeeklyLayoutQuery) -> Result<WeeklyLayout, SchedulerError>;
 }
 ```
 
@@ -862,7 +863,7 @@ Near-term sequencing:
 - TM7: actor lookup boundary + optional actor-reference validation (completed on 2026-04-20)
 - TM8: timezone-aware weekly query boundary normalization (completed on 2026-04-21)
 - TM9: release readiness and local tooling parity for wasm package smoke (completed on 2026-04-21)
-- TM10: core weekly query filters and visible-hour window behavior (next)
+- TM10: core weekly query filters and visible-hour window behavior (completed on 2026-04-21)
 
 ### TM7: Actor boundary and validation collaborator
 Deliver:

@@ -20,8 +20,8 @@ Legend:
 | FR-9 | Conflict validation (overlap, one appointment per slot, valid slot reference) | Covered | `core/src/validation/slot_validation.rs` overlap tests, `core/src/validation/appointment_validation.rs` (`rejects_when_slot_already_has_appointment`), `core/src/validation/invariants.rs` slot-reference invariant tests |
 | FR-10 | Semantic layout output (no pixel/UI data) | Covered | `core/src/layout/weekly_layout/tests.rs` (day index, minute offsets, clipping, deterministic ordering); output DTOs in `core/src/layout/output.rs` |
 | FR-11 | Week navigation (next/previous/jump) | Covered | `core/src/layout/weekly_layout/tests.rs` (`query_navigation_moves_anchor_by_exactly_one_week`, `query_navigation_is_stable_across_month_and_year_boundaries`) and anchor-date projection tests (`computes_monday_aligned_week_for_midweek_anchor`) |
-| FR-12 | Assignee-scoped weekly query filtering | Gap | Contract added in `docs/functional_spec.md` and `docs/technical_spec.md` for TM10; implementation/tests pending. |
-| FR-13 | Visible-hour window query behavior and validation | Gap | Contract added in `docs/functional_spec.md` and `docs/technical_spec.md` for TM10; implementation/tests pending. |
+| FR-12 | Assignee-scoped weekly query filtering | Covered | `core/src/layout/weekly_layout/tests.rs` (`assignee_filter_limits_slot_projection`, `assignee_filter_limits_appointment_projection_by_slot_assignee`, `filtered_projections_are_identical_across_insertion_orders`) |
+| FR-13 | Visible-hour window query behavior and validation | Covered | `core/src/layout/weekly_layout/tests.rs` (`visible_window_clips_and_filters_slot_projection`, `visible_window_clips_and_filters_appointment_projection`), `core/src/application/scheduler_service.rs` (`weekly_layout_query_rejects_invalid_visible_window_order`, `weekly_layout_query_rejects_out_of_range_visible_window_bound`) |
 
 ## Notes
 - Adapter contract stability and envelope/error determinism are additionally covered in:
