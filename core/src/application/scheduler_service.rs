@@ -361,6 +361,32 @@ mod tests {
     }
 
     #[test]
+    fn appointment_host_is_derived_from_slot_assignee() {
+        let mut service = SchedulerService::new();
+        service.add_slot(add_slot_cmd("slot-1")).unwrap();
+
+        service
+            .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
+            .unwrap();
+
+        let appointment = service
+            .state()
+            .appointments
+            .get(&AppointmentId::new("appt-1"))
+            .expect("appointment exists");
+        let slot = service
+            .state()
+            .slots
+            .get(&appointment.slot_id)
+            .expect("referenced slot exists");
+
+        // Host is derived from the referenced slot assignee, not from appointment creator.
+        let derived_host = slot.assignee_id.clone();
+        assert_eq!(derived_host, ActorId::new("assignee-1"));
+        assert_ne!(appointment.created_by, derived_host);
+    }
+
+    #[test]
     fn cancelling_booked_slot_is_rejected() {
         let mut service = SchedulerService::new();
         service.add_slot(add_slot_cmd("slot-1")).unwrap();
