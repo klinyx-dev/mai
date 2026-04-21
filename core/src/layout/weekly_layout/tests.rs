@@ -159,6 +159,41 @@ fn projects_only_available_slots_in_visible_week() {
 }
 
 #[test]
+fn assignee_filter_limits_slot_projection() {
+    let mut state = ScheduleState::new();
+    state.slots.insert(
+        SlotId::new("slot-a1"),
+        slot(
+            "slot-a1",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("slot-a2"),
+        Slot::with_status(
+            SlotId::new("slot-a2"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 12, 0, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-2"),
+            ActorId::new("creator-1"),
+            SlotStatus::Available,
+        ),
+    );
+
+    let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+    query.assignee_id = Some(ActorId::new("assignee-1"));
+
+    let nodes = project_slot_layout_nodes(&state, &query);
+    assert_eq!(nodes.len(), 1);
+    assert_eq!(nodes[0].slot_id, SlotId::new("slot-a1"));
+}
+
+#[test]
 fn applies_week_and_day_clipping_flags_and_offsets() {
     let mut state = ScheduleState::new();
     state.slots.insert(
@@ -319,6 +354,56 @@ fn includes_only_appointments_with_visible_referenced_slots() {
     assert_eq!(nodes.len(), 1);
     assert_eq!(nodes[0].appointment_id, AppointmentId::new("appt-visible"));
     assert_eq!(nodes[0].slot_id, SlotId::new("slot-visible"));
+}
+
+#[test]
+fn assignee_filter_limits_appointment_projection_by_slot_assignee() {
+    let mut state = ScheduleState::new();
+
+    state.slots.insert(
+        SlotId::new("slot-a1"),
+        Slot::with_status(
+            SlotId::new("slot-a1"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 8, 9, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 8, 10, 0, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-1"),
+            ActorId::new("creator-1"),
+            SlotStatus::Booked,
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("slot-a2"),
+        Slot::with_status(
+            SlotId::new("slot-a2"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 8, 11, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 8, 12, 0, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-2"),
+            ActorId::new("creator-1"),
+            SlotStatus::Booked,
+        ),
+    );
+
+    state.appointments.insert(
+        AppointmentId::new("appt-a1"),
+        appointment("appt-a1", "slot-a1"),
+    );
+    state.appointments.insert(
+        AppointmentId::new("appt-a2"),
+        appointment("appt-a2", "slot-a2"),
+    );
+
+    let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+    query.assignee_id = Some(ActorId::new("assignee-1"));
+
+    let nodes = project_appointment_layout_nodes(&state, &query);
+    assert_eq!(nodes.len(), 1);
+    assert_eq!(nodes[0].appointment_id, AppointmentId::new("appt-a1"));
 }
 
 #[test]
