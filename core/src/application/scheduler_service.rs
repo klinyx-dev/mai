@@ -361,6 +361,24 @@ mod tests {
     }
 
     #[test]
+    fn cancelling_booked_slot_is_rejected() {
+        let mut service = SchedulerService::new();
+        service.add_slot(add_slot_cmd("slot-1")).unwrap();
+        service
+            .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
+            .unwrap();
+
+        let result = service.cancel_slot(CancelSlotCommand {
+            slot_id: SlotId::new("slot-1"),
+        });
+
+        assert_eq!(
+            result.expect_err("cancelling booked slot must fail"),
+            SchedulerError::Business(BusinessRuleError::SlotNotAvailable)
+        );
+    }
+
+    #[test]
     fn delete_appointment_fails_when_not_found() {
         let mut service = SchedulerService::new();
         let result = service.delete_appointment(DeleteAppointmentCommand {
