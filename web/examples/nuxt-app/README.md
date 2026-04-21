@@ -1,9 +1,28 @@
-# Nuxt example (skeleton)
+# Nuxt example app
 
-This folder documents the expected Nuxt integration shape for `@mai/mai-ui-vue`.
+This is a runnable Nuxt integration example for `@mai/mai-ui-vue`.
 
-## Plugin
+## What it demonstrates
+- client-only wasm initialization from `core/pkg/mai.js`
+- adapter injection through Nuxt plugin (`$mai`)
+- week calendar rendering via `MaiBoard`
+- week navigation (`Prev`, `Today`, `Next`) with query refresh per week anchor
 
-Use a client-only plugin to initialize `WasmBindgenAdapter` and inject it to composables.
+## Key files
+- `plugins/mai.client.ts`:
+  initializes wasm and provides `createNuxtMaiState(adapter)`.
+- `pages/index.vue`:
+  owns `anchorDate` state, calls `useMai().refresh(...)`, and binds to `MaiBoard`.
+- `nuxt.config.ts`:
+  includes `compatibilityDate` and Vite fs allow-list for `../../../core/pkg`.
 
-See `plugins/mai.client.ts`.
+## Run
+From `web/`:
+
+```bash
+pnpm run example:dev
+```
+
+## Integration notes
+- Keep wasm/plugin usage inside client context.
+- Keep adapter and API calls in page/composable layer, not inside pure presentational components.

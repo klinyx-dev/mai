@@ -5,6 +5,12 @@
   --mai-text: #242424;
   --mai-deep: #111111;
   --mai-muted: #898989;
+  --mai-border: #e4e4e4;
+  --mai-line: #efefef;
+  --mai-slot: #e6f4ea;
+  --mai-slot-border: #7cc38f;
+  --mai-appointment: #e8eefc;
+  --mai-appointment-border: #7a94d9;
   --mai-ring: rgba(34, 42, 53, 0.08);
   --mai-soft-shadow: rgba(34, 42, 53, 0.05);
   --mai-contact-shadow: rgba(19, 19, 22, 0.7);
@@ -14,13 +20,20 @@
   color: var(--mai-text);
   background: var(--mai-bg);
   font-family: "Inter", "Segoe UI", sans-serif;
+  min-height: 100%;
 }
 
 .mai-board__panel {
-  max-width: 1200px;
-  margin: 0 auto;
+  --mai-calendar-height: clamp(420px, calc(100vh - 230px), 1200px);
+  max-width: none;
+  width: 100%;
+  margin: 0;
   padding: 24px;
   border-radius: 16px;
+  box-sizing: border-box;
+  min-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
   box-shadow:
     0 1px 5px -4px var(--mai-contact-shadow),
     0 0 0 1px var(--mai-ring),
@@ -30,14 +43,15 @@
 .mai-board__header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .mai-board__heading-block {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .mai-board__kicker {
@@ -60,15 +74,58 @@
 .mai-board__subtitle {
   margin: 0;
   color: var(--mai-muted);
-  font-size: 16px;
-  font-weight: 300;
+  font-size: 15px;
+  font-weight: 400;
   line-height: 1.5;
+}
+
+.mai-board__toolbar {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.mai-board__navigation {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mai-board__nav-button {
+  border: 1px solid var(--mai-border);
+  background: #ffffff;
+  color: var(--mai-text);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mai-board__nav-button:hover {
+  background: #f7f7f7;
+}
+
+.mai-board__nav-button--today {
+  background: var(--mai-text);
+  color: #ffffff;
+  border-color: var(--mai-text);
+}
+
+.mai-board__range-label {
+  margin: 0;
+  color: var(--mai-deep);
+  font-family: "Cal Sans", "Inter", sans-serif;
+  font-size: 20px;
+  line-height: 1.2;
 }
 
 .mai-board__metrics {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .mai-board__metric {
@@ -93,72 +150,146 @@
     0 4px 8px var(--mai-soft-shadow);
 }
 
-.mai-board__week {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 12px;
+.mai-board__error {
+  margin: 0 0 12px;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.mai-board__day {
-  min-height: 220px;
-  padding: 12px;
+.mai-board__calendar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
   border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--mai-border);
+}
+
+.mai-board__calendar {
+  min-width: 980px;
+  display: grid;
+  grid-template-columns: 74px repeat(7, minmax(120px, 1fr));
+}
+
+.mai-board__time-column {
+  border-right: 1px solid var(--mai-border);
   background: #ffffff;
-  box-shadow:
-    0 1px 5px -4px var(--mai-contact-shadow),
-    0 0 0 1px var(--mai-ring),
-    0 4px 8px var(--mai-soft-shadow);
+}
+
+.mai-board__time-column-header {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mai-muted);
+  border-bottom: 1px solid var(--mai-border);
+}
+
+.mai-board__time-grid {
+  position: relative;
+  height: var(--mai-calendar-height);
+}
+
+.mai-board__time-label {
+  height: 60px;
+  padding: 0 6px;
+  display: flex;
+  justify-content: flex-end;
+  transform: translateY(-8px);
+  color: var(--mai-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.mai-board__day-column {
+  border-right: 1px solid var(--mai-border);
+  background: #ffffff;
+}
+
+.mai-board__day-column:last-child {
+  border-right: 0;
+}
+
+.mai-board__day-header {
+  height: 54px;
+  border-bottom: 1px solid var(--mai-border);
+  display: grid;
+  place-content: center;
+  gap: 2px;
+}
+
+.mai-board__day-grid {
+  position: relative;
+  height: var(--mai-calendar-height);
 }
 
 .mai-board__day-label {
-  margin: 0 0 8px;
+  margin: 0;
   color: var(--mai-deep);
-  font-family: "Cal Sans", "Inter", sans-serif;
-  font-size: 20px;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.2px;
+  line-height: 1.1;
+  text-align: center;
 }
 
-.mai-board__stack {
-  display: grid;
-  gap: 8px;
-}
-
-.mai-board__item {
-  padding: 10px;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow:
-    0 0 0 1px var(--mai-ring),
-    0 4px 8px var(--mai-soft-shadow);
-}
-
-.mai-board__item--slot {
-  background: #f8f8f8;
-}
-
-.mai-board__item--appointment {
-  background: #f2f2f2;
-}
-
-.mai-board__item-title {
-  margin: 0 0 4px;
-  color: var(--mai-text);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-
-.mai-board__item-time {
+.mai-board__day-date {
   margin: 0;
   color: var(--mai-muted);
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.mai-board__hour-line {
+  height: 60px;
+  border-bottom: 1px solid var(--mai-line);
+}
+
+.mai-board__event {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  padding: 6px 7px;
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.08);
+}
+
+.mai-board__event--slot {
+  background: var(--mai-slot);
+  border-left-color: var(--mai-slot-border);
+}
+
+.mai-board__event--appointment {
+  background: var(--mai-appointment);
+  border-left-color: var(--mai-appointment-border);
+}
+
+.mai-board__event-title {
+  margin: 0;
+  color: var(--mai-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.mai-board__event-time {
+  margin: 0;
+  color: var(--mai-muted);
+  font-size: 11px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .mai-board__empty {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
   margin: 0;
   color: var(--mai-muted);
   font-size: 12px;
@@ -170,26 +301,29 @@
   .mai-board__title {
     font-size: 36px;
   }
-
-  .mai-board__week {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 640px) {
   .mai-board__panel {
+    --mai-calendar-height: clamp(360px, calc(100vh - 250px), 900px);
     padding: 16px;
+    min-height: calc(100vh - 32px);
   }
 
   .mai-board__header {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .mai-board__title {
     font-size: 30px;
   }
 
-  .mai-board__week {
-    grid-template-columns: 1fr;
+  .mai-board__toolbar {
+    justify-items: start;
+  }
+
+  .mai-board__metrics {
+    justify-content: flex-start;
   }
 }

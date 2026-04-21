@@ -1,0 +1,15 @@
+{
+  "name": "@mai/nuxt-app-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@mai/mai-ui-vue": "workspace:*",
+    "nuxt": "^3.16.0",
+    "vue": "^3.5.0"
+  }
+}
