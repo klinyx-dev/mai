@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use chrono::{LocalResult, NaiveDate, TimeZone, Utc};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     AddAppointmentCommand, AddSlotCommand, CancelSlotCommand, DeleteAppointmentCommand,
@@ -251,7 +251,9 @@ fn business_error_code(error: &BusinessRuleError) -> &'static str {
     }
 }
 
-fn normalize_weekly_anchor_date(query: &WasmWeeklyLayoutQuery) -> Result<NaiveDate, WasmAdapterError> {
+fn normalize_weekly_anchor_date(
+    query: &WasmWeeklyLayoutQuery,
+) -> Result<NaiveDate, WasmAdapterError> {
     let timezone_name = query
         .timezone
         .as_deref()

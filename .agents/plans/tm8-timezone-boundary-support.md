@@ -58,6 +58,22 @@ Acceptance criteria:
 - Add invalid-timezone error tests.
 - Update usage and payload docs with migration-safe examples.
 
+Decision recorded:
+- Added TM8 consumer-smoke coverage in `core/tests/wasm_web_smoke.rs` for:
+  - legacy weekly query payload
+  - timezone-enabled weekly query payload
+  - invalid-timezone deterministic contract error envelope
+- Updated usage docs with migration-safe guidance:
+  - legacy `{ anchor_date }` callers remain valid
+  - timezone-aware callers can opt into `{ anchor_date, timezone }`.
+- Fixed `core/tests/run_generated_package_smoke.sh` line endings for shell compatibility.
+- Verification status:
+  - `cargo fmt --all --check`: pass
+  - `cargo clippy --all-targets --all-features -- -D warnings`: pass
+  - `cargo test`: pass
+  - `cargo check --target wasm32-unknown-unknown -p mai`: pass
+  - `core/tests/run_generated_package_smoke.sh`: blocked locally (`wasm-pack` not installed)
+
 Verification:
 - `cargo fmt --all --check`
 - `cargo clippy --all-targets --all-features -- -D warnings`

@@ -53,6 +53,20 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
         "appt-9001"
     );
 
+    let timezone_query_response = adapter.execute_query_json(
+        r#"{
+            "query":"weekly_layout",
+            "payload":{
+                "anchor_date":"2026-01-05",
+                "timezone":"Europe/Paris"
+            }
+        }"#,
+    );
+    let timezone_query_json: serde_json::Value =
+        serde_json::from_str(&timezone_query_response).unwrap();
+    assert_eq!(timezone_query_json["status"], "success");
+    assert_eq!(timezone_query_json["data"]["week_start"], "2025-12-29");
+
     // Repeat booking to prove consumer-visible business error envelope shape.
     let duplicate_booking_response = adapter.execute_command_json(
         r#"{
@@ -74,4 +88,20 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
         duplicate_booking_json["error"]["code"],
         "slot_already_booked"
     );
+
+    // Invalid timezone must map to deterministic contract error.
+    let invalid_timezone_response = adapter.execute_query_json(
+        r#"{
+            "query":"weekly_layout",
+            "payload":{
+                "anchor_date":"2026-05-07",
+                "timezone":"Not/A_Real_TZ"
+            }
+        }"#,
+    );
+    let invalid_timezone_json: serde_json::Value =
+        serde_json::from_str(&invalid_timezone_response).unwrap();
+    assert_eq!(invalid_timezone_json["status"], "error");
+    assert_eq!(invalid_timezone_json["error"]["category"], "contract");
+    assert_eq!(invalid_timezone_json["error"]["code"], "invalid_timezone");
 }

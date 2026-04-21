@@ -322,18 +322,16 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
 fn wasm_adapter_wrapper_normalizes_timezone_aware_weekly_query_anchor() {
     let adapter = WasmSchedulerAdapter::new();
 
-    let legacy_response = adapter.execute_query(
-        WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+    let legacy_response =
+        adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
             timezone: None,
-        }),
-    );
-    let timezone_response = adapter.execute_query(
-        WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+        }));
+    let timezone_response =
+        adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
             timezone: Some("Europe/Paris".to_string()),
-        }),
-    );
+        }));
 
     let legacy_week_start = match legacy_response {
         WasmQueryResponse::Success { data } => data.week_start,
@@ -344,20 +342,24 @@ fn wasm_adapter_wrapper_normalizes_timezone_aware_weekly_query_anchor() {
         WasmQueryResponse::Error { error } => panic!("unexpected error: {error:?}"),
     };
 
-    assert_eq!(legacy_week_start, NaiveDate::from_ymd_opt(2026, 1, 5).unwrap());
-    assert_eq!(timezone_week_start, NaiveDate::from_ymd_opt(2025, 12, 29).unwrap());
+    assert_eq!(
+        legacy_week_start,
+        NaiveDate::from_ymd_opt(2026, 1, 5).unwrap()
+    );
+    assert_eq!(
+        timezone_week_start,
+        NaiveDate::from_ymd_opt(2025, 12, 29).unwrap()
+    );
 }
 
 #[test]
 fn wasm_adapter_wrapper_returns_deterministic_error_for_invalid_timezone() {
     let adapter = WasmSchedulerAdapter::new();
 
-    let response = adapter.execute_query(
-        WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
-            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
-            timezone: Some("Not/A_Real_TZ".to_string()),
-        }),
-    );
+    let response = adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+        anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
+        timezone: Some("Not/A_Real_TZ".to_string()),
+    }));
 
     let error = match response {
         WasmQueryResponse::Success { data } => panic!("unexpected success: {data:?}"),

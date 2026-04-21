@@ -80,6 +80,10 @@ Current contract behavior:
 - payload with `timezone` is accepted and normalized at adapter boundary into an effective UTC anchor date before calling core layout
 - JSON envelope shape remains unchanged
 
+Migration-safe usage:
+- existing callers can continue sending `{ anchor_date }` only
+- callers that need locale-aware week anchoring can opt into `{ anchor_date, timezone }`
+
 Invalid-timezone deterministic error mapping is now active:
 - `category = contract`
 - `code = invalid_timezone`
