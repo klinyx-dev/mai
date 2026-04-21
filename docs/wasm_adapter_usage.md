@@ -42,6 +42,32 @@ From the repository root:
 core/tests/run_generated_package_smoke.sh
 ```
 
+## Local Toolchain Contract For Smoke (TM9 Task 1)
+
+Local environment must satisfy the same baseline as CI:
+- Rust stable toolchain (`dtolnay/rust-toolchain@stable`)
+- Rust target `wasm32-unknown-unknown`
+- `wasm-pack` available on `PATH`
+- Node.js `22.x` (CI uses `actions/setup-node@v4` with `node-version: "22"`)
+
+Recommended preflight checks from repository root:
+
+```bash
+rustc --version
+cargo --version
+rustup target list --installed
+wasm-pack --version
+node --version
+```
+
+`rustup target list --installed` output must include `wasm32-unknown-unknown`.
+
+If any preflight check fails, fix tool installation before running:
+
+```bash
+core/tests/run_generated_package_smoke.sh
+```
+
 What this verifies:
 - package build succeeds via `wasm-pack`
 - expected generated files exist under `core/pkg/`

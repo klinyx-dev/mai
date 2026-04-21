@@ -57,6 +57,25 @@ cargo clippy --all-targets --all-features -- -D warnings
 core/tests/run_generated_package_smoke.sh
 ```
 
+### WASM Smoke Preflight Contract
+Before running `core/tests/run_generated_package_smoke.sh`, verify local tooling matches CI baseline:
+- Rust stable
+- `wasm32-unknown-unknown` installed
+- `wasm-pack` installed
+- Node.js `22.x`
+
+Preflight command set:
+
+```bash
+rustc --version
+cargo --version
+rustup target list --installed
+wasm-pack --version
+node --version
+```
+
+`rustup target list --installed` output must include `wasm32-unknown-unknown`.
+
 ## Release Baseline (`v0.1.0`)
 Contract guarantees for consumers:
 - JSON envelope contract remains stable for commands/queries and success/error responses.
