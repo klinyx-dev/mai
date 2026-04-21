@@ -14,5 +14,11 @@ await mai.refresh({
 </script>
 
 <template>
-  <MaiBoard :layout="mai.layout" title="Doctor Web Mai" />
+  <main style="background: #fff; padding: 24px">
+    <MaiBoard
+      :layout="mai.layout"
+      title="Doctor Availability Board"
+      subtitle="Monochrome weekly scheduling inspired by Cal-style interface rules"
+    />
+  </main>
 </template>
