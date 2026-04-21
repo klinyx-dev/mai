@@ -47,9 +47,7 @@ fn add_appointment_command_round_trips() {
 
 #[test]
 fn weekly_layout_query_round_trips_with_iso_date() {
-    let query = WeeklyLayoutQuery {
-        anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
-    };
+    let query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 5, 7).unwrap());
 
     let json = serde_json::to_value(&query).unwrap();
     assert_eq!(json["anchor_date"], "2026-05-07");

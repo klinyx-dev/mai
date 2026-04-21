@@ -1,29 +1,42 @@
 use chrono::{Datelike, Duration, NaiveDate};
 use serde::{Deserialize, Serialize};
 
-use crate::domain::week::WeekRange;
+use crate::{ActorId, domain::week::WeekRange};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WeeklyLayoutQuery {
     pub anchor_date: NaiveDate,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub assignee_id: Option<ActorId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub visible_start_minute: Option<u16>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub visible_end_minute: Option<u16>,
 }
 
 pub const DAYS_PER_WEEK: i64 = 7;
 
 impl WeeklyLayoutQuery {
     pub fn new(anchor_date: NaiveDate) -> Self {
-        Self { anchor_date }
+        Self {
+            anchor_date,
+            assignee_id: None,
+            visible_start_minute: None,
+            visible_end_minute: None,
+        }
     }
 
     pub fn next_week(&self) -> Self {
         Self {
             anchor_date: self.anchor_date + Duration::days(DAYS_PER_WEEK),
+            ..self.clone()
         }
     }
 
     pub fn previous_week(&self) -> Self {
         Self {
             anchor_date: self.anchor_date - Duration::days(DAYS_PER_WEEK),
+            ..self.clone()
         }
     }
 }

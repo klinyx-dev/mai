@@ -144,7 +144,7 @@ impl WasmSchedulerAdapter {
                 Ok(anchor_date) => WasmQueryResponse::Success {
                     data: self
                         .service
-                        .get_weekly_layout(WeeklyLayoutQuery { anchor_date }),
+                        .get_weekly_layout(WeeklyLayoutQuery::new(anchor_date)),
                 },
                 Err(error) => WasmQueryResponse::Error { error },
             },

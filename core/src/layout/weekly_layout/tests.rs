@@ -27,7 +27,10 @@ fn query_navigation_moves_anchor_by_exactly_one_week() {
     let next = query.next_week();
     let previous = query.previous_week();
 
-    assert_eq!(next.anchor_date, NaiveDate::from_ymd_opt(2026, 1, 15).unwrap());
+    assert_eq!(
+        next.anchor_date,
+        NaiveDate::from_ymd_opt(2026, 1, 15).unwrap()
+    );
     assert_eq!(
         previous.anchor_date,
         NaiveDate::from_ymd_opt(2026, 1, 1).unwrap()
@@ -143,9 +146,7 @@ fn projects_only_available_slots_in_visible_week() {
 
     let nodes = project_slot_layout_nodes(
         &state,
-        &WeeklyLayoutQuery {
-            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-        },
+        &WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap()),
     );
 
     assert_eq!(nodes.len(), 1);
@@ -181,9 +182,7 @@ fn applies_week_and_day_clipping_flags_and_offsets() {
 
     let nodes = project_slot_layout_nodes(
         &state,
-        &WeeklyLayoutQuery {
-            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-        },
+        &WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap()),
     );
 
     assert_eq!(nodes.len(), 2);
@@ -236,9 +235,7 @@ fn returns_deterministic_order_for_equivalent_slots() {
 
     let nodes = project_slot_layout_nodes(
         &state,
-        &WeeklyLayoutQuery {
-            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-        },
+        &WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap()),
     );
 
     let ordered_ids = nodes
@@ -267,9 +264,7 @@ fn projects_appointments_from_referenced_slot_time() {
 
     let nodes = project_appointment_layout_nodes(
         &state,
-        &WeeklyLayoutQuery {
-            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-        },
+        &WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap()),
     );
 
     assert_eq!(nodes.len(), 1);
@@ -318,9 +313,7 @@ fn includes_only_appointments_with_visible_referenced_slots() {
 
     let nodes = project_appointment_layout_nodes(
         &state,
-        &WeeklyLayoutQuery {
-            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-        },
+        &WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap()),
     );
 
     assert_eq!(nodes.len(), 1);
@@ -373,9 +366,7 @@ fn appointment_projection_is_deterministically_sorted() {
 
     let nodes = project_appointment_layout_nodes(
         &state,
-        &WeeklyLayoutQuery {
-            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-        },
+        &WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap()),
     );
 
     let ordered_ids = nodes
@@ -387,9 +378,7 @@ fn appointment_projection_is_deterministically_sorted() {
 
 #[test]
 fn projections_are_identical_across_insertion_orders() {
-    let query = WeeklyLayoutQuery {
-        anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-    };
+    let query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
 
     let mut state_a = ScheduleState::new();
     state_a.slots.insert(
@@ -513,9 +502,7 @@ fn slot_projection_never_leaks_booked_or_cancelled_slots() {
 
     let nodes = project_slot_layout_nodes(
         &state,
-        &WeeklyLayoutQuery {
-            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-        },
+        &WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap()),
     );
 
     let projected_ids = nodes

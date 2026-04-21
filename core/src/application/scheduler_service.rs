@@ -463,9 +463,9 @@ mod tests {
             .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
             .unwrap();
 
-        let layout = service.get_weekly_layout(WeeklyLayoutQuery {
-            anchor_date: chrono::NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-        });
+        let layout = service.get_weekly_layout(WeeklyLayoutQuery::new(
+            chrono::NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        ));
 
         assert_eq!(
             layout.week_start,

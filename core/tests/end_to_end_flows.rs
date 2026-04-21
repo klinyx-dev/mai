@@ -44,9 +44,9 @@ fn add_slot_book_unbook_and_layout_flow() {
         })
         .unwrap();
 
-    let layout = service.get_weekly_layout(WeeklyLayoutQuery {
-        anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-    });
+    let layout = service.get_weekly_layout(WeeklyLayoutQuery::new(
+        NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+    ));
 
     assert_eq!(layout.slots.len(), 1);
     assert!(layout.appointments.is_empty());
@@ -108,9 +108,9 @@ fn overlapping_slots_different_assignees_are_allowed() {
         .add_slot(add_slot_command("slot-2", "assignee-2", 9, 10))
         .unwrap();
 
-    let layout = service.get_weekly_layout(WeeklyLayoutQuery {
-        anchor_date: NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-    });
+    let layout = service.get_weekly_layout(WeeklyLayoutQuery::new(
+        NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+    ));
 
     assert_eq!(layout.slots.len(), 2);
     assert!(
