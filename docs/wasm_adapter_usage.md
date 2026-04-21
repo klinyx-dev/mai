@@ -239,3 +239,11 @@ if (duplicateBooking.status === "error") {
 
 - Payload shapes: `docs/adapter_payload_examples.md`
 - Contract and wrapper implementation: `core/src/adapters/wasm/mod.rs`
+
+## TM10 Core-Logic Work Note
+
+TM10 focuses on core weekly query expressiveness (`assignee_id`, visible-hour window) before adapter contract expansion.
+
+Until TM10 adapter work is explicitly planned:
+- keep current JSON envelope/query payload shape unchanged at wasm boundary
+- treat TM10 additions as Rust-core query capability only

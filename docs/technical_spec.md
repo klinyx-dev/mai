@@ -488,19 +488,26 @@ This is explicitly required by the functional spec, which says layout output mus
 ```rust
 pub struct WeeklyLayoutQuery {
     pub anchor_date: NaiveDate,
+    pub assignee_id: Option<ActorId>,
+    pub visible_start_minute: Option<u16>,
+    pub visible_end_minute: Option<u16>,
 }
 ```
 
-Core layout input remains `anchor_date` only.
+Core query contract now supports optional scope/window controls while preserving `anchor_date` as the canonical week anchor.
 
 Current shipped boundary behavior (TM8 completed on 2026-04-21):
 - adapter query payload accepts optional `timezone` metadata
 - adapter normalizes `anchor_date + timezone` to an effective UTC week anchor before calling core layout
 - domain/layout modules stay timezone-rule-free
 
-Optional later additions to the core query struct:
-- visible hours
-- assignee filter
+Query rules:
+- when `assignee_id` is present, projection includes only data for that assignee
+- when visible window bounds are present, projection applies deterministic clipping/filtering to that window
+- invalid window bounds are rejected deterministically at the query boundary:
+  - `visible_start_minute` and `visible_end_minute` must be within `0..=1440`
+  - `visible_start_minute < visible_end_minute`
+- omitted optional fields preserve current behavior
 
 ### 10.3 Output shape
 ```rust
@@ -716,8 +723,11 @@ Verify:
 - correct day index computation
 - correct minute offsets
 - correct exclusion of booked/cancelled slots
+- correct assignee-scoped filtering when query filter is present
+- correct visible-hour window clipping/filter behavior
 - deterministic ordering
 - clipping flags for items spanning outside visible week if that case is later allowed
+- deterministic rejection for invalid query window bounds
 
 ### 13.4 Property tests
 Useful for overlap logic and ordering stability.
@@ -852,6 +862,7 @@ Near-term sequencing:
 - TM7: actor lookup boundary + optional actor-reference validation (completed on 2026-04-20)
 - TM8: timezone-aware weekly query boundary normalization (completed on 2026-04-21)
 - TM9: release readiness and local tooling parity for wasm package smoke (completed on 2026-04-21)
+- TM10: core weekly query filters and visible-hour window behavior (next)
 
 ### TM7: Actor boundary and validation collaborator
 Deliver:
@@ -866,6 +877,14 @@ Deliver:
 - deterministic normalization from boundary timezone input to UTC-effective week anchor
 - stable error mapping for invalid timezone input
 - no timezone conversion rules added inside domain/layout modules
+
+### TM10: Core weekly query filters and visible-hour window
+Deliver:
+- optional `assignee_id` filtering in core weekly projection
+- optional visible window bounds in core weekly query
+- deterministic clipping/filtering behavior for windowed queries
+- deterministic structural validation for invalid window bounds
+- no UI/pixel semantics introduced in core
 
 ## 19. Locked Technical Decisions (Accepted 2026-04-20)
 These decisions are fixed for the near-term implementation and release baseline.

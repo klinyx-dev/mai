@@ -84,6 +84,8 @@ Implications:
 - Weekly view
 - Display available slots
 - Display booked appointments
+- Optional assignee-scoped weekly query filtering
+- Optional visible-hour window constraints for weekly query
 - Add slot (single)
 - Delete slot (single)
 - Cancel slot
@@ -184,6 +186,21 @@ System must NOT output:
 - previous week
 - jump to date
 
+### FR-12: Assignee-Scoped Weekly Query
+System must:
+- Accept optional assignee filter metadata in weekly query
+- Return slot nodes only for matching assignee
+- Return appointment nodes only when referenced slot assignee matches filter
+- Preserve existing unfiltered behavior when assignee filter is absent
+
+### FR-13: Visible-Hour Window Query
+System must:
+- Accept optional visible window boundaries in minute offsets from day start
+- Support deterministic clipping/filtering against the visible window
+- Reject invalid window definitions deterministically
+  - start/end outside `0..=1440`
+  - start >= end
+
 ---
 
 ## 5. Business Rules
@@ -227,6 +244,7 @@ The system is complete when:
 - Invalid operations are rejected
 - Behavior is deterministic across platforms
 - No UI-specific logic exists in the core
+- Optional query filters/windows preserve backward compatibility for existing callers
 
 ---
 

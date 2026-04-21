@@ -62,6 +62,13 @@ The boundary is envelope-based:
 }
 ```
 
+## TM10 Note (Core-First)
+
+Planned TM10 query extensions (`assignee_id`, `visible_start_minute`, `visible_end_minute`) are currently defined as core-spec work first.
+
+Near-term rule:
+- do not change adapter JSON payload examples in this file until TM10 adapter-boundary exposure is explicitly scheduled.
+
 ## Mutation Success Response (`WasmCommandResponse`)
 
 ```json
