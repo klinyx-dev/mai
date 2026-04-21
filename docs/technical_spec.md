@@ -846,7 +846,8 @@ Near-term sequencing:
 - TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (completed)
 - TM6c: package/build verification for real JS consumption (completed on 2026-04-20)
 - TM7: actor lookup boundary + optional actor-reference validation (completed on 2026-04-20)
-- TM8: timezone-aware weekly query boundary normalization (next)
+- TM8: timezone-aware weekly query boundary normalization (completed on 2026-04-21)
+- TM9: release readiness and local tooling parity for wasm package smoke (next)
 
 ### TM7: Actor boundary and validation collaborator
 Deliver:
