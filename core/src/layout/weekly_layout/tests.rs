@@ -542,6 +542,137 @@ fn projections_are_identical_across_insertion_orders() {
 }
 
 #[test]
+fn filtered_projections_are_identical_across_insertion_orders() {
+    let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+    query.assignee_id = Some(ActorId::new("assignee-1"));
+    query.visible_start_minute = Some(9 * 60 + 30);
+    query.visible_end_minute = Some(10 * 60 + 30);
+
+    let mut state_a = ScheduleState::new();
+    state_a.slots.insert(
+        SlotId::new("slot-target-b"),
+        Slot::with_status(
+            SlotId::new("slot-target-b"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-1"),
+            ActorId::new("creator-1"),
+            SlotStatus::Booked,
+        ),
+    );
+    state_a.slots.insert(
+        SlotId::new("slot-target-a"),
+        Slot::with_status(
+            SlotId::new("slot-target-a"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-1"),
+            ActorId::new("creator-1"),
+            SlotStatus::Booked,
+        ),
+    );
+    state_a.slots.insert(
+        SlotId::new("slot-other-assignee"),
+        Slot::with_status(
+            SlotId::new("slot-other-assignee"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 7, 9, 45, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 15, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-2"),
+            ActorId::new("creator-1"),
+            SlotStatus::Booked,
+        ),
+    );
+    state_a.appointments.insert(
+        AppointmentId::new("appt-target-b"),
+        appointment("appt-target-b", "slot-target-b"),
+    );
+    state_a.appointments.insert(
+        AppointmentId::new("appt-target-a"),
+        appointment("appt-target-a", "slot-target-a"),
+    );
+    state_a.appointments.insert(
+        AppointmentId::new("appt-other-assignee"),
+        appointment("appt-other-assignee", "slot-other-assignee"),
+    );
+
+    let mut state_b = ScheduleState::new();
+    state_b.appointments.insert(
+        AppointmentId::new("appt-other-assignee"),
+        appointment("appt-other-assignee", "slot-other-assignee"),
+    );
+    state_b.appointments.insert(
+        AppointmentId::new("appt-target-a"),
+        appointment("appt-target-a", "slot-target-a"),
+    );
+    state_b.appointments.insert(
+        AppointmentId::new("appt-target-b"),
+        appointment("appt-target-b", "slot-target-b"),
+    );
+    state_b.slots.insert(
+        SlotId::new("slot-other-assignee"),
+        Slot::with_status(
+            SlotId::new("slot-other-assignee"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 7, 9, 45, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 15, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-2"),
+            ActorId::new("creator-1"),
+            SlotStatus::Booked,
+        ),
+    );
+    state_b.slots.insert(
+        SlotId::new("slot-target-a"),
+        Slot::with_status(
+            SlotId::new("slot-target-a"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-1"),
+            ActorId::new("creator-1"),
+            SlotStatus::Booked,
+        ),
+    );
+    state_b.slots.insert(
+        SlotId::new("slot-target-b"),
+        Slot::with_status(
+            SlotId::new("slot-target-b"),
+            TimeRange::new(
+                Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+            )
+            .unwrap(),
+            ActorId::new("assignee-1"),
+            ActorId::new("creator-1"),
+            SlotStatus::Booked,
+        ),
+    );
+
+    let appointments_a = project_appointment_layout_nodes(&state_a, &query);
+    let appointments_b = project_appointment_layout_nodes(&state_b, &query);
+
+    assert_eq!(appointments_a, appointments_b);
+
+    let projected_ids = appointments_a
+        .iter()
+        .map(|node| node.appointment_id.as_str().to_string())
+        .collect::<Vec<_>>();
+    assert_eq!(projected_ids, vec!["appt-target-a", "appt-target-b"]);
+}
+
+#[test]
 fn slot_projection_never_leaks_booked_or_cancelled_slots() {
     let mut state = ScheduleState::new();
     state.slots.insert(
