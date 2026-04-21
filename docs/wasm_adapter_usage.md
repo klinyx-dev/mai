@@ -77,10 +77,10 @@ Weekly layout query payload now accepts an optional `timezone` field at adapter 
 
 Current contract behavior:
 - existing payload without `timezone` remains valid
-- payload with `timezone` is accepted
+- payload with `timezone` is accepted and normalized at adapter boundary into an effective UTC anchor date before calling core layout
 - JSON envelope shape remains unchanged
 
-Normalization and invalid-timezone validation are introduced in TM8 Task 2/3.
+Invalid-timezone deterministic error mapping is introduced in TM8 Task 3.
 
 Example:
 

@@ -27,6 +27,12 @@ Acceptance criteria:
 - Normalize `anchor_date + timezone` into effective UTC week anchor before calling core layout logic.
 - Keep domain/layout modules free of timezone conversion rules.
 
+Decision recorded:
+- Added adapter-side normalization from `WasmWeeklyLayoutQuery` to core `WeeklyLayoutQuery`.
+- Normalization converts local anchor date in provided timezone to effective UTC anchor date before week computation.
+- Domain/layout modules remain unchanged and timezone-free.
+- Invalid timezone fallback remains legacy-compatible in Task 2; deterministic invalid-timezone error mapping is handled in Task 3.
+
 Acceptance criteria:
 - Same inputs produce deterministic normalized behavior.
 - No core domain model changes required for timezone representation.

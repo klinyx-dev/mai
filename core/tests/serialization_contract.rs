@@ -319,6 +319,55 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
 }
 
 #[test]
+fn wasm_adapter_wrapper_normalizes_timezone_aware_weekly_query_anchor() {
+    let adapter = WasmSchedulerAdapter::new();
+
+    let legacy_response = adapter.execute_query(
+        WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
+            timezone: None,
+        }),
+    );
+    let timezone_response = adapter.execute_query(
+        WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
+            timezone: Some("Europe/Paris".to_string()),
+        }),
+    );
+
+    let legacy_week_start = match legacy_response {
+        WasmQueryResponse::Success { data } => data.week_start,
+        WasmQueryResponse::Error { error } => panic!("unexpected error: {error:?}"),
+    };
+    let timezone_week_start = match timezone_response {
+        WasmQueryResponse::Success { data } => data.week_start,
+        WasmQueryResponse::Error { error } => panic!("unexpected error: {error:?}"),
+    };
+
+    assert_eq!(legacy_week_start, NaiveDate::from_ymd_opt(2026, 1, 5).unwrap());
+    assert_eq!(timezone_week_start, NaiveDate::from_ymd_opt(2025, 12, 29).unwrap());
+}
+
+#[test]
+fn wasm_adapter_wrapper_falls_back_to_legacy_behavior_for_invalid_timezone_in_task2() {
+    let adapter = WasmSchedulerAdapter::new();
+
+    let response = adapter.execute_query(
+        WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+            anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
+            timezone: Some("Not/A_Real_TZ".to_string()),
+        }),
+    );
+
+    let week_start = match response {
+        WasmQueryResponse::Success { data } => data.week_start,
+        WasmQueryResponse::Error { error } => panic!("unexpected error: {error:?}"),
+    };
+
+    assert_eq!(week_start, NaiveDate::from_ymd_opt(2026, 1, 5).unwrap());
+}
+
+#[test]
 fn wasm_adapter_wrapper_maps_invalid_json_to_contract_error() {
     let mut adapter = WasmSchedulerAdapter::new();
     let malformed = r#"{"command":"add_slot","payload":{"slot_id":"slot-1""#;

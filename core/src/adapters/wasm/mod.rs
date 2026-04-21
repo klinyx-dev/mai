@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use chrono::{LocalResult, NaiveDate, TimeZone, Utc};
 
 use crate::{
     AddAppointmentCommand, AddSlotCommand, CancelSlotCommand, DeleteAppointmentCommand,
@@ -8,7 +9,7 @@ use crate::{BusinessRuleError, ReferentialError, SchedulerError, StructuralError
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WasmWeeklyLayoutQuery {
-    pub anchor_date: chrono::NaiveDate,
+    pub anchor_date: NaiveDate,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub timezone: Option<String>,
 }
@@ -132,10 +133,8 @@ impl WasmSchedulerAdapter {
     pub fn execute_query(&self, request: WasmQueryRequest) -> WasmQueryResponse {
         match request {
             WasmQueryRequest::WeeklyLayout(query) => WasmQueryResponse::Success {
-                // TM8 Task 1: adapter contract accepts optional timezone.
-                // Normalization behavior is introduced in TM8 Task 2.
                 data: self.service.get_weekly_layout(WeeklyLayoutQuery {
-                    anchor_date: query.anchor_date,
+                    anchor_date: normalize_weekly_anchor_date(&query),
                 }),
             },
         }
@@ -239,4 +238,43 @@ fn business_error_code(error: &BusinessRuleError) -> &'static str {
         BusinessRuleError::CannotDeleteBookedSlot => "cannot_delete_booked_slot",
         BusinessRuleError::AppointmentAlreadyExistsForSlot => "appointment_already_exists_for_slot",
     }
+}
+
+fn normalize_weekly_anchor_date(query: &WasmWeeklyLayoutQuery) -> NaiveDate {
+    let timezone_name = query
+        .timezone
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty());
+
+    let Some(timezone_name) = timezone_name else {
+        return query.anchor_date;
+    };
+
+    let Ok(timezone) = timezone_name.parse::<chrono_tz::Tz>() else {
+        // TM8 Task 3 maps invalid timezone inputs to deterministic errors.
+        // Task 2 keeps backward-compatible fallback behavior.
+        return query.anchor_date;
+    };
+
+    local_anchor_to_utc_date(query.anchor_date, timezone).unwrap_or(query.anchor_date)
+}
+
+fn local_anchor_to_utc_date(anchor_date: NaiveDate, timezone: chrono_tz::Tz) -> Option<NaiveDate> {
+    for hour in 0..24 {
+        let local_time = anchor_date.and_hms_opt(hour, 0, 0)?;
+        let utc_date = match timezone.from_local_datetime(&local_time) {
+            LocalResult::Single(date_time) => Some(date_time.with_timezone(&Utc).date_naive()),
+            LocalResult::Ambiguous(left, right) => {
+                Some(left.min(right).with_timezone(&Utc).date_naive())
+            }
+            LocalResult::None => None,
+        };
+
+        if let Some(date) = utc_date {
+            return Some(date);
+        }
+    }
+
+    None
 }
