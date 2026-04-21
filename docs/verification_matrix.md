@@ -19,11 +19,10 @@ Legend:
 | FR-8 | Delete appointment unbooks slot | Covered | `core/src/application/scheduler_service.rs` (`deleting_appointment_restores_slot_availability`), `core/tests/end_to_end_flows.rs` (`add_slot_book_unbook_and_layout_flow`) |
 | FR-9 | Conflict validation (overlap, one appointment per slot, valid slot reference) | Covered | `core/src/validation/slot_validation.rs` overlap tests, `core/src/validation/appointment_validation.rs` (`rejects_when_slot_already_has_appointment`), `core/src/validation/invariants.rs` slot-reference invariant tests |
 | FR-10 | Semantic layout output (no pixel/UI data) | Covered | `core/src/layout/weekly_layout/tests.rs` (day index, minute offsets, clipping, deterministic ordering); output DTOs in `core/src/layout/output.rs` |
-| FR-11 | Week navigation (next/previous/jump) | Partially Covered | Jump-to-date is covered via anchor-date week projection tests in `core/src/layout/weekly_layout/tests.rs`; explicit next/previous navigation helper APIs are not separately defined in core service layer. |
+| FR-11 | Week navigation (next/previous/jump) | Covered | `core/src/layout/weekly_layout/tests.rs` (`query_navigation_moves_anchor_by_exactly_one_week`, `query_navigation_is_stable_across_month_and_year_boundaries`) and anchor-date projection tests (`computes_monday_aligned_week_for_midweek_anchor`) |
 
 ## Notes
 - Adapter contract stability and envelope/error determinism are additionally covered in:
   - `core/tests/serialization_contract.rs`
   - `core/tests/wasm_web_smoke.rs`
   - `core/tests/generated_package_smoke.mjs` (invoked via `core/tests/run_generated_package_smoke.sh`)
-- If explicit FR-11 next/previous helper APIs are required (instead of consumer-provided anchor dates), add a dedicated core helper and corresponding tests.

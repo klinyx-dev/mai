@@ -21,6 +21,35 @@ fn computes_monday_aligned_week_for_midweek_anchor() {
 }
 
 #[test]
+fn query_navigation_moves_anchor_by_exactly_one_week() {
+    let query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+
+    let next = query.next_week();
+    let previous = query.previous_week();
+
+    assert_eq!(next.anchor_date, NaiveDate::from_ymd_opt(2026, 1, 15).unwrap());
+    assert_eq!(
+        previous.anchor_date,
+        NaiveDate::from_ymd_opt(2026, 1, 1).unwrap()
+    );
+}
+
+#[test]
+fn query_navigation_is_stable_across_month_and_year_boundaries() {
+    let late_december = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 12, 30).unwrap());
+    let early_january = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 3).unwrap());
+
+    assert_eq!(
+        late_december.next_week().anchor_date,
+        NaiveDate::from_ymd_opt(2027, 1, 6).unwrap()
+    );
+    assert_eq!(
+        early_january.previous_week().anchor_date,
+        NaiveDate::from_ymd_opt(2025, 12, 27).unwrap()
+    );
+}
+
+#[test]
 fn computes_previous_monday_for_sunday_anchor() {
     let anchor = NaiveDate::from_ymd_opt(2026, 1, 11).unwrap(); // Sunday
     let week = week_range_from_anchor(anchor);

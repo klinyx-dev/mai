@@ -10,6 +10,24 @@ pub struct WeeklyLayoutQuery {
 
 pub const DAYS_PER_WEEK: i64 = 7;
 
+impl WeeklyLayoutQuery {
+    pub fn new(anchor_date: NaiveDate) -> Self {
+        Self { anchor_date }
+    }
+
+    pub fn next_week(&self) -> Self {
+        Self {
+            anchor_date: self.anchor_date + Duration::days(DAYS_PER_WEEK),
+        }
+    }
+
+    pub fn previous_week(&self) -> Self {
+        Self {
+            anchor_date: self.anchor_date - Duration::days(DAYS_PER_WEEK),
+        }
+    }
+}
+
 pub fn week_range_from_anchor(anchor_date: NaiveDate) -> WeekRange {
     let days_from_monday = i64::from(anchor_date.weekday().num_days_from_monday());
     let week_start = anchor_date - Duration::days(days_from_monday);
