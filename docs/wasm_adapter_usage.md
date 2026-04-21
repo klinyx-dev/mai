@@ -80,7 +80,10 @@ Current contract behavior:
 - payload with `timezone` is accepted and normalized at adapter boundary into an effective UTC anchor date before calling core layout
 - JSON envelope shape remains unchanged
 
-Invalid-timezone deterministic error mapping is introduced in TM8 Task 3.
+Invalid-timezone deterministic error mapping is now active:
+- `category = contract`
+- `code = invalid_timezone`
+- `message = invalid timezone value`
 
 Example:
 

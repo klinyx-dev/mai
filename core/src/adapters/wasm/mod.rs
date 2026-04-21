@@ -97,6 +97,14 @@ impl WasmAdapterError {
             message,
         }
     }
+
+    pub fn invalid_timezone() -> Self {
+        Self {
+            category: WasmErrorCategory::Contract,
+            code: "invalid_timezone".to_string(),
+            message: "invalid timezone value".to_string(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -132,10 +140,13 @@ impl WasmSchedulerAdapter {
 
     pub fn execute_query(&self, request: WasmQueryRequest) -> WasmQueryResponse {
         match request {
-            WasmQueryRequest::WeeklyLayout(query) => WasmQueryResponse::Success {
-                data: self.service.get_weekly_layout(WeeklyLayoutQuery {
-                    anchor_date: normalize_weekly_anchor_date(&query),
-                }),
+            WasmQueryRequest::WeeklyLayout(query) => match normalize_weekly_anchor_date(&query) {
+                Ok(anchor_date) => WasmQueryResponse::Success {
+                    data: self
+                        .service
+                        .get_weekly_layout(WeeklyLayoutQuery { anchor_date }),
+                },
+                Err(error) => WasmQueryResponse::Error { error },
             },
         }
     }
@@ -240,24 +251,24 @@ fn business_error_code(error: &BusinessRuleError) -> &'static str {
     }
 }
 
-fn normalize_weekly_anchor_date(query: &WasmWeeklyLayoutQuery) -> NaiveDate {
+fn normalize_weekly_anchor_date(query: &WasmWeeklyLayoutQuery) -> Result<NaiveDate, WasmAdapterError> {
     let timezone_name = query
         .timezone
         .as_deref()
         .map(str::trim)
-        .filter(|value| !value.is_empty());
+        .filter(|value| !value.is_empty())
+        .map(str::to_string);
 
     let Some(timezone_name) = timezone_name else {
-        return query.anchor_date;
+        return Ok(query.anchor_date);
     };
 
-    let Ok(timezone) = timezone_name.parse::<chrono_tz::Tz>() else {
-        // TM8 Task 3 maps invalid timezone inputs to deterministic errors.
-        // Task 2 keeps backward-compatible fallback behavior.
-        return query.anchor_date;
-    };
+    let timezone = timezone_name
+        .parse::<chrono_tz::Tz>()
+        .map_err(|_| WasmAdapterError::invalid_timezone())?;
 
-    local_anchor_to_utc_date(query.anchor_date, timezone).unwrap_or(query.anchor_date)
+    local_anchor_to_utc_date(query.anchor_date, timezone)
+        .ok_or_else(WasmAdapterError::invalid_timezone)
 }
 
 fn local_anchor_to_utc_date(anchor_date: NaiveDate, timezone: chrono_tz::Tz) -> Option<NaiveDate> {

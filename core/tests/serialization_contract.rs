@@ -349,7 +349,7 @@ fn wasm_adapter_wrapper_normalizes_timezone_aware_weekly_query_anchor() {
 }
 
 #[test]
-fn wasm_adapter_wrapper_falls_back_to_legacy_behavior_for_invalid_timezone_in_task2() {
+fn wasm_adapter_wrapper_returns_deterministic_error_for_invalid_timezone() {
     let adapter = WasmSchedulerAdapter::new();
 
     let response = adapter.execute_query(
@@ -359,12 +359,34 @@ fn wasm_adapter_wrapper_falls_back_to_legacy_behavior_for_invalid_timezone_in_ta
         }),
     );
 
-    let week_start = match response {
-        WasmQueryResponse::Success { data } => data.week_start,
-        WasmQueryResponse::Error { error } => panic!("unexpected error: {error:?}"),
+    let error = match response {
+        WasmQueryResponse::Success { data } => panic!("unexpected success: {data:?}"),
+        WasmQueryResponse::Error { error } => error,
     };
 
-    assert_eq!(week_start, NaiveDate::from_ymd_opt(2026, 1, 5).unwrap());
+    assert_eq!(error.category, WasmErrorCategory::Contract);
+    assert_eq!(error.code, "invalid_timezone");
+    assert_eq!(error.message, "invalid timezone value");
+}
+
+#[test]
+fn wasm_adapter_wrapper_maps_invalid_timezone_to_error_envelope_in_json_entrypoint() {
+    let adapter = WasmSchedulerAdapter::new();
+    let query_json = r#"{
+        "query":"weekly_layout",
+        "payload":{
+            "anchor_date":"2026-01-05",
+            "timezone":"Not/A_Real_TZ"
+        }
+    }"#;
+
+    let response = adapter.execute_query_json(query_json);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "error");
+    assert_eq!(payload["error"]["category"], "contract");
+    assert_eq!(payload["error"]["code"], "invalid_timezone");
+    assert_eq!(payload["error"]["message"], "invalid timezone value");
 }
 
 #[test]

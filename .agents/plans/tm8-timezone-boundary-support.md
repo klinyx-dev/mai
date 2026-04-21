@@ -41,6 +41,14 @@ Acceptance criteria:
 - Validate timezone field at boundary.
 - Map invalid timezone inputs to stable adapter error code/messages.
 
+Decision recorded:
+- Invalid timezone inputs now return adapter error envelope:
+  - `category = contract`
+  - `code = invalid_timezone`
+  - `message = invalid timezone value`
+- Invalid timezone no longer falls back to legacy anchor behavior.
+- Error envelope structure remains unchanged.
+
 Acceptance criteria:
 - Invalid timezone input never escapes as raw parse/runtime errors.
 - Error envelope shape remains unchanged.
