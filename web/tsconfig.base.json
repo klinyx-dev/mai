@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mai/mai-web-core": ["packages/mai-web-core/src/index.ts"],
+      "@mai/mai-ui-vue": ["packages/mai-ui-vue/src/index.ts"],
+      "@mai/mai-ui-vue/styles.css": ["packages/mai-ui-vue/src/styles/theme.css"],
+      "vue": ["types/vue-shim.d.ts"]
+    }
+  }
+}

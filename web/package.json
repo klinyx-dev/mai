@@ -1,0 +1,14 @@
+{
+  "name": "@mai/web-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Web packages for consuming mai wasm core.",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "npm run -w @mai/mai-web-core build && npm run -w @mai/mai-ui-vue build",
+    "test": "npm run -w @mai/mai-web-core test"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@mai/mai-ui-vue",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Nuxt-compatible Vue UI package for mai web.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && cp src/styles/theme.css dist/styles.css"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "@mai/mai-web-core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vue": "^3.5.0"
+  }
+}

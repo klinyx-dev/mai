@@ -1,0 +1,32 @@
+:root {
+  --mai-surface: #f6f8fb;
+  --mai-card: #ffffff;
+  --mai-primary: #155eef;
+  --mai-primary-strong: #0040c1;
+  --mai-text: #0f1728;
+  --mai-muted: #5f6b7a;
+  --mai-border: #d9dee7;
+  --mai-booked: #f59f0b;
+  --mai-available: #17b26a;
+}
+
+.mai-board {
+  font-family: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at 0 0, #eaf0ff, #f7f9fd 40%, #eef3ff 100%);
+  color: var(--mai-text);
+}
+
+.mai-board__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mai-board__panel {
+  border: 1px solid var(--mai-border);
+  border-radius: 14px;
+  background: var(--mai-card);
+  padding: 12px;
+}
