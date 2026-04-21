@@ -491,12 +491,16 @@ pub struct WeeklyLayoutQuery {
 }
 ```
 
-Optional later additions:
-- timezone
+Core layout input remains `anchor_date` only.
+
+Current shipped boundary behavior (TM8 completed on 2026-04-21):
+- adapter query payload accepts optional `timezone` metadata
+- adapter normalizes `anchor_date + timezone` to an effective UTC week anchor before calling core layout
+- domain/layout modules stay timezone-rule-free
+
+Optional later additions to the core query struct:
 - visible hours
 - assignee filter
-
-Not needed in first pass
 
 ### 10.3 Output shape
 ```rust
