@@ -7,6 +7,8 @@ pub enum StructuralError {
     InvalidTimeRange,
     #[error("title cannot be empty")]
     EmptyTitle,
+    #[error("invalid visible window")]
+    InvalidVisibleWindow,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]

@@ -1,6 +1,7 @@
 use chrono::{Datelike, Duration, NaiveDate};
 use serde::{Deserialize, Serialize};
 
+use crate::StructuralError;
 use crate::{ActorId, domain::week::WeekRange};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -15,6 +16,13 @@ pub struct WeeklyLayoutQuery {
 }
 
 pub const DAYS_PER_WEEK: i64 = 7;
+pub const MINUTES_PER_DAY: u16 = 1440;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct VisibleMinuteWindow {
+    pub start_minute: u16,
+    pub end_minute: u16,
+}
 
 impl WeeklyLayoutQuery {
     pub fn new(anchor_date: NaiveDate) -> Self {
@@ -55,4 +63,25 @@ pub fn day_start_from_week(week_start: NaiveDate, day_index: u8) -> Option<Naive
     }
 
     Some(week_start + Duration::days(i64::from(day_index)))
+}
+
+pub fn resolve_visible_minute_window(
+    query: &WeeklyLayoutQuery,
+) -> Result<Option<VisibleMinuteWindow>, StructuralError> {
+    if query.visible_start_minute.is_none() && query.visible_end_minute.is_none() {
+        return Ok(None);
+    }
+
+    let start_minute = query.visible_start_minute.unwrap_or(0);
+    let end_minute = query.visible_end_minute.unwrap_or(MINUTES_PER_DAY);
+
+    if start_minute > MINUTES_PER_DAY || end_minute > MINUTES_PER_DAY || start_minute >= end_minute
+    {
+        return Err(StructuralError::InvalidVisibleWindow);
+    }
+
+    Ok(Some(VisibleMinuteWindow {
+        start_minute,
+        end_minute,
+    }))
 }

@@ -598,6 +598,126 @@ fn slot_projection_never_leaks_booked_or_cancelled_slots() {
     assert_eq!(projected_ids, vec!["available-1", "available-2"]);
 }
 
+#[test]
+fn visible_window_clips_and_filters_slot_projection() {
+    let mut state = ScheduleState::new();
+    state.slots.insert(
+        SlotId::new("slot-early"),
+        slot(
+            "slot-early",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 7, 8, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("slot-overlap-start"),
+        slot(
+            "slot-overlap-start",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("slot-overlap-end"),
+        slot(
+            "slot-overlap-end",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+        ),
+    );
+
+    let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+    query.visible_start_minute = Some(9 * 60 + 30);
+    query.visible_end_minute = Some(10 * 60 + 30);
+
+    let nodes = project_slot_layout_nodes(&state, &query);
+
+    assert_eq!(nodes.len(), 2);
+    assert_eq!(nodes[0].slot_id, SlotId::new("slot-overlap-start"));
+    assert_eq!(nodes[0].start_minute, 9 * 60 + 30);
+    assert_eq!(nodes[0].end_minute, 10 * 60);
+    assert!(nodes[0].clipped_start);
+    assert!(!nodes[0].clipped_end);
+
+    assert_eq!(nodes[1].slot_id, SlotId::new("slot-overlap-end"));
+    assert_eq!(nodes[1].start_minute, 10 * 60);
+    assert_eq!(nodes[1].end_minute, 10 * 60 + 30);
+    assert!(!nodes[1].clipped_start);
+    assert!(nodes[1].clipped_end);
+}
+
+#[test]
+fn visible_window_clips_and_filters_appointment_projection() {
+    let mut state = ScheduleState::new();
+    state.slots.insert(
+        SlotId::new("slot-early"),
+        slot(
+            "slot-early",
+            SlotStatus::Booked,
+            Utc.with_ymd_and_hms(2026, 1, 7, 8, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("slot-overlap-start"),
+        slot(
+            "slot-overlap-start",
+            SlotStatus::Booked,
+            Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("slot-overlap-end"),
+        slot(
+            "slot-overlap-end",
+            SlotStatus::Booked,
+            Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+        ),
+    );
+    state.appointments.insert(
+        AppointmentId::new("appt-early"),
+        appointment("appt-early", "slot-early"),
+    );
+    state.appointments.insert(
+        AppointmentId::new("appt-overlap-start"),
+        appointment("appt-overlap-start", "slot-overlap-start"),
+    );
+    state.appointments.insert(
+        AppointmentId::new("appt-overlap-end"),
+        appointment("appt-overlap-end", "slot-overlap-end"),
+    );
+
+    let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+    query.visible_start_minute = Some(9 * 60 + 30);
+    query.visible_end_minute = Some(10 * 60 + 30);
+
+    let nodes = project_appointment_layout_nodes(&state, &query);
+
+    assert_eq!(nodes.len(), 2);
+    assert_eq!(
+        nodes[0].appointment_id,
+        AppointmentId::new("appt-overlap-start")
+    );
+    assert_eq!(nodes[0].start_minute, 9 * 60 + 30);
+    assert_eq!(nodes[0].end_minute, 10 * 60);
+    assert!(nodes[0].clipped_start);
+    assert!(!nodes[0].clipped_end);
+
+    assert_eq!(
+        nodes[1].appointment_id,
+        AppointmentId::new("appt-overlap-end")
+    );
+    assert_eq!(nodes[1].start_minute, 10 * 60);
+    assert_eq!(nodes[1].end_minute, 10 * 60 + 30);
+    assert!(!nodes[1].clipped_start);
+    assert!(nodes[1].clipped_end);
+}
+
 fn slot(
     id: &str,
     status: SlotStatus,

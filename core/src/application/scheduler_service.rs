@@ -11,7 +11,8 @@ use crate::domain::enums::SlotStatus;
 use crate::domain::slot::Slot;
 use crate::domain::time_range::TimeRange;
 use crate::layout::weekly_layout::{
-    project_appointment_layout_nodes, project_slot_layout_nodes, week_range_from_anchor,
+    project_appointment_layout_nodes, project_slot_layout_nodes, resolve_visible_minute_window,
+    week_range_from_anchor,
 };
 use crate::layout::{WeeklyLayout, WeeklyLayoutQuery};
 use crate::state::schedule_state::ScheduleState;
@@ -171,16 +172,26 @@ impl SchedulerService {
     }
 
     pub fn get_weekly_layout(&self, query: WeeklyLayoutQuery) -> WeeklyLayout {
+        self.get_weekly_layout_checked(query)
+            .expect("weekly layout query must be valid")
+    }
+
+    pub fn get_weekly_layout_checked(
+        &self,
+        query: WeeklyLayoutQuery,
+    ) -> CommandResult<WeeklyLayout> {
+        resolve_visible_minute_window(&query)?;
+
         let week = week_range_from_anchor(query.anchor_date);
         let slots = project_slot_layout_nodes(&self.state, &query);
         let appointments = project_appointment_layout_nodes(&self.state, &query);
 
-        WeeklyLayout {
+        Ok(WeeklyLayout {
             week_start: week.start,
             week_end: week.end,
             slots,
             appointments,
-        }
+        })
     }
 
     fn ensure_actor_exists(
@@ -536,6 +547,37 @@ mod tests {
         assert!(
             result.is_ok(),
             "behavior should remain unchanged without lookup"
+        );
+    }
+
+    #[test]
+    fn weekly_layout_query_rejects_invalid_visible_window_order() {
+        let service = SchedulerService::new();
+        let mut query =
+            WeeklyLayoutQuery::new(chrono::NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+        query.visible_start_minute = Some(600);
+        query.visible_end_minute = Some(600);
+
+        let result = service.get_weekly_layout_checked(query);
+
+        assert_eq!(
+            result.expect_err("equal visible window bounds must fail"),
+            SchedulerError::Structural(StructuralError::InvalidVisibleWindow)
+        );
+    }
+
+    #[test]
+    fn weekly_layout_query_rejects_out_of_range_visible_window_bound() {
+        let service = SchedulerService::new();
+        let mut query =
+            WeeklyLayoutQuery::new(chrono::NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+        query.visible_end_minute = Some(1441);
+
+        let result = service.get_weekly_layout_checked(query);
+
+        assert_eq!(
+            result.expect_err("out of range visible window bound must fail"),
+            SchedulerError::Structural(StructuralError::InvalidVisibleWindow)
         );
     }
 }

@@ -228,6 +228,7 @@ fn structural_error_code(error: &StructuralError) -> &'static str {
     match error {
         StructuralError::InvalidTimeRange => "invalid_time_range",
         StructuralError::EmptyTitle => "empty_title",
+        StructuralError::InvalidVisibleWindow => "invalid_visible_window",
     }
 }
 
