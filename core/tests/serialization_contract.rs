@@ -93,6 +93,9 @@ fn wasm_command_request_uses_tagged_envelope() {
 fn wasm_query_request_uses_tagged_envelope() {
     let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
         anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+        assignee_id: None,
+        visible_start_minute: None,
+        visible_end_minute: None,
         timezone: None,
     });
 
@@ -109,6 +112,9 @@ fn wasm_query_request_uses_tagged_envelope() {
 fn wasm_query_request_accepts_optional_timezone() {
     let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
         anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+        assignee_id: None,
+        visible_start_minute: None,
+        visible_end_minute: None,
         timezone: Some("Europe/Paris".to_string()),
     });
 
@@ -134,6 +140,25 @@ fn wasm_command_response_uses_shared_success_envelope() {
 
     let restored: WasmCommandResponse = serde_json::from_value(json).unwrap();
     assert_eq!(restored, response);
+}
+
+#[test]
+fn wasm_query_request_accepts_tm10_optional_fields() {
+    let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+        anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+        assignee_id: Some("doctor-42".to_string()),
+        visible_start_minute: Some(540),
+        visible_end_minute: Some(1020),
+        timezone: None,
+    });
+
+    let json = serde_json::to_value(&request).unwrap();
+    assert_eq!(json["payload"]["assignee_id"], "doctor-42");
+    assert_eq!(json["payload"]["visible_start_minute"], 540);
+    assert_eq!(json["payload"]["visible_end_minute"], 1020);
+
+    let restored: WasmQueryRequest = serde_json::from_value(json).unwrap();
+    assert_eq!(restored, request);
 }
 
 #[test]
@@ -179,6 +204,9 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
         query,
         WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+            assignee_id: None,
+            visible_start_minute: None,
+            visible_end_minute: None,
             timezone: None,
         })
     );
@@ -297,7 +325,10 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
     let query_json = r#"{
         "query":"weekly_layout",
         "payload":{
-            "anchor_date":"2026-05-07"
+            "anchor_date":"2026-05-07",
+            "assignee_id":"doctor-42",
+            "visible_start_minute":540,
+            "visible_end_minute":570
         }
     }"#;
 
@@ -310,6 +341,7 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
 
     assert_eq!(payload["status"], "success");
     assert_eq!(payload["data"]["week_start"], "2026-05-04");
+    assert_eq!(payload["data"]["appointments"][0]["slot_id"], "slot-1001");
     assert_eq!(
         payload["data"]["appointments"][0]["appointment_id"],
         "appt-9001"
@@ -323,11 +355,17 @@ fn wasm_adapter_wrapper_normalizes_timezone_aware_weekly_query_anchor() {
     let legacy_response =
         adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
+            assignee_id: None,
+            visible_start_minute: None,
+            visible_end_minute: None,
             timezone: None,
         }));
     let timezone_response =
         adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
+            assignee_id: None,
+            visible_start_minute: None,
+            visible_end_minute: None,
             timezone: Some("Europe/Paris".to_string()),
         }));
 
@@ -356,6 +394,9 @@ fn wasm_adapter_wrapper_returns_deterministic_error_for_invalid_timezone() {
 
     let response = adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
         anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
+        assignee_id: None,
+        visible_start_minute: None,
+        visible_end_minute: None,
         timezone: Some("Not/A_Real_TZ".to_string()),
     }));
 
@@ -367,6 +408,26 @@ fn wasm_adapter_wrapper_returns_deterministic_error_for_invalid_timezone() {
     assert_eq!(error.category, WasmErrorCategory::Contract);
     assert_eq!(error.code, "invalid_timezone");
     assert_eq!(error.message, "invalid timezone value");
+}
+
+#[test]
+fn wasm_adapter_wrapper_maps_invalid_visible_window_to_structural_error() {
+    let adapter = WasmSchedulerAdapter::new();
+    let query_json = r#"{
+        "query":"weekly_layout",
+        "payload":{
+            "anchor_date":"2026-05-07",
+            "visible_start_minute":600,
+            "visible_end_minute":600
+        }
+    }"#;
+
+    let response = adapter.execute_query_json(query_json);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "error");
+    assert_eq!(payload["error"]["category"], "structural");
+    assert_eq!(payload["error"]["code"], "invalid_visible_window");
 }
 
 #[test]

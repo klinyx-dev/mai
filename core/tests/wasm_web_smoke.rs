@@ -40,7 +40,10 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
         r#"{
             "query":"weekly_layout",
             "payload":{
-                "anchor_date":"2026-05-07"
+                "anchor_date":"2026-05-07",
+                "assignee_id":"doctor-42",
+                "visible_start_minute":540,
+                "visible_end_minute":570
             }
         }"#,
     );
@@ -48,6 +51,10 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
         serde_json::from_str(&weekly_query_response).unwrap();
     assert_eq!(weekly_query_json["status"], "success");
     assert_eq!(weekly_query_json["data"]["week_start"], "2026-05-04");
+    assert_eq!(
+        weekly_query_json["data"]["appointments"][0]["slot_id"],
+        "slot-1001"
+    );
     assert_eq!(
         weekly_query_json["data"]["appointments"][0]["appointment_id"],
         "appt-9001"
@@ -104,4 +111,23 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
     assert_eq!(invalid_timezone_json["status"], "error");
     assert_eq!(invalid_timezone_json["error"]["category"], "contract");
     assert_eq!(invalid_timezone_json["error"]["code"], "invalid_timezone");
+
+    let invalid_window_response = adapter.execute_query_json(
+        r#"{
+            "query":"weekly_layout",
+            "payload":{
+                "anchor_date":"2026-05-07",
+                "visible_start_minute":600,
+                "visible_end_minute":600
+            }
+        }"#,
+    );
+    let invalid_window_json: serde_json::Value =
+        serde_json::from_str(&invalid_window_response).unwrap();
+    assert_eq!(invalid_window_json["status"], "error");
+    assert_eq!(invalid_window_json["error"]["category"], "structural");
+    assert_eq!(
+        invalid_window_json["error"]["code"],
+        "invalid_visible_window"
+    );
 }
