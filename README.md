@@ -44,8 +44,8 @@ assert_eq!(layout.week_start.to_string(), "2026-05-04");
 
 ## Web Packages (Nuxt-First)
 - `web/packages/mai-web-core`: framework-agnostic TS contracts and JSON adapter helpers.
-- `web/packages/mai-ui-vue`: Nuxt-compatible Vue UI primitives built on top of web core.
-- `web/examples/nuxt-app`: integration skeleton with client-side wasm initialization.
+- `web/packages/mai-ui-vue`: Nuxt-compatible Vue UI package with week calendar UI and week navigation.
+- `web/examples/nuxt-app`: runnable Nuxt integration example with client-side wasm initialization.
 
 ## Extend The Crate
 1. Add/adjust command DTOs under `core/src/commands/`.
@@ -86,6 +86,22 @@ node --version
 ```
 
 `rustup target list --installed` output must include `wasm32-unknown-unknown`.
+
+## Web Quick Start
+From the repository root:
+
+```bash
+cd web
+pnpm install
+pnpm run build
+pnpm run example:dev
+```
+
+Open `http://localhost:3000/`.
+
+Notes:
+- The web workspace standard is `pnpm` (not `npm`).
+- The Nuxt example loads wasm output from `core/pkg`.
 
 ## Release Baseline (`v0.1.0`)
 Contract guarantees for consumers:
