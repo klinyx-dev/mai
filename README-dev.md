@@ -27,14 +27,15 @@ cargo make shell
 
 Run checks:
 ```bash
-cargo make check
-cargo make test
-cargo make fmt
-cargo make clippy
-cargo make wasm-check
-cargo make wasm-smoke
 cargo make ci
 ```
+
+`cargo make ci` is the containerized equivalent of the canonical release-readiness verification sequence in `README.md`:
+- `cargo fmt --all --check`
+- `cargo clippy --all-targets --all-features -- -D warnings`
+- `cargo test`
+- `cargo check --target wasm32-unknown-unknown -p mai`
+- `core/tests/run_generated_package_smoke.sh`
 
 ## Notes
 - Rust dependencies are cached in named Podman volumes, so rebuilds stay fast across container runs.

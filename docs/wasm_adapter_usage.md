@@ -42,6 +42,8 @@ From the repository root:
 core/tests/run_generated_package_smoke.sh
 ```
 
+This smoke command is the final step of the canonical release-readiness verification sequence documented in `README.md`.
+
 ## Local Toolchain Contract For Smoke (TM9 Task 1)
 
 Local environment must satisfy the same baseline as CI:

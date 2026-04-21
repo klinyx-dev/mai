@@ -49,11 +49,14 @@ assert_eq!(layout.week_start.to_string(), "2026-05-04");
 ## Commands
 From the repository root:
 
+### Canonical Release-Readiness Verification Sequence
+Run this sequence in order:
+
 ```bash
-cargo build
-cargo test
 cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
+cargo test
+cargo check --target wasm32-unknown-unknown -p mai
 core/tests/run_generated_package_smoke.sh
 ```
 
