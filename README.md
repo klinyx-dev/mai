@@ -26,6 +26,9 @@ service.add_slot(AddSlotCommand {
 
 let layout = service.get_weekly_layout(WeeklyLayoutQuery {
     anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+    assignee_id: None,
+    visible_start_minute: None,
+    visible_end_minute: None,
 });
 assert_eq!(layout.week_start.to_string(), "2026-05-04");
 # Ok::<(), mai::SchedulerError>(())
@@ -38,6 +41,11 @@ assert_eq!(layout.week_start.to_string(), "2026-05-04");
 - `application`: `SchedulerService` orchestration boundary
 - `layout`: weekly semantic projection (no pixel/UI logic)
 - `adapters`: integration surface (WASM-ready boundary)
+
+## Web Packages (Nuxt-First)
+- `web/packages/mai-web-core`: framework-agnostic TS contracts and JSON adapter helpers.
+- `web/packages/mai-ui-vue`: Nuxt-compatible Vue UI primitives built on top of web core.
+- `web/examples/nuxt-app`: integration skeleton with client-side wasm initialization.
 
 ## Extend The Crate
 1. Add/adjust command DTOs under `core/src/commands/`.

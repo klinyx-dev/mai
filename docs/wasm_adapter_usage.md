@@ -133,6 +133,21 @@ const layoutResponse = JSON.parse(
 );
 ```
 
+## TM10 Query Contract (Adapter Exposure)
+
+Weekly layout query payload now also accepts optional core filter/window fields:
+- `assignee_id`
+- `visible_start_minute`
+- `visible_end_minute`
+
+Current contract behavior:
+- omitted fields preserve legacy behavior
+- `assignee_id` filters both slot and appointment projections by slot assignee
+- visible window fields apply deterministic clipping/filtering in core projection
+- invalid visible-window bounds map to deterministic structural errors:
+  - `category = structural`
+  - `code = invalid_visible_window`
+
 ## End-to-End Flow
 
 ### 1. Initialize adapter state
@@ -191,7 +206,12 @@ const layoutResponse = JSON.parse(
   adapter.execute_query_json(
     JSON.stringify({
       query: "weekly_layout",
-      payload: { anchor_date: "2026-05-07" }
+      payload: {
+        anchor_date: "2026-05-07",
+        assignee_id: "doctor-42",
+        visible_start_minute: 540,
+        visible_end_minute: 1020
+      }
     })
   )
 );
@@ -239,11 +259,3 @@ if (duplicateBooking.status === "error") {
 
 - Payload shapes: `docs/adapter_payload_examples.md`
 - Contract and wrapper implementation: `core/src/adapters/wasm/mod.rs`
-
-## TM10 Core-Logic Work Note
-
-TM10 focuses on core weekly query expressiveness (`assignee_id`, visible-hour window) before adapter contract expansion.
-
-Until TM10 adapter work is explicitly planned:
-- keep current JSON envelope/query payload shape unchanged at wasm boundary
-- treat TM10 additions as Rust-core query capability only

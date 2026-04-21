@@ -62,12 +62,20 @@ The boundary is envelope-based:
 }
 ```
 
-## TM10 Note (Core-First)
+## Query Request: Weekly Layout with TM10 Filters
 
-Planned TM10 query extensions (`assignee_id`, `visible_start_minute`, `visible_end_minute`) are currently defined as core-spec work first.
-
-Near-term rule:
-- do not change adapter JSON payload examples in this file until TM10 adapter-boundary exposure is explicitly scheduled.
+```json
+{
+  "query": "weekly_layout",
+  "payload": {
+    "anchor_date": "2026-05-07",
+    "timezone": "Europe/Paris",
+    "assignee_id": "doctor-42",
+    "visible_start_minute": 540,
+    "visible_end_minute": 1020
+  }
+}
+```
 
 ## Mutation Success Response (`WasmCommandResponse`)
 
