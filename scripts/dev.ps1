@@ -40,10 +40,10 @@ function Prepare-Podman {
     Require-Podman
 
     $machineName = "podman-machine-default"
-    $machineList = @(podman machine list --format "{{.Name}} {{.Running}}" 2>$null)
+    $machineList = @(podman machine list --format "{{.Name}} {{.Running}}" 2>$null) -replace "\*", ""
     if ($LASTEXITCODE -ne 0 -or -not ($machineList | Where-Object { $_ -match "^$machineName\s+" })) {
         podman machine init $machineName
-        $machineList = @(podman machine list --format "{{.Name}} {{.Running}}" 2>$null)
+        $machineList = @(podman machine list --format "{{.Name}} {{.Running}}" 2>$null) -replace "\*", ""
     }
 
     $isRunning = $machineList | Where-Object { $_ -match "^$machineName\s+true$" }
