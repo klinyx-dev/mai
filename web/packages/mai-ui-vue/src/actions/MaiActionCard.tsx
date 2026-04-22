@@ -47,7 +47,7 @@ export const MaiActionCard = defineComponent({
             onClick={() => emit("close")}
             aria-label={props.closeAriaLabel}
           >
-            x
+            <span aria-hidden="true">×</span>
           </button>
         </header>
         {slots.default ? slots.default() : null}
