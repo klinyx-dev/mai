@@ -732,6 +732,11 @@ const adapter = await createWasmAdapter();
 const state = createNuxtMaiState(adapter);
 ```
 
+Current implementation status (completed on 2026-04-22):
+- `@mai/mai-wasm-adapter` package added and consumed by Nuxt example.
+- app-level direct `core/pkg` imports removed from `examples/nuxt-app` source.
+- boundary regression smoke script added at `web/scripts/check-package-boundaries.mjs`.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests
