@@ -1,7 +1,7 @@
 use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
-    AddAppointmentCommand, AddSlotCommand, BusinessRuleError, ReferentialError, SchedulerError,
-    WeeklyLayoutQuery,
+    AddAppointmentCommand, AddSlotCommand, BusinessRuleError, CancelAppointmentCommand,
+    ReferentialError, SchedulerError, WeeklyLayoutQuery,
     adapters::wasm::{
         WasmAdapterError, WasmBindgenAdapter, WasmCommandRequest, WasmCommandResponse,
         WasmErrorCategory, WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse,
@@ -46,6 +46,19 @@ fn add_appointment_command_round_trips() {
 }
 
 #[test]
+fn cancel_appointment_command_round_trips() {
+    let command = CancelAppointmentCommand {
+        appointment_id: "appt-9001".into(),
+        cancelled_by: "patient-77".into(),
+    };
+
+    let json = serde_json::to_string(&command).unwrap();
+    let restored: CancelAppointmentCommand = serde_json::from_str(&json).unwrap();
+
+    assert_eq!(restored, command);
+}
+
+#[test]
 fn weekly_layout_query_round_trips_with_iso_date() {
     let query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 5, 7).unwrap());
 
@@ -84,6 +97,23 @@ fn wasm_command_request_uses_tagged_envelope() {
     assert_eq!(json["command"], "add_slot");
     assert_eq!(json["payload"]["slot_id"], "slot-1001");
     assert_eq!(json["payload"]["start"], "2026-05-04T09:00:00Z");
+
+    let restored: WasmCommandRequest = serde_json::from_value(json).unwrap();
+    assert_eq!(restored, request);
+}
+
+#[test]
+fn wasm_cancel_appointment_request_uses_tagged_envelope() {
+    let request = WasmCommandRequest::CancelAppointment(CancelAppointmentCommand {
+        appointment_id: "appt-9001".into(),
+        cancelled_by: "patient-77".into(),
+    });
+
+    let json = serde_json::to_value(&request).unwrap();
+
+    assert_eq!(json["command"], "cancel_appointment");
+    assert_eq!(json["payload"]["appointment_id"], "appt-9001");
+    assert_eq!(json["payload"]["cancelled_by"], "patient-77");
 
     let restored: WasmCommandRequest = serde_json::from_value(json).unwrap();
     assert_eq!(restored, request);
@@ -300,6 +330,48 @@ fn wasm_adapter_wrapper_maps_business_error_for_duplicate_booking() {
 }
 
 #[test]
+fn wasm_adapter_wrapper_maps_business_error_for_unauthorized_appointment_cancellation() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "assignee_id":"doctor-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let add_appointment_json = r#"{
+        "command":"add_appointment",
+        "payload":{
+            "appointment_id":"appt-9001",
+            "slot_id":"slot-1001",
+            "invitee_ids":["patient-77"],
+            "title":"Follow-up Consultation",
+            "created_by":"staff-3"
+        }
+    }"#;
+    let cancel_appointment_json = r#"{
+        "command":"cancel_appointment",
+        "payload":{
+            "appointment_id":"appt-9001",
+            "cancelled_by":"stranger-1"
+        }
+    }"#;
+
+    adapter.execute_command_json(add_slot_json);
+    adapter.execute_command_json(add_appointment_json);
+
+    let response = adapter.execute_command_json(cancel_appointment_json);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "error");
+    assert_eq!(payload["error"]["category"], "business");
+    assert_eq!(payload["error"]["code"], "appointment_cancel_not_allowed");
+}
+
+#[test]
 fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
     let mut adapter = WasmSchedulerAdapter::new();
     let add_slot_json = r#"{
@@ -471,6 +543,19 @@ fn wasm_adapter_error_conversion_is_deterministic_for_business_errors() {
     assert_eq!(error.category, WasmErrorCategory::Business);
     assert_eq!(error.code, "cannot_delete_booked_slot");
     assert_eq!(error.message, "cannot delete a booked slot");
+}
+
+#[test]
+fn wasm_adapter_error_conversion_is_deterministic_for_cancel_authorization_error() {
+    let error = WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+        BusinessRuleError::AppointmentCancelNotAllowed,
+    ));
+    assert_eq!(error.category, WasmErrorCategory::Business);
+    assert_eq!(error.code, "appointment_cancel_not_allowed");
+    assert_eq!(
+        error.message,
+        "appointment cancellation is not allowed for this actor"
+    );
 }
 
 #[test]

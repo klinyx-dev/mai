@@ -11,8 +11,8 @@ pub use application::{
     SchedulerService, StructuralError,
 };
 pub use commands::{
-    AddAppointmentCommand, AddSlotCommand, CancelSlotCommand, DeleteAppointmentCommand,
-    DeleteSlotCommand,
+    AddAppointmentCommand, AddSlotCommand, CancelAppointmentCommand, CancelSlotCommand,
+    DeleteAppointmentCommand, DeleteSlotCommand,
 };
 pub use domain::{
     ActorId, ActorRef, Appointment, AppointmentId, Slot, SlotId, SlotStatus, TimeRange,

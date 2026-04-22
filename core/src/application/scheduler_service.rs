@@ -3,6 +3,7 @@ use crate::application::command_result::CommandResult;
 use crate::application::errors::{ReferentialError, StructuralError};
 use crate::commands::add_appointment::AddAppointmentCommand;
 use crate::commands::add_slot::AddSlotCommand;
+use crate::commands::cancel_appointment::CancelAppointmentCommand;
 use crate::commands::cancel_slot::CancelSlotCommand;
 use crate::commands::delete_appointment::DeleteAppointmentCommand;
 use crate::commands::delete_slot::DeleteSlotCommand;
@@ -17,7 +18,8 @@ use crate::layout::weekly_layout::{
 use crate::layout::{WeeklyLayout, WeeklyLayoutQuery};
 use crate::state::schedule_state::ScheduleState;
 use crate::validation::appointment_validation::{
-    ensure_appointment_exists, ensure_no_appointment_for_slot, ensure_title_not_empty,
+    ensure_actor_can_cancel_appointment, ensure_appointment_exists, ensure_no_appointment_for_slot,
+    ensure_title_not_empty,
 };
 use crate::validation::invariants::validate_slot_appointment_invariants;
 use crate::validation::slot_validation::{
@@ -151,6 +153,26 @@ impl SchedulerService {
         Ok(())
     }
 
+    pub fn cancel_appointment(&mut self, cmd: CancelAppointmentCommand) -> CommandResult {
+        let appointment = ensure_appointment_exists(&self.state, &cmd.appointment_id)?;
+        let slot_id = appointment.slot_id.clone();
+        let slot = ensure_slot_exists(&self.state, &slot_id)?;
+
+        ensure_actor_can_cancel_appointment(appointment, slot, &cmd.cancelled_by)?;
+
+        self.state.appointments.remove(&cmd.appointment_id);
+
+        let slot = self
+            .state
+            .slots
+            .get_mut(&slot_id)
+            .ok_or(ReferentialError::SlotNotFound)?;
+        slot.status = SlotStatus::Available;
+
+        validate_slot_appointment_invariants(&self.state)?;
+        Ok(())
+    }
+
     pub fn delete_appointment(&mut self, cmd: DeleteAppointmentCommand) -> CommandResult {
         let appointment = ensure_appointment_exists(&self.state, &cmd.appointment_id)?;
 
@@ -217,6 +239,7 @@ mod tests {
     };
     use crate::commands::add_appointment::AddAppointmentCommand;
     use crate::commands::add_slot::AddSlotCommand;
+    use crate::commands::cancel_appointment::CancelAppointmentCommand;
     use crate::commands::cancel_slot::CancelSlotCommand;
     use crate::commands::delete_appointment::DeleteAppointmentCommand;
     use crate::commands::delete_slot::DeleteSlotCommand;
@@ -307,6 +330,64 @@ mod tests {
                 .expect("slot exists")
                 .status,
             SlotStatus::Available
+        );
+    }
+
+    #[test]
+    fn cancellation_by_assignee_invitee_or_creator_restores_slot_availability() {
+        for canceller in ["assignee-1", "invitee-1", "creator-2"] {
+            let mut service = SchedulerService::new();
+            service.add_slot(add_slot_cmd("slot-1")).unwrap();
+            service
+                .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
+                .unwrap();
+
+            service
+                .cancel_appointment(CancelAppointmentCommand {
+                    appointment_id: AppointmentId::new("appt-1"),
+                    cancelled_by: ActorId::new(canceller),
+                })
+                .unwrap();
+
+            assert!(service.state().appointments.is_empty());
+            assert_eq!(
+                service
+                    .state()
+                    .slots
+                    .get(&SlotId::new("slot-1"))
+                    .expect("slot exists")
+                    .status,
+                SlotStatus::Available
+            );
+        }
+    }
+
+    #[test]
+    fn cancellation_by_non_participant_is_rejected() {
+        let mut service = SchedulerService::new();
+        service.add_slot(add_slot_cmd("slot-1")).unwrap();
+        service
+            .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
+            .unwrap();
+
+        let result = service.cancel_appointment(CancelAppointmentCommand {
+            appointment_id: AppointmentId::new("appt-1"),
+            cancelled_by: ActorId::new("someone-else"),
+        });
+
+        assert_eq!(
+            result.expect_err("non participant canceller must fail"),
+            SchedulerError::Business(BusinessRuleError::AppointmentCancelNotAllowed)
+        );
+        assert_eq!(service.state().appointments.len(), 1);
+        assert_eq!(
+            service
+                .state()
+                .slots
+                .get(&SlotId::new("slot-1"))
+                .expect("slot exists")
+                .status,
+            SlotStatus::Booked
         );
     }
 

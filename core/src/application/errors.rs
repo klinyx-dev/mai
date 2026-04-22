@@ -37,6 +37,8 @@ pub enum BusinessRuleError {
     CannotDeleteBookedSlot,
     #[error("appointment already exists for this slot")]
     AppointmentAlreadyExistsForSlot,
+    #[error("appointment cancellation is not allowed for this actor")]
+    AppointmentCancelNotAllowed,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]

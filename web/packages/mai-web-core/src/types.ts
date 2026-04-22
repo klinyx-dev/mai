@@ -49,6 +49,7 @@ export type CommandName =
   | "delete_slot"
   | "cancel_slot"
   | "add_appointment"
+  | "cancel_appointment"
   | "delete_appointment";
 
 export interface CommandEnvelope<TPayload extends object> {

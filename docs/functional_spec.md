@@ -90,6 +90,7 @@ Implications:
 - Delete slot (single)
 - Cancel slot
 - Add appointment (single)
+- Cancel appointment
 - Delete appointment (single)
 - Validation rules
 - Semantic layout output
@@ -161,6 +162,17 @@ System must:
 System must:
 - Remove appointment by ID
 - Update referenced slot status from `booked` to `available`
+
+### FR-8b: Cancel Appointment (Authorized Unbooking)
+System must:
+- Accept (`appointment_id`, `cancelled_by`)
+- Allow cancellation when `cancelled_by` is:
+  - slot assignee
+  - appointment invitee
+  - appointment creator
+- Reject cancellation by non-participant actors deterministically
+- Remove appointment by ID
+- Update referenced slot status from `booked` to `available`
  
 ### FR-9: Conflict Validation
 System must enforce:
@@ -230,6 +242,7 @@ System must:
 16. Slots must not overlap for the same assignee
 17. Booked slots cannot be deleted
 18. Appointments cannot exist without a valid slot
+19. Appointment cancellation is allowed only for slot assignee, appointment invitee, or appointment creator
 
 ---
 
@@ -239,6 +252,7 @@ The system is complete when:
 - Available slots are displayed correctly
 - Booked slots are not shown as available
 - Appointment creation books exactly one slot
+- Appointment cancellation by participant restores slot availability
 - Appointment deletion restores slot availability
 - Slot ownership is always consistent
 - Invalid operations are rejected
@@ -258,6 +272,7 @@ The system is complete when:
 - Add/Delete slot
 - Cancel slot
 - Add/Delete appointment
+- Cancel appointment with participant authorization
 
 ### M3: Validation
 - Slot overlap (per assignee)

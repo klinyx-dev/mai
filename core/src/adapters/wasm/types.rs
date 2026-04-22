@@ -2,8 +2,8 @@ use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AddAppointmentCommand, AddSlotCommand, CancelSlotCommand, DeleteAppointmentCommand,
-    DeleteSlotCommand, WeeklyLayout,
+    AddAppointmentCommand, AddSlotCommand, CancelAppointmentCommand, CancelSlotCommand,
+    DeleteAppointmentCommand, DeleteSlotCommand, WeeklyLayout,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -30,6 +30,7 @@ pub enum WasmCommandRequest {
     DeleteSlot(DeleteSlotCommand),
     CancelSlot(CancelSlotCommand),
     AddAppointment(AddAppointmentCommand),
+    CancelAppointment(CancelAppointmentCommand),
     DeleteAppointment(DeleteAppointmentCommand),
 }
 

@@ -84,6 +84,7 @@ core/
 │   ├── delete_slot.rs
 │   ├── cancel_slot.rs
 │   ├── add_appointment.rs
+│   ├── cancel_appointment.rs
 │   └── delete_appointment.rs
 ├── validation/
 │   ├── mod.rs
@@ -327,6 +328,14 @@ pub struct DeleteAppointmentCommand {
 }
 ```
 
+### 6.6 Cancel appointment
+```rust
+pub struct CancelAppointmentCommand {
+    pub appointment_id: AppointmentId,
+    pub cancelled_by: ActorId,
+}
+```
+
 All mutation entrypoints should use these command structs rather than loose parameters
 
 ## 7. Validation Design
@@ -387,6 +396,7 @@ pub enum SchedulerError {
     SlotNotAvailable,
     CannotDeleteBookedSlot,
     AppointmentAlreadyExistsForSlot,
+    AppointmentCancelNotAllowed,
     InvariantViolation(String),
 }
 ```
@@ -433,6 +443,15 @@ When deleting an appointment:
 
 Also atomic
 
+When cancelling an appointment:
+1. Verify appointment exists
+2. Verify canceller is one of:
+   - slot assignee
+   - appointment invitee
+   - appointment creator
+3. Delete appointment
+4. Update slot status to `Available`
+
 ### 8.4 Delete slot flow
 Deleting a slot is allowed only when:
 - slot exists
@@ -462,6 +481,7 @@ impl SchedulerService {
     pub fn delete_slot(&mut self, cmd: DeleteSlotCommand) -> Result<(), SchedulerError>;
     pub fn cancel_slot(&mut self, cmd: CancelSlotCommand) -> Result<(), SchedulerError>;
     pub fn add_appointment(&mut self, cmd: AddAppointmentCommand) -> Result<(), SchedulerError>;
+    pub fn cancel_appointment(&mut self, cmd: CancelAppointmentCommand) -> Result<(), SchedulerError>;
     pub fn delete_appointment(&mut self, cmd: DeleteAppointmentCommand) -> Result<(), SchedulerError>;
 
     pub fn get_weekly_layout(&self, query: WeeklyLayoutQuery) -> WeeklyLayout;
@@ -895,7 +915,7 @@ Deliver:
 - command DTOs
 - SchedulerService
 - add/delete/cancel slot
-- add/delete appointment
+- add/cancel/delete appointment
 
 ### TM3: Validation layer
 Deliver:

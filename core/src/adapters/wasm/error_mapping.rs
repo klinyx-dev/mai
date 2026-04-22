@@ -65,5 +65,6 @@ fn business_error_code(error: &BusinessRuleError) -> &'static str {
         BusinessRuleError::SlotNotAvailable => "slot_not_available",
         BusinessRuleError::CannotDeleteBookedSlot => "cannot_delete_booked_slot",
         BusinessRuleError::AppointmentAlreadyExistsForSlot => "appointment_already_exists_for_slot",
+        BusinessRuleError::AppointmentCancelNotAllowed => "appointment_cancel_not_allowed",
     }
 }
