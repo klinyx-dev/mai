@@ -22,8 +22,8 @@ Boundary rule:
 - App code should not import `core/pkg/*` directly.
 - App code should import runtime adapter APIs from package exports.
 
-## UI board contract (TM11 Phase 1)
-`MaiBoard` now exposes optional view/interaction contract fields for real app integration:
+## UI board contract (TM11)
+`MaiBoard` exposes view/interaction contract fields for real app integration:
 - Props:
   - `visibleStartMinute?: number` (default `0`)
   - `visibleEndMinute?: number` (default `1440`)
@@ -34,6 +34,26 @@ Boundary rule:
   - `slot-click`
   - `appointment-click`
   - `empty-cell-click`
+
+Example consumption:
+```vue
+<MaiBoard
+  :layout="layout"
+  :anchor-date="anchorDate"
+  :visible-start-minute="0"
+  :visible-end-minute="1440"
+  time-label-format="24h"
+  @navigate-week="navigateWeek"
+  @slot-click="onSlotClick"
+  @appointment-click="onAppointmentClick"
+  @empty-cell-click="onEmptyCellClick"
+/>
+```
+
+UI package tests now cover:
+- full-day timeline defaults and window normalization,
+- 12h/24h label formatting,
+- interaction payload mapping for slot/appointment/empty-cell events.
 
 ## Prerequisites
 - Node.js 22.x recommended (Node 23 may show experimental warnings from transitive deps).

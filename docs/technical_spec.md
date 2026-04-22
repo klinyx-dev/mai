@@ -753,6 +753,14 @@ TM11 Phase 1 UI contract (current baseline):
   - `appointment-click`
   - `empty-cell-click`
 
+TM11 Phase 6 completion status (2026-04-22):
+- `@mai/mai-ui-vue` includes deterministic tests for:
+  - full-day timeline defaults/window normalization,
+  - time label formatting modes (`24h`/`12h`),
+  - interaction payload mapping for slot/appointment/empty-cell events.
+- Nuxt example app consumes UI interaction events and demonstrates payload handling.
+- workspace `pnpm run test` includes `@mai/mai-ui-vue` tests in the baseline verification chain.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests
