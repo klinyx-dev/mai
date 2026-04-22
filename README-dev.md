@@ -1,68 +1,121 @@
 # Dev Environment
 
+The default development workflow uses Podman host scripts. Rust, Cargo, wasm-pack, Node.js, and pnpm run inside the dev container.
+
 ## Requirements
 - Podman
-- cargo-make
-- Node.js 22.x (LTS recommended)
-- pnpm 10.x
 
-The workflow is intended for both Windows and macOS. Run all commands from the repository root so the project directory is mounted into `/workspace` consistently.
+No host Rust/Cargo/Node.js/pnpm installation is required for the normal workflow.
 
-## Install cargo-make
-```bash
-cargo install cargo-make
+Run all commands from the repository root.
+
+## First Setup
+
+Windows:
+
+```powershell
+.\scripts\dev.ps1 setup
 ```
 
-## First setup
+macOS/Linux:
+
 ```bash
-cargo make prepare
-cargo make build-image
+./scripts/dev.sh setup
 ```
 
-`cargo make prepare` initializes and starts the Podman machine when needed. This matters on both macOS and Windows, where Podman runs through a VM.
+This prepares Podman, builds the dev image, and installs web dependencies inside the container.
 
-## Daily commands
-Open shell in container:
-```bash
-cargo make shell
+## Daily Development
+
+Windows:
+
+```powershell
+.\scripts\dev.ps1 dev
 ```
 
-Run checks:
+macOS/Linux:
+
 ```bash
-cargo make ci
+./scripts/dev.sh dev
 ```
 
-`cargo make ci` is the containerized equivalent of the canonical release-readiness verification sequence in `README.md`:
+The app is exposed at `http://localhost:3000`.
+
+What `dev` does:
+- builds or refreshes the generated WASM package
+- installs web dependencies if needed
+- builds web packages
+- starts the Nuxt example app
+
+## Full Validation
+
+Windows:
+
+```powershell
+.\scripts\dev.ps1 verify
+```
+
+macOS/Linux:
+
+```bash
+./scripts/dev.sh verify
+```
+
+`verify` runs:
 - `cargo fmt --all --check`
 - `cargo clippy --all-targets --all-features -- -D warnings`
 - `cargo test`
 - `cargo check --target wasm32-unknown-unknown -p mai`
 - `core/tests/run_generated_package_smoke.sh`
+- `pnpm run build`
+- `pnpm run test`
 
-## Notes
-- Rust dependencies are cached in named Podman volumes, so rebuilds stay fast across container runs.
-- Build artifacts are written to the container-mounted `target/` directory at `/workspace/target`.
+## Useful Commands
 
-## Web contributor workflow
-Run web commands from `web/`:
+Open a shell in the dev container:
 
-```bash
-cd web
-pnpm install
-pnpm run build
-pnpm run test
-pnpm run example:dev
+```powershell
+.\scripts\dev.ps1 shell
 ```
 
-What each command does:
-- `pnpm run build`: builds `@mai/mai-web-core` and `@mai/mai-ui-vue`.
-- `pnpm run test`: runs web-core tests (`node --test`).
-- `pnpm run example:dev`: starts the Nuxt example app for manual verification.
+```bash
+./scripts/dev.sh shell
+```
 
-### Web troubleshooting
-- `Unsupported URL Type "workspace:*"`:
-  Use `pnpm install` instead of `npm install`.
-- Vite error `outside of serving allow list` for `core/pkg/mai_bg.wasm`:
-  Ensure `web/examples/nuxt-app/nuxt.config.ts` includes `vite.server.fs.allow` for `../../../core/pkg`.
-- Nuxt port collision:
-  Run `pnpm --filter @mai/nuxt-app-example dev --host 127.0.0.1 --port 3101`.
+Run web-only commands:
+
+```powershell
+.\scripts\dev.ps1 web-install
+.\scripts\dev.ps1 web-build
+.\scripts\dev.ps1 web-test
+```
+
+```bash
+./scripts/dev.sh web-install
+./scripts/dev.sh web-build
+./scripts/dev.sh web-test
+```
+
+## Corporate TLS Fallback
+
+If `setup` fails while Podman pulls the base image through company TLS interception, use the explicit dev-only fallback.
+
+Windows:
+
+```powershell
+.\scripts\dev.ps1 setup-no-tls-verify
+```
+
+macOS/Linux:
+
+```bash
+./scripts/dev.sh setup-no-tls-verify
+```
+
+This disables Podman TLS verification for this dev image build only. Keep the normal `setup` command as the default.
+
+## Notes
+- Rust dependencies are cached in named Podman volumes.
+- Web dependencies use a named pnpm store volume.
+- Build artifacts are written to the mounted workspace `target/` directory.
+- `cargo make` tasks may still exist for advanced/local Rust workflows, but they are not required for normal development.
