@@ -1,20 +1,10 @@
 import { defineComponent, h, ref, watch, type PropType } from "vue";
-import type { CreateSlotActionEventPayload, EmptyCellClickEventPayload } from "./contracts";
-
-function isoFromDate(date: Date): string {
-  return date.toISOString();
-}
-
-function dateFromWeekPoint(
-  weekStartIso: string,
-  dayIndex: number,
-  minuteOfDay: number
-): Date {
-  const base = new Date(`${weekStartIso}T00:00:00Z`);
-  base.setUTCDate(base.getUTCDate() + dayIndex);
-  base.setUTCMinutes(minuteOfDay, 0, 0);
-  return base;
-}
+import type {
+  CreateSlotActionEventPayload,
+  EmptyCellClickEventPayload,
+} from "../contracts";
+import { MaiActionButtons, MaiActionCard, MaiActionMetaList } from "./MaiActionCard";
+import { buildCreateSlotPayload } from "./payload";
 
 export const MaiCreateSlotCard = defineComponent({
   name: "MaiCreateSlotCard",
@@ -65,39 +55,25 @@ export const MaiCreateSlotCard = defineComponent({
       }
     );
 
-    function createPayload(): CreateSlotActionEventPayload {
-      const safeDuration = Math.max(15, Math.min(durationMinutes.value, 180));
-      const start = dateFromWeekPoint(
-        props.weekStartIso,
-        props.draft.dayIndex,
-        props.draft.minuteOfDay
-      );
-      const end = new Date(start.getTime() + safeDuration * 60 * 1000);
-      return {
-        slotId: `slot-${Date.now()}`,
-        startIso: isoFromDate(start),
-        endIso: isoFromDate(end),
+    const createPayload = () =>
+      buildCreateSlotPayload({
+        weekStartIso: props.weekStartIso,
+        dayIndex: props.draft.dayIndex,
+        minuteOfDay: props.draft.minuteOfDay,
+        durationMinutes: durationMinutes.value,
         assigneeId: props.assigneeId,
         createdBy: props.createdBy,
-      };
-    }
+      });
 
     return () => (
-      <section class="mai-action-card">
-        <header class="mai-action-card__header">
-          <h3 class="mai-action-card__title">Create Slot</h3>
-          <button
-            type="button"
-            class="mai-action-card__close"
-            onClick={() => emit("close")}
-            aria-label="Close create slot"
-          >
-            x
-          </button>
-        </header>
-        <p class="mai-action-card__meta">
-          day {props.draft.dayIndex} - minute {props.draft.minuteOfDay}
-        </p>
+      <MaiActionCard
+        title="Create Slot"
+        closeAriaLabel="Close create slot"
+        onClose={() => emit("close")}
+      >
+        <MaiActionMetaList
+          lines={[`day ${props.draft.dayIndex} - minute ${props.draft.minuteOfDay}`]}
+        />
         <label class="mai-action-field">
           <span class="mai-action-field__label">Duration (minutes)</span>
           <input
@@ -115,17 +91,18 @@ export const MaiCreateSlotCard = defineComponent({
             }}
           />
         </label>
-        <div class="mai-action-card__actions">
-          <button
-            type="button"
-            class="mai-action-button mai-action-button--primary"
-            disabled={props.busy}
-            onClick={() => emit("create-slot", createPayload())}
-          >
-            Create Slot
-          </button>
-        </div>
-      </section>
+        <MaiActionButtons
+          buttons={[
+            {
+              key: "create-slot",
+              label: "Create Slot",
+              tone: "primary",
+              disabled: props.busy,
+              onClick: () => emit("create-slot", createPayload()),
+            },
+          ]}
+        />
+      </MaiActionCard>
     );
   },
 });

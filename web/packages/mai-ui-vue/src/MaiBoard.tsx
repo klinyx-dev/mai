@@ -10,12 +10,12 @@ import type {
   TimeLabelFormat,
   WeekShift,
 } from "./contracts";
-import { MaiAppointmentActionsCard } from "./MaiAppointmentActionsCard";
+import { MaiAppointmentActionsCard } from "./actions/MaiAppointmentActionsCard";
+import { MaiCreateSlotCard } from "./actions/MaiCreateSlotCard";
+import { MaiSlotActionsCard } from "./actions/MaiSlotActionsCard";
 import { MaiDayColumn } from "./board/MaiDayColumn";
 import { MaiTimeGutter } from "./board/MaiTimeGutter";
 import { MaiWeekHeader } from "./board/MaiWeekHeader";
-import { MaiCreateSlotCard } from "./MaiCreateSlotCard";
-import { MaiSlotActionsCard } from "./MaiSlotActionsCard";
 import {
   addDaysIso,
   buildDayColumns,
@@ -284,6 +284,36 @@ export const MaiBoard = defineComponent({
       emit("empty-cell-click", payload);
     }
 
+    function emitCreateSlot(payload: CreateSlotActionEventPayload) {
+      emit("create-slot", payload);
+      clearActions();
+    }
+
+    function emitBookSlot(payload: SlotActionEventPayload) {
+      emit("book-slot", payload);
+      clearActions();
+    }
+
+    function emitCancelSlot(payload: SlotActionEventPayload) {
+      emit("cancel-slot", payload);
+      clearActions();
+    }
+
+    function emitDeleteSlot(payload: SlotActionEventPayload) {
+      emit("delete-slot", payload);
+      clearActions();
+    }
+
+    function emitCancelAppointment(payload: AppointmentActionEventPayload) {
+      emit("cancel-appointment", payload);
+      clearActions();
+    }
+
+    function emitDeleteAppointment(payload: AppointmentActionEventPayload) {
+      emit("delete-appointment", payload);
+      clearActions();
+    }
+
     return () => (
       <section class="mai-board mai-board__panel">
         <MaiWeekHeader
@@ -330,12 +360,7 @@ export const MaiBoard = defineComponent({
               createdBy={props.actionCreatedBy}
               defaultDurationMinutes={props.defaultSlotDurationMinutes}
               busy={props.actionBusy}
-              {...{
-                "onCreate-slot": (payload: CreateSlotActionEventPayload) => {
-                  emit("create-slot", payload);
-                  clearActions();
-                },
-              }}
+              {...{ "onCreate-slot": emitCreateSlot }}
               onClose={clearActions}
             />
           </div>
@@ -346,18 +371,9 @@ export const MaiBoard = defineComponent({
               slot={selectedSlot.value}
               busy={props.actionBusy}
               {...{
-                "onBook-slot": (payload: SlotActionEventPayload) => {
-                  emit("book-slot", payload);
-                  clearActions();
-                },
-                "onCancel-slot": (payload: SlotActionEventPayload) => {
-                  emit("cancel-slot", payload);
-                  clearActions();
-                },
-                "onDelete-slot": (payload: SlotActionEventPayload) => {
-                  emit("delete-slot", payload);
-                  clearActions();
-                },
+                "onBook-slot": emitBookSlot,
+                "onCancel-slot": emitCancelSlot,
+                "onDelete-slot": emitDeleteSlot,
               }}
               onClose={clearActions}
             />
@@ -369,14 +385,8 @@ export const MaiBoard = defineComponent({
               appointment={selectedAppointment.value}
               busy={props.actionBusy}
               {...{
-                "onCancel-appointment": (payload: AppointmentActionEventPayload) => {
-                  emit("cancel-appointment", payload);
-                  clearActions();
-                },
-                "onDelete-appointment": (payload: AppointmentActionEventPayload) => {
-                  emit("delete-appointment", payload);
-                  clearActions();
-                },
+                "onCancel-appointment": emitCancelAppointment,
+                "onDelete-appointment": emitDeleteAppointment,
               }}
               onClose={clearActions}
             />
