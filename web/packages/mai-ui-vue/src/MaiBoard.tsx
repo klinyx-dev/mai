@@ -17,8 +17,9 @@ import {
   DEFAULT_TOTAL_VISIBLE_MINUTES,
   DEFAULT_VISIBLE_END_MINUTE,
   DEFAULT_VISIBLE_START_MINUTE,
+  formatMinuteLabel,
   mapCalendarEvents,
-  minuteLabel,
+  normalizeVisibleWindow,
   startOfWeekIso,
   weekRangeLabel,
 } from "./board/view-model";
@@ -138,10 +139,19 @@ export const MaiBoard = defineComponent({
     const weekEndIso = computed(() => props.layout?.week_end ?? addDaysIso(weekStartIso.value, 6));
     const weekLabel = computed(() => weekRangeLabel(weekStartIso.value, weekEndIso.value));
 
-    const hourTicks = computed(() =>
-      createHourTicks(DEFAULT_VISIBLE_START_MINUTE, DEFAULT_VISIBLE_END_MINUTE)
+    const visibleWindow = computed(() =>
+      normalizeVisibleWindow(props.visibleStartMinute, props.visibleEndMinute)
     );
-    const totalVisibleMinutes = computed(() => DEFAULT_TOTAL_VISIBLE_MINUTES);
+    const hourTicks = computed(() =>
+      createHourTicks(visibleWindow.value.startMinute, visibleWindow.value.endMinute)
+    );
+    const totalVisibleMinutes = computed(() =>
+      visibleWindow.value.endMinute - visibleWindow.value.startMinute ||
+      DEFAULT_TOTAL_VISIBLE_MINUTES
+    );
+    const minuteTextFormatter = computed(
+      () => (minute: number) => formatMinuteLabel(minute, props.timeLabelFormat)
+    );
 
     const calendarEvents = computed(() => mapCalendarEvents(props.layout));
     const dayColumns = computed(() =>
@@ -164,15 +174,18 @@ export const MaiBoard = defineComponent({
 
         <div class="mai-board__calendar-scroll">
           <div class="mai-board__calendar">
-            <MaiTimeGutter hourTicks={hourTicks.value} minuteLabel={minuteLabel} />
+            <MaiTimeGutter
+              hourTicks={hourTicks.value}
+              minuteLabel={minuteTextFormatter.value}
+            />
             {dayColumns.value.map((column) => (
               <MaiDayColumn
                 column={column}
                 hourTicks={hourTicks.value}
                 emptyStateText={props.emptyStateText}
-                minuteLabel={minuteLabel}
-                visibleStartMinute={DEFAULT_VISIBLE_START_MINUTE}
-                visibleEndMinute={DEFAULT_VISIBLE_END_MINUTE}
+                minuteLabel={minuteTextFormatter.value}
+                visibleStartMinute={visibleWindow.value.startMinute}
+                visibleEndMinute={visibleWindow.value.endMinute}
                 totalVisibleMinutes={totalVisibleMinutes.value}
                 key={column.dayIndex}
               />

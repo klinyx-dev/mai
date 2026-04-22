@@ -15,6 +15,8 @@ export const MaiDayColumn = defineComponent({
     totalVisibleMinutes: { type: Number, required: true },
   },
   setup(props) {
+    const slotHeight = `${100 / Math.max(props.hourTicks.length - 1, 1)}%`;
+
     return () => (
       <article class="mai-board__day-column">
         <header class="mai-board__day-header">
@@ -23,7 +25,11 @@ export const MaiDayColumn = defineComponent({
         </header>
         <div class="mai-board__day-grid">
           {props.hourTicks.map((tick) => (
-            <div class="mai-board__hour-line" key={`hour-${props.column.dayIndex}-${tick}`}></div>
+            <div
+              class="mai-board__hour-line"
+              key={`hour-${props.column.dayIndex}-${tick}`}
+              style={{ height: slotHeight }}
+            ></div>
           ))}
           {props.column.events.map((event) => {
             const clamped = clampToVisibleRange(

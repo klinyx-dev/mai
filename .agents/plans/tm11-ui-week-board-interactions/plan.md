@@ -81,6 +81,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `feat(ui): add full-day default timeline with configurable visible window`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 4: Implement interaction components and emits
 - Add click targets and emit payloads:
   - slot card click emits slot metadata,

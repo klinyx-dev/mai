@@ -1,8 +1,8 @@
 import type { WeeklyLayout } from "@mai/mai-web-core";
 
 export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-export const DEFAULT_VISIBLE_START_MINUTE = 8 * 60;
-export const DEFAULT_VISIBLE_END_MINUTE = 20 * 60;
+export const DEFAULT_VISIBLE_START_MINUTE = 0;
+export const DEFAULT_VISIBLE_END_MINUTE = 1440;
 export const DEFAULT_TOTAL_VISIBLE_MINUTES =
   DEFAULT_VISIBLE_END_MINUTE - DEFAULT_VISIBLE_START_MINUTE;
 
@@ -31,12 +31,32 @@ export interface DayColumn {
   events: CalendarEvent[];
 }
 
-export function minuteLabel(totalMinutes: number): string {
+function minuteLabel24h(totalMinutes: number): string {
   const hour = Math.floor(totalMinutes / 60);
   const minute = totalMinutes % 60;
   return `${hour.toString().padStart(2, "0")}:${minute
     .toString()
     .padStart(2, "0")}`;
+}
+
+function minuteLabel12h(totalMinutes: number): string {
+  const normalized = totalMinutes % 1440;
+  const hour24 = Math.floor(normalized / 60);
+  const minute = normalized % 60;
+  const suffix = hour24 < 12 ? "AM" : "PM";
+  const hour12Raw = hour24 % 12;
+  const hour12 = hour12Raw === 0 ? 12 : hour12Raw;
+  return `${hour12}:${minute.toString().padStart(2, "0")} ${suffix}`;
+}
+
+export function formatMinuteLabel(
+  totalMinutes: number,
+  format: "24h" | "12h"
+): string {
+  if (format === "12h") {
+    return minuteLabel12h(totalMinutes);
+  }
+  return minuteLabel24h(totalMinutes);
 }
 
 function dateFromIso(isoDate: string): Date {
@@ -112,6 +132,21 @@ export function clampToVisibleRange(
     start: Math.max(startMinute, visibleStartMinute),
     end: Math.min(endMinute, visibleEndMinute),
   };
+}
+
+export function normalizeVisibleWindow(
+  startMinute: number,
+  endMinute: number
+): { startMinute: number; endMinute: number } {
+  const clampedStart = Math.min(Math.max(startMinute, 0), 1440);
+  const clampedEnd = Math.min(Math.max(endMinute, 0), 1440);
+  if (clampedStart >= clampedEnd) {
+    return {
+      startMinute: DEFAULT_VISIBLE_START_MINUTE,
+      endMinute: DEFAULT_VISIBLE_END_MINUTE,
+    };
+  }
+  return { startMinute: clampedStart, endMinute: clampedEnd };
 }
 
 export function mapCalendarEvents(layout: WeeklyLayout | null): CalendarEvent[] {
