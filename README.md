@@ -1,96 +1,29 @@
 # mai
 
-mai is a scheduler library.
+Headless scheduling core in Rust with wasm + web integration.
 
-## Workspace
-- `core/`: Rust headless scheduling core crate.
-- `docs/adapter_payload_examples.md`: adapter-facing JSON payload examples.
-- `docs/wasm_adapter_usage.md`: end-to-end WASM adapter usage notes (JSON command/query flow).
+## Repository structure
+- `core/`: Rust scheduling core crate.
+- `web/`: web workspace (`mai-web-core`, `mai-ui-vue`, Nuxt example app).
+- `docs/`: functional/technical specs and adapter usage docs.
 
-## Stable DTO Boundary
-Import public DTOs from the crate root (example: `mai::AddSlotCommand`, `mai::WeeklyLayoutQuery`, `mai::WeeklyLayout`, `mai::SchedulerError`) to avoid relying on internal module paths.
+## Prerequisites
+- Rust stable (`rustup`, `cargo`)
+- Rust target `wasm32-unknown-unknown`
+- `wasm-pack`
+- Node.js 22.x
+- `pnpm` 10.x
 
-## Quick Start
-```rust
-use chrono::NaiveDate;
-use mai::{AddSlotCommand, ActorId, SchedulerService, SlotId, WeeklyLayoutQuery};
-
-let mut service = SchedulerService::new();
-service.add_slot(AddSlotCommand {
-    slot_id: SlotId::new("slot-1"),
-    start: "2026-05-04T09:00:00Z".parse().unwrap(),
-    end: "2026-05-04T09:30:00Z".parse().unwrap(),
-    assignee_id: ActorId::new("doctor-42"),
-    created_by: ActorId::new("admin-7"),
-})?;
-
-let layout = service.get_weekly_layout(WeeklyLayoutQuery {
-    anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
-    assignee_id: None,
-    visible_start_minute: None,
-    visible_end_minute: None,
-});
-assert_eq!(layout.week_start.to_string(), "2026-05-04");
-# Ok::<(), mai::SchedulerError>(())
-```
-
-## Architecture Summary
-- `domain`: typed entities and value objects
-- `commands`: mutation request DTOs
-- `validation`: deterministic business rule checks
-- `application`: `SchedulerService` orchestration boundary
-- `layout`: weekly semantic projection (no pixel/UI logic)
-- `adapters`: integration surface (WASM-ready boundary)
-
-## Web Packages (Nuxt-First)
-- `web/packages/mai-web-core`: framework-agnostic TS contracts and JSON adapter helpers.
-- `web/packages/mai-ui-vue`: Nuxt-compatible Vue UI package with week calendar UI and week navigation.
-- `web/examples/nuxt-app`: runnable Nuxt integration example with client-side wasm initialization.
-
-## Extend The Crate
-1. Add/adjust command DTOs under `core/src/commands/`.
-2. Add pure rules under `core/src/validation/`.
-3. Keep orchestration in `core/src/application/scheduler_service.rs`.
-4. Add unit tests in module files plus integration tests in `core/tests/`.
-5. Add adapter payload examples in `docs/adapter_payload_examples.md` when DTO shape changes.
-
-## Commands
-From the repository root:
-
-### Canonical Release-Readiness Verification Sequence
-Run this sequence in order:
+## Quick start (local)
+From repository root:
 
 ```bash
-cargo fmt --all --check
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test
-cargo check --target wasm32-unknown-unknown -p mai
-core/tests/run_generated_package_smoke.sh
-```
+rustup target add wasm32-unknown-unknown
 
-### WASM Smoke Preflight Contract
-Before running `core/tests/run_generated_package_smoke.sh`, verify local tooling matches CI baseline:
-- Rust stable
-- `wasm32-unknown-unknown` installed
-- `wasm-pack` installed
-- Node.js `22.x`
+cd core
+wasm-pack build --target web --out-dir pkg --out-name mai
+cd ..
 
-Preflight command set:
-
-```bash
-rustc --version
-cargo --version
-rustup target list --installed
-wasm-pack --version
-node --version
-```
-
-`rustup target list --installed` output must include `wasm32-unknown-unknown`.
-
-## Web Quick Start
-From the repository root:
-
-```bash
 cd web
 pnpm install
 pnpm run build
@@ -99,20 +32,20 @@ pnpm run example:dev
 
 Open `http://localhost:3000/`.
 
-Notes:
-- The web workspace standard is `pnpm` (not `npm`).
-- The Nuxt example loads wasm output from `core/pkg`.
+## Validation commands
+From repository root:
 
-## Release Baseline (`v0.1.0`)
-Contract guarantees for consumers:
-- JSON envelope contract remains stable for commands/queries and success/error responses.
-- `WasmBindgenAdapter` export surface stays JSON-only (`new`, `execute_command_json`, `execute_query_json`).
-- Generated package consumption path is validated through `core/tests/run_generated_package_smoke.sh`.
+```bash
+cargo fmt --all --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test
+cargo check --target wasm32-unknown-unknown -p mai
+core/tests/run_generated_package_smoke.sh
+cd web && pnpm run build && pnpm run test
+```
 
-Release readiness checklist:
-1. Ensure a clean git working tree.
-2. Merge release PR into `main` (`main` is the stable release branch).
-3. Run all commands in the `Commands` section successfully.
-4. Confirm GitHub Actions CI (`rust-quality` + `wasm-package-smoke`) is green on `main`.
-5. Confirm `CHANGELOG.md` includes the release entry.
-6. Create and push tag `v0.1.0` from the release commit on `main`.
+## Useful docs
+- Dev setup details: [README-dev.md](/Users/minhduc/Documents/Projects/klinyx/mai/README-dev.md)
+- Web workspace guide: [web/README.md](/Users/minhduc/Documents/Projects/klinyx/mai/web/README.md)
+- Wasm adapter usage: [docs/wasm_adapter_usage.md](/Users/minhduc/Documents/Projects/klinyx/mai/docs/wasm_adapter_usage.md)
+- Payload examples: [docs/adapter_payload_examples.md](/Users/minhduc/Documents/Projects/klinyx/mai/docs/adapter_payload_examples.md)
