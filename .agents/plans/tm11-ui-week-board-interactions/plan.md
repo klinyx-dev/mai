@@ -114,6 +114,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `style(ui): finalize consistent week board visual system`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 6: Tests, example integration, docs
 - Add unit/component tests for:
   - timeline window defaults and overrides,
