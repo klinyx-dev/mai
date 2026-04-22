@@ -36,6 +36,12 @@ Open `http://localhost:3000/`.
 From repository root:
 
 ```bash
+./scripts/verify-local.sh
+```
+
+Equivalent manual sequence:
+
+```bash
 cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test
@@ -47,5 +53,6 @@ cd web && pnpm run build && pnpm run test
 ## Useful docs
 - Dev setup details: [README-dev.md](/Users/minhduc/Documents/Projects/klinyx/mai/README-dev.md)
 - Web workspace guide: [web/README.md](/Users/minhduc/Documents/Projects/klinyx/mai/web/README.md)
+- Release process: [docs/release_process.md](/Users/minhduc/Documents/Projects/klinyx/mai/docs/release_process.md)
 - Wasm adapter usage: [docs/wasm_adapter_usage.md](/Users/minhduc/Documents/Projects/klinyx/mai/docs/wasm_adapter_usage.md)
 - Payload examples: [docs/adapter_payload_examples.md](/Users/minhduc/Documents/Projects/klinyx/mai/docs/adapter_payload_examples.md)

@@ -30,6 +30,12 @@ pnpm run example:dev
 From repository root:
 
 ```bash
+./scripts/verify-local.sh
+```
+
+Equivalent manual sequence:
+
+```bash
 cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test
