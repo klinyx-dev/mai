@@ -9,19 +9,36 @@ export const MaiEventCard = defineComponent({
     height: { type: Number, required: true },
     minuteLabel: { type: Function as PropType<(value: number) => string>, required: true },
     onActivate: {
-      type: Function as PropType<(event: CalendarEvent) => void>,
+      type: Function as PropType<
+        (event: CalendarEvent, point: { clientX: number; clientY: number }) => void
+      >,
       required: true,
     },
   },
   setup(props) {
-    function handleActivate() {
-      props.onActivate(props.event);
+    function centerPointFromTarget(target: EventTarget | null): {
+      clientX: number;
+      clientY: number;
+    } {
+      const element = target instanceof HTMLElement ? target : null;
+      if (!element) {
+        return { clientX: 0, clientY: 0 };
+      }
+      const rect = element.getBoundingClientRect();
+      return {
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      };
+    }
+
+    function handleActivate(point: { clientX: number; clientY: number }) {
+      props.onActivate(props.event, point);
     }
 
     function handleKeydown(event: KeyboardEvent) {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        handleActivate();
+        handleActivate(centerPointFromTarget(event.currentTarget));
       }
     }
 
@@ -34,7 +51,7 @@ export const MaiEventCard = defineComponent({
         tabindex={0}
         onClick={(event) => {
           event.stopPropagation();
-          handleActivate();
+          handleActivate({ clientX: event.clientX, clientY: event.clientY });
         }}
         onKeydown={handleKeydown}
       >

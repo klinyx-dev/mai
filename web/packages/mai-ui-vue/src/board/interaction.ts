@@ -5,17 +5,28 @@ import type {
 } from "../contracts";
 import type { CalendarEvent } from "./view-model";
 
-export function toSlotClickPayload(event: CalendarEvent): SlotClickEventPayload {
+interface InteractionPoint {
+  clientX: number;
+  clientY: number;
+}
+
+export function toSlotClickPayload(
+  event: CalendarEvent,
+  point: InteractionPoint
+): SlotClickEventPayload {
   return {
     slotId: event.slotId,
     dayIndex: event.dayIndex,
     startMinute: event.startMinute,
     endMinute: event.endMinute,
+    clientX: point.clientX,
+    clientY: point.clientY,
   };
 }
 
 export function toAppointmentClickPayload(
-  event: CalendarEvent
+  event: CalendarEvent,
+  point: InteractionPoint
 ): AppointmentClickEventPayload {
   return {
     appointmentId: event.id,
@@ -23,11 +34,14 @@ export function toAppointmentClickPayload(
     dayIndex: event.dayIndex,
     startMinute: event.startMinute,
     endMinute: event.endMinute,
+    clientX: point.clientX,
+    clientY: point.clientY,
   };
 }
 
 export function toEmptyCellClickPayload(input: {
   dayIndex: number;
+  clientX: number;
   clientY: number;
   top: number;
   height: number;
@@ -43,5 +57,7 @@ export function toEmptyCellClickPayload(input: {
   return {
     dayIndex: input.dayIndex,
     minuteOfDay: Math.min(Math.max(minute, 0), 1440),
+    clientX: input.clientX,
+    clientY: input.clientY,
   };
 }

@@ -56,26 +56,35 @@ test("maps slot and appointment interaction payloads", () => {
     startMinute: 600,
     endMinute: 660,
   };
+  const point = {
+    clientX: 123,
+    clientY: 456,
+  };
 
-  assert.deepEqual(toSlotClickPayload(slotEvent), {
+  assert.deepEqual(toSlotClickPayload(slotEvent, point), {
     slotId: "slot-1",
     dayIndex: 2,
     startMinute: 600,
     endMinute: 660,
+    clientX: 123,
+    clientY: 456,
   });
 
-  assert.deepEqual(toAppointmentClickPayload(appointmentEvent), {
+  assert.deepEqual(toAppointmentClickPayload(appointmentEvent, point), {
     appointmentId: "appt-1",
     slotId: "slot-1",
     dayIndex: 2,
     startMinute: 600,
     endMinute: 660,
+    clientX: 123,
+    clientY: 456,
   });
 });
 
 test("computes empty-cell payload minute anchor from pointer position", () => {
   const payload = toEmptyCellClickPayload({
     dayIndex: 4,
+    clientX: 320,
     clientY: 450,
     top: 200,
     height: 500,
@@ -86,5 +95,7 @@ test("computes empty-cell payload minute anchor from pointer position", () => {
   assert.deepEqual(payload, {
     dayIndex: 4,
     minuteOfDay: 720,
+    clientX: 320,
+    clientY: 450,
   });
 });

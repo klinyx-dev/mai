@@ -33,11 +33,11 @@ export const MaiSlotActionsCard = defineComponent({
             onClick={() => emit("close")}
             aria-label="Close slot actions"
           >
-            ×
+            x
           </button>
         </header>
         <p class="mai-action-card__meta">
-          {props.slot.slotId} · day {props.slot.dayIndex}
+          {props.slot.slotId} - day {props.slot.dayIndex}
         </p>
         <p class="mai-action-card__meta">
           {props.slot.startMinute} - {props.slot.endMinute}

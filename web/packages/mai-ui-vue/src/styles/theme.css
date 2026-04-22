@@ -366,6 +366,13 @@
   box-shadow: 0 1px 4px -3px var(--mai-contact-shadow);
 }
 
+.mai-action-popover {
+  position: fixed;
+  z-index: 20;
+  max-width: calc(100vw - 24px);
+  filter: drop-shadow(0 16px 24px rgba(17, 17, 17, 0.14));
+}
+
 .mai-action-card__header {
   display: flex;
   align-items: center;
@@ -403,6 +410,34 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--mai-space-2);
+}
+
+.mai-action-field {
+  display: grid;
+  gap: 6px;
+}
+
+.mai-action-field__label {
+  color: var(--mai-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mai-action-input {
+  border: 1px solid var(--mai-border);
+  border-radius: var(--mai-radius-1);
+  background: var(--mai-bg);
+  color: var(--mai-text);
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.mai-action-input:focus-visible {
+  outline: 2px solid var(--mai-focus);
+  outline-offset: 1px;
 }
 
 .mai-action-button {

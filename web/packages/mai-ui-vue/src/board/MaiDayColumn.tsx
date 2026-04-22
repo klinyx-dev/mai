@@ -39,13 +39,16 @@ export const MaiDayColumn = defineComponent({
   setup(props) {
     const tickCount = Math.max(props.hourTicks.length - 1, 1);
 
-    function handleEventActivate(event: (typeof props.column.events)[number]) {
+    function handleEventActivate(
+      event: (typeof props.column.events)[number],
+      point: { clientX: number; clientY: number }
+    ) {
       if (event.kind === "slot") {
-        props.onSlotClick(toSlotClickPayload(event));
+        props.onSlotClick(toSlotClickPayload(event, point));
         return;
       }
 
-      props.onAppointmentClick(toAppointmentClickPayload(event));
+      props.onAppointmentClick(toAppointmentClickPayload(event, point));
     }
 
     function handleGridClick(event: MouseEvent) {
@@ -57,6 +60,7 @@ export const MaiDayColumn = defineComponent({
       props.onEmptyCellClick(
         toEmptyCellClickPayload({
           dayIndex: props.column.dayIndex,
+          clientX: event.clientX,
           clientY: event.clientY,
           top: rect.top,
           height: rect.height,

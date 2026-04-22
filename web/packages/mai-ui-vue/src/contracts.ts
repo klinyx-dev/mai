@@ -7,6 +7,8 @@ export interface SlotClickEventPayload {
   dayIndex: number;
   startMinute: number;
   endMinute: number;
+  clientX: number;
+  clientY: number;
 }
 
 export interface AppointmentClickEventPayload {
@@ -15,11 +17,15 @@ export interface AppointmentClickEventPayload {
   dayIndex: number;
   startMinute: number;
   endMinute: number;
+  clientX: number;
+  clientY: number;
 }
 
 export interface EmptyCellClickEventPayload {
   dayIndex: number;
   minuteOfDay: number;
+  clientX: number;
+  clientY: number;
 }
 
 export interface SlotActionEventPayload {
@@ -28,4 +34,12 @@ export interface SlotActionEventPayload {
 
 export interface AppointmentActionEventPayload {
   appointmentId: string;
+}
+
+export interface CreateSlotActionEventPayload {
+  slotId: string;
+  startIso: string;
+  endIso: string;
+  assigneeId: string;
+  createdBy: string;
 }

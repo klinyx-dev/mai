@@ -1,15 +1,21 @@
-import { computed, defineComponent, h, type PropType } from "vue";
+import { computed, defineComponent, h, ref, type PropType } from "vue";
 import type { WeeklyLayout } from "@mai/mai-web-core";
 import type {
+  AppointmentActionEventPayload,
   AppointmentClickEventPayload,
+  CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
+  SlotActionEventPayload,
   SlotClickEventPayload,
   TimeLabelFormat,
   WeekShift,
 } from "./contracts";
+import { MaiAppointmentActionsCard } from "./MaiAppointmentActionsCard";
 import { MaiDayColumn } from "./board/MaiDayColumn";
 import { MaiTimeGutter } from "./board/MaiTimeGutter";
 import { MaiWeekHeader } from "./board/MaiWeekHeader";
+import { MaiCreateSlotCard } from "./MaiCreateSlotCard";
+import { MaiSlotActionsCard } from "./MaiSlotActionsCard";
 import {
   addDaysIso,
   buildDayColumns,
@@ -42,7 +48,9 @@ function isSlotClickPayload(value: unknown): value is SlotClickEventPayload {
     typeof payload.slotId === "string" &&
     Number.isInteger(payload.dayIndex) &&
     typeof payload.startMinute === "number" &&
-    typeof payload.endMinute === "number"
+    typeof payload.endMinute === "number" &&
+    typeof payload.clientX === "number" &&
+    typeof payload.clientY === "number"
   );
 }
 
@@ -56,7 +64,9 @@ function isAppointmentClickPayload(value: unknown): value is AppointmentClickEve
     typeof payload.slotId === "string" &&
     Number.isInteger(payload.dayIndex) &&
     typeof payload.startMinute === "number" &&
-    typeof payload.endMinute === "number"
+    typeof payload.endMinute === "number" &&
+    typeof payload.clientX === "number" &&
+    typeof payload.clientY === "number"
   );
 }
 
@@ -65,7 +75,51 @@ function isEmptyCellClickPayload(value: unknown): value is EmptyCellClickEventPa
     return false;
   }
   const payload = value as Record<string, unknown>;
-  return Number.isInteger(payload.dayIndex) && typeof payload.minuteOfDay === "number";
+  return (
+    Number.isInteger(payload.dayIndex) &&
+    typeof payload.minuteOfDay === "number" &&
+    typeof payload.clientX === "number" &&
+    typeof payload.clientY === "number"
+  );
+}
+
+function isSlotActionPayload(value: unknown): value is SlotActionEventPayload {
+  return Boolean(value && typeof value === "object" && typeof (value as Record<string, unknown>).slotId === "string");
+}
+
+function isAppointmentActionPayload(value: unknown): value is AppointmentActionEventPayload {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      typeof (value as Record<string, unknown>).appointmentId === "string"
+  );
+}
+
+function isCreateSlotPayload(value: unknown): value is CreateSlotActionEventPayload {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const payload = value as Record<string, unknown>;
+  return (
+    typeof payload.slotId === "string" &&
+    typeof payload.startIso === "string" &&
+    typeof payload.endIso === "string" &&
+    typeof payload.assigneeId === "string" &&
+    typeof payload.createdBy === "string"
+  );
+}
+
+function popoverStyleFromPoint(clientX: number, clientY: number): Record<string, string> {
+  const width = 340;
+  const offset = 12;
+  const viewportWidth = typeof window === "undefined" ? width + offset * 2 : window.innerWidth;
+  const left = Math.min(clientX + offset, Math.max(offset, viewportWidth - width - offset));
+  const top = Math.max(offset, clientY + offset);
+  return {
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${width}px`,
+  };
 }
 
 export const MaiBoard = defineComponent({
@@ -77,6 +131,12 @@ export const MaiBoard = defineComponent({
       isAppointmentClickPayload(payload),
     "empty-cell-click": (payload: EmptyCellClickEventPayload) =>
       isEmptyCellClickPayload(payload),
+    "create-slot": (payload: CreateSlotActionEventPayload) => isCreateSlotPayload(payload),
+    "book-slot": (payload: SlotActionEventPayload) => isSlotActionPayload(payload),
+    "cancel-slot": (payload: SlotActionEventPayload) => isSlotActionPayload(payload),
+    "delete-slot": (payload: SlotActionEventPayload) => isSlotActionPayload(payload),
+    "delete-appointment": (payload: AppointmentActionEventPayload) =>
+      isAppointmentActionPayload(payload),
   },
   props: {
     layout: {
@@ -131,8 +191,37 @@ export const MaiBoard = defineComponent({
       required: false,
       default: "No events",
     },
+    actionAssigneeId: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    actionCreatedBy: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    actionBusy: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    defaultSlotDurationMinutes: {
+      type: Number,
+      required: false,
+      default: 30,
+    },
+    showActionOverlay: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   setup(props, { emit }) {
+    const selectedSlot = ref<SlotClickEventPayload | null>(null);
+    const selectedAppointment = ref<AppointmentClickEventPayload | null>(null);
+    const pendingSlotDraft = ref<EmptyCellClickEventPayload | null>(null);
+
     const slotCount = computed(() => props.layout?.slots.length ?? 0);
     const appointmentCount = computed(() => props.layout?.appointments.length ?? 0);
     const weekStartIso = computed(() => props.layout?.week_start ?? startOfWeekIso(props.anchorDate));
@@ -157,6 +246,41 @@ export const MaiBoard = defineComponent({
     const dayColumns = computed(() =>
       buildDayColumns(weekStartIso.value, calendarEvents.value)
     );
+    const activePopoverStyle = computed(() => {
+      const point =
+        pendingSlotDraft.value ?? selectedSlot.value ?? selectedAppointment.value ?? null;
+      if (!point) {
+        return {};
+      }
+      return popoverStyleFromPoint(point.clientX, point.clientY);
+    });
+
+    function clearActions() {
+      selectedSlot.value = null;
+      selectedAppointment.value = null;
+      pendingSlotDraft.value = null;
+    }
+
+    function handleSlotClick(payload: SlotClickEventPayload) {
+      selectedSlot.value = payload;
+      selectedAppointment.value = null;
+      pendingSlotDraft.value = null;
+      emit("slot-click", payload);
+    }
+
+    function handleAppointmentClick(payload: AppointmentClickEventPayload) {
+      selectedAppointment.value = payload;
+      selectedSlot.value = null;
+      pendingSlotDraft.value = null;
+      emit("appointment-click", payload);
+    }
+
+    function handleEmptyCellClick(payload: EmptyCellClickEventPayload) {
+      pendingSlotDraft.value = payload;
+      selectedSlot.value = null;
+      selectedAppointment.value = null;
+      emit("empty-cell-click", payload);
+    }
 
     return () => (
       <section class="mai-board mai-board__panel">
@@ -187,14 +311,71 @@ export const MaiBoard = defineComponent({
                 visibleStartMinute={visibleWindow.value.startMinute}
                 visibleEndMinute={visibleWindow.value.endMinute}
                 totalVisibleMinutes={totalVisibleMinutes.value}
-                onSlotClick={(payload) => emit("slot-click", payload)}
-                onAppointmentClick={(payload) => emit("appointment-click", payload)}
-                onEmptyCellClick={(payload) => emit("empty-cell-click", payload)}
+                onSlotClick={handleSlotClick}
+                onAppointmentClick={handleAppointmentClick}
+                onEmptyCellClick={handleEmptyCellClick}
                 key={column.dayIndex}
               />
             ))}
           </div>
         </div>
+        {props.showActionOverlay && pendingSlotDraft.value && props.actionAssigneeId && props.actionCreatedBy ? (
+          <div class="mai-action-popover" style={activePopoverStyle.value}>
+            <MaiCreateSlotCard
+              draft={pendingSlotDraft.value}
+              weekStartIso={weekStartIso.value}
+              assigneeId={props.actionAssigneeId}
+              createdBy={props.actionCreatedBy}
+              defaultDurationMinutes={props.defaultSlotDurationMinutes}
+              busy={props.actionBusy}
+              {...{
+                "onCreate-slot": (payload: CreateSlotActionEventPayload) => {
+                  emit("create-slot", payload);
+                  clearActions();
+                },
+              }}
+              onClose={clearActions}
+            />
+          </div>
+        ) : null}
+        {props.showActionOverlay && selectedSlot.value ? (
+          <div class="mai-action-popover" style={activePopoverStyle.value}>
+            <MaiSlotActionsCard
+              slot={selectedSlot.value}
+              busy={props.actionBusy}
+              {...{
+                "onBook-slot": (payload: SlotActionEventPayload) => {
+                  emit("book-slot", payload);
+                  clearActions();
+                },
+                "onCancel-slot": (payload: SlotActionEventPayload) => {
+                  emit("cancel-slot", payload);
+                  clearActions();
+                },
+                "onDelete-slot": (payload: SlotActionEventPayload) => {
+                  emit("delete-slot", payload);
+                  clearActions();
+                },
+              }}
+              onClose={clearActions}
+            />
+          </div>
+        ) : null}
+        {props.showActionOverlay && selectedAppointment.value ? (
+          <div class="mai-action-popover" style={activePopoverStyle.value}>
+            <MaiAppointmentActionsCard
+              appointment={selectedAppointment.value}
+              busy={props.actionBusy}
+              {...{
+                "onDelete-appointment": (payload: AppointmentActionEventPayload) => {
+                  emit("delete-appointment", payload);
+                  clearActions();
+                },
+              }}
+              onClose={clearActions}
+            />
+          </div>
+        ) : null}
       </section>
     );
   },

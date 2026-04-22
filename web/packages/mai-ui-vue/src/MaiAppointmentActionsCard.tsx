@@ -33,14 +33,14 @@ export const MaiAppointmentActionsCard = defineComponent({
             onClick={() => emit("close")}
             aria-label="Close appointment actions"
           >
-            ×
+            x
           </button>
         </header>
         <p class="mai-action-card__meta">
-          {props.appointment.appointmentId} · slot {props.appointment.slotId}
+          {props.appointment.appointmentId} - slot {props.appointment.slotId}
         </p>
         <p class="mai-action-card__meta">
-          day {props.appointment.dayIndex} · {props.appointment.startMinute} -{" "}
+          day {props.appointment.dayIndex} - {props.appointment.startMinute} -{" "}
           {props.appointment.endMinute}
         </p>
         <div class="mai-action-card__actions">

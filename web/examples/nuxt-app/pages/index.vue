@@ -1,18 +1,11 @@
 <script setup lang="ts">
 import "@mai/mai-ui-vue/styles.css";
-import {
-  MaiAppointmentActionsCard,
-  MaiBoard,
-  MaiSlotActionsCard,
-  useMai,
-} from "@mai/mai-ui-vue";
+import { MaiBoard, useMai } from "@mai/mai-ui-vue";
 import { onMounted, ref, shallowRef } from "vue";
 import type {
   AppointmentActionEventPayload,
-  AppointmentClickEventPayload,
-  EmptyCellClickEventPayload,
+  CreateSlotActionEventPayload,
   SlotActionEventPayload,
-  SlotClickEventPayload,
 } from "@mai/mai-ui-vue";
 
 type MaiLayout = ReturnType<typeof useMai>["layout"]["value"];
@@ -23,8 +16,6 @@ const errorMessage = ref<string | null>(null);
 const interactionMessage = ref<string>("No UI interaction yet.");
 const anchorDate = ref("2026-05-07");
 const assigneeId = "doctor-42";
-const selectedSlot = ref<SlotClickEventPayload | null>(null);
-const selectedAppointment = ref<AppointmentClickEventPayload | null>(null);
 const actionBusy = ref(false);
 
 let mai: ReturnType<typeof useMai> | null = null;
@@ -63,22 +54,6 @@ async function navigateWeek(shift: -1 | 0 | 1): Promise<void> {
   await refreshWeek();
 }
 
-function onSlotClick(payload: SlotClickEventPayload): void {
-  selectedSlot.value = payload;
-  selectedAppointment.value = null;
-  interactionMessage.value = `slot-click: ${payload.slotId} (day ${payload.dayIndex}, ${payload.startMinute}-${payload.endMinute})`;
-}
-
-function onAppointmentClick(payload: AppointmentClickEventPayload): void {
-  selectedAppointment.value = payload;
-  selectedSlot.value = null;
-  interactionMessage.value = `appointment-click: ${payload.appointmentId} on ${payload.slotId} (day ${payload.dayIndex})`;
-}
-
-function onEmptyCellClick(payload: EmptyCellClickEventPayload): void {
-  interactionMessage.value = `empty-cell-click: day ${payload.dayIndex}, minute ${payload.minuteOfDay}`;
-}
-
 async function bookSlot(payload: SlotActionEventPayload): Promise<void> {
   if (!mai) return;
   actionBusy.value = true;
@@ -94,7 +69,28 @@ async function bookSlot(payload: SlotActionEventPayload): Promise<void> {
   });
   if (ok) {
     interactionMessage.value = `book-slot: ${payload.slotId}`;
-    selectedSlot.value = null;
+    await refreshWeek();
+  } else {
+    errorMessage.value = mai.error.value;
+  }
+  actionBusy.value = false;
+}
+
+async function createSlot(payload: CreateSlotActionEventPayload): Promise<void> {
+  if (!mai) return;
+  actionBusy.value = true;
+  const ok = await mai.mutate({
+    command: "add_slot",
+    payload: {
+      slot_id: payload.slotId,
+      start: payload.startIso,
+      end: payload.endIso,
+      assignee_id: payload.assigneeId,
+      created_by: payload.createdBy,
+    },
+  });
+  if (ok) {
+    interactionMessage.value = `create-slot: ${payload.slotId}`;
     await refreshWeek();
   } else {
     errorMessage.value = mai.error.value;
@@ -113,7 +109,6 @@ async function cancelSlot(payload: SlotActionEventPayload): Promise<void> {
   });
   if (ok) {
     interactionMessage.value = `cancel-slot: ${payload.slotId}`;
-    selectedSlot.value = null;
     await refreshWeek();
   } else {
     errorMessage.value = mai.error.value;
@@ -132,7 +127,6 @@ async function deleteSlot(payload: SlotActionEventPayload): Promise<void> {
   });
   if (ok) {
     interactionMessage.value = `delete-slot: ${payload.slotId}`;
-    selectedSlot.value = null;
     await refreshWeek();
   } else {
     errorMessage.value = mai.error.value;
@@ -153,7 +147,6 @@ async function deleteAppointment(
   });
   if (ok) {
     interactionMessage.value = `delete-appointment: ${payload.appointmentId}`;
-    selectedAppointment.value = null;
     await refreshWeek();
   } else {
     errorMessage.value = mai.error.value;
@@ -181,29 +174,16 @@ onMounted(async () => {
         :error-message="errorMessage"
         title="Doctor Availability Board"
         subtitle="Weekly schedule with appointment and availability timeline"
+        :action-busy="actionBusy"
+        action-assignee-id="doctor-42"
+        action-created-by="ui-operator"
         @navigate-week="navigateWeek"
-        @slot-click="onSlotClick"
-        @appointment-click="onAppointmentClick"
-        @empty-cell-click="onEmptyCellClick"
+        @create-slot="createSlot"
+        @book-slot="bookSlot"
+        @cancel-slot="cancelSlot"
+        @delete-slot="deleteSlot"
+        @delete-appointment="deleteAppointment"
       />
-      <div style="display: grid; gap: 12px; padding: 12px 16px 20px">
-        <MaiSlotActionsCard
-          v-if="selectedSlot"
-          :slot="selectedSlot"
-          :busy="actionBusy"
-          @book-slot="bookSlot"
-          @cancel-slot="cancelSlot"
-          @delete-slot="deleteSlot"
-          @close="selectedSlot = null"
-        />
-        <MaiAppointmentActionsCard
-          v-if="selectedAppointment"
-          :appointment="selectedAppointment"
-          :busy="actionBusy"
-          @delete-appointment="deleteAppointment"
-          @close="selectedAppointment = null"
-        />
-      </div>
     </ClientOnly>
   </main>
 </template>
