@@ -1,9 +1,10 @@
-import init, { WasmBindgenAdapter } from "../../../../core/pkg/mai.js";
 import { createNuxtMaiState } from "@mai/mai-ui-vue";
+import { createWasmAdapter } from "@mai/mai-wasm-adapter";
 
 export default defineNuxtPlugin(async () => {
-  await init();
-  const adapter = new WasmBindgenAdapter();
+  const wasmModulePath = new URL("../../../../core/pkg/mai.js", import.meta.url)
+    .href;
+  const adapter = await createWasmAdapter({ wasmModulePath });
 
   return {
     provide: {

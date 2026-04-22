@@ -8,6 +8,7 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
+    "@mai/mai-wasm-adapter": "workspace:*",
     "@mai/mai-ui-vue": "workspace:*",
     "nuxt": "^3.16.0",
     "vue": "^3.5.0"

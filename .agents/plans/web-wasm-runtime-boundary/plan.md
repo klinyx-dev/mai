@@ -71,6 +71,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `refactor: consume wasm adapter via web package in nuxt example`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 4: Build/test hardening for boundary regression
 - Add tests for package client/runtime path where appropriate.
 - Add a smoke check to fail if app imports `core/pkg` directly.
