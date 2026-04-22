@@ -81,7 +81,7 @@ open_shell() {
 }
 
 web_install() {
-  run_container "cd web && pnpm install --frozen-lockfile"
+  run_container 'pnpm config set store-dir "$PNPM_STORE_DIR" && cd web && pnpm install --frozen-lockfile'
 }
 
 web_build() {
@@ -93,23 +93,25 @@ web_test() {
 }
 
 dev() {
-  run_web_container "core/tests/run_generated_package_smoke.sh
+  run_web_container 'core/tests/run_generated_package_smoke.sh
+pnpm config set store-dir "$PNPM_STORE_DIR"
 cd web
 pnpm install --frozen-lockfile
 pnpm run build
-pnpm --filter @mai/nuxt-app-example dev --host 0.0.0.0 --port 3000"
+pnpm --filter @mai/nuxt-app-example dev --host 0.0.0.0 --port 3000'
 }
 
 verify() {
-  run_container "cargo fmt --all --check
+  run_container 'cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test
 cargo check --target wasm32-unknown-unknown -p mai
 core/tests/run_generated_package_smoke.sh
+pnpm config set store-dir "$PNPM_STORE_DIR"
 cd web
 pnpm install --frozen-lockfile
 pnpm run build
-pnpm run test"
+pnpm run test'
 }
 
 case "${command_name}" in

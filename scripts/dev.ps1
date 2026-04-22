@@ -91,7 +91,7 @@ function Invoke-DevContainer {
 }
 
 function Run-WebInstall {
-    Invoke-DevContainer "cd web && pnpm install --frozen-lockfile"
+    Invoke-DevContainer "pnpm config set store-dir `$PNPM_STORE_DIR && cd web && pnpm install --frozen-lockfile"
 }
 
 function Run-WebBuild {
@@ -105,6 +105,7 @@ function Run-WebTest {
 function Run-Dev {
     Invoke-DevContainer @"
 core/tests/run_generated_package_smoke.sh
+pnpm config set store-dir `$PNPM_STORE_DIR
 cd web
 pnpm install --frozen-lockfile
 pnpm run build
@@ -119,6 +120,7 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test
 cargo check --target wasm32-unknown-unknown -p mai
 core/tests/run_generated_package_smoke.sh
+pnpm config set store-dir `$PNPM_STORE_DIR
 cd web
 pnpm install --frozen-lockfile
 pnpm run build
