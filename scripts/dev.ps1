@@ -57,6 +57,9 @@ function Build-Image {
 
     Prepare-Podman
     podman build --tls-verify=$TlsVerify -t $ImageName -f "Containerfile" $RepoRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw "Dev image build failed. If this is a corporate TLS certificate issue while pulling the base image, run: .\scripts\dev.ps1 setup-no-tls-verify"
+    }
 }
 
 function Ensure-Image {
@@ -101,6 +104,9 @@ function Invoke-DevContainer {
     }
 
     podman @args
+    if ($LASTEXITCODE -ne 0) {
+        throw "Dev container command failed."
+    }
 }
 
 function Run-WebInstall {
