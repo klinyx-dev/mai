@@ -65,6 +65,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `refactor(ui): decompose MaiBoard into week-view primitives`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 3: Implement full-day timeline default + configurable window
 - Replace fixed `08:00-20:00` constants with prop-driven window.
 - Default to full-day (`0..1440`) rendering and labels.
