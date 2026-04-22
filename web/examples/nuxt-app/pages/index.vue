@@ -2,12 +2,18 @@
 import "@mai/mai-ui-vue/styles.css";
 import { MaiBoard, useMai } from "@mai/mai-ui-vue";
 import { onMounted, ref, shallowRef } from "vue";
+import type {
+  AppointmentClickEventPayload,
+  EmptyCellClickEventPayload,
+  SlotClickEventPayload,
+} from "@mai/mai-ui-vue";
 
 type MaiLayout = ReturnType<typeof useMai>["layout"]["value"];
 
 const layout = shallowRef<MaiLayout>(null);
 const loading = ref(false);
 const errorMessage = ref<string | null>(null);
+const interactionMessage = ref<string>("No UI interaction yet.");
 const anchorDate = ref("2026-05-07");
 const assigneeId = "doctor-42";
 
@@ -32,8 +38,6 @@ async function refreshWeek(): Promise<void> {
   await mai.refresh({
     anchor_date: anchorDate.value,
     assignee_id: assigneeId,
-    visible_start_minute: 540,
-    visible_end_minute: 1020,
   });
   layout.value = mai.layout.value;
   errorMessage.value = mai.error.value;
@@ -49,6 +53,18 @@ async function navigateWeek(shift: -1 | 0 | 1): Promise<void> {
   await refreshWeek();
 }
 
+function onSlotClick(payload: SlotClickEventPayload): void {
+  interactionMessage.value = `slot-click: ${payload.slotId} (day ${payload.dayIndex}, ${payload.startMinute}-${payload.endMinute})`;
+}
+
+function onAppointmentClick(payload: AppointmentClickEventPayload): void {
+  interactionMessage.value = `appointment-click: ${payload.appointmentId} on ${payload.slotId} (day ${payload.dayIndex})`;
+}
+
+function onEmptyCellClick(payload: EmptyCellClickEventPayload): void {
+  interactionMessage.value = `empty-cell-click: day ${payload.dayIndex}, minute ${payload.minuteOfDay}`;
+}
+
 onMounted(async () => {
   const { $mai } = useNuxtApp();
   mai = useMai({ adapter: $mai.adapter });
@@ -58,6 +74,9 @@ onMounted(async () => {
 
 <template>
   <main style="background: #fff; padding: 24px; min-height: 100vh; box-sizing: border-box">
+    <p style="margin: 0 0 12px; color: #5b6472; font: 500 13px/1.5 Inter, sans-serif">
+      {{ interactionMessage }}
+    </p>
     <ClientOnly>
       <MaiBoard
         :layout="layout"
@@ -67,6 +86,9 @@ onMounted(async () => {
         title="Doctor Availability Board"
         subtitle="Weekly schedule with appointment and availability timeline"
         @navigate-week="navigateWeek"
+        @slot-click="onSlotClick"
+        @appointment-click="onAppointmentClick"
+        @empty-cell-click="onEmptyCellClick"
       />
     </ClientOnly>
   </main>

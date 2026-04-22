@@ -2,6 +2,11 @@ import { defineComponent, h, type PropType } from "vue";
 import { MaiEventCard } from "./MaiEventCard";
 import type { DayColumn } from "./view-model";
 import { clampToVisibleRange } from "./view-model";
+import {
+  toAppointmentClickPayload,
+  toEmptyCellClickPayload,
+  toSlotClickPayload,
+} from "./interaction";
 import type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
@@ -36,22 +41,11 @@ export const MaiDayColumn = defineComponent({
 
     function handleEventActivate(event: (typeof props.column.events)[number]) {
       if (event.kind === "slot") {
-        props.onSlotClick({
-          slotId: event.slotId,
-          dayIndex: event.dayIndex,
-          startMinute: event.startMinute,
-          endMinute: event.endMinute,
-        });
+        props.onSlotClick(toSlotClickPayload(event));
         return;
       }
 
-      props.onAppointmentClick({
-        appointmentId: event.id,
-        slotId: event.slotId,
-        dayIndex: event.dayIndex,
-        startMinute: event.startMinute,
-        endMinute: event.endMinute,
-      });
+      props.onAppointmentClick(toAppointmentClickPayload(event));
     }
 
     function handleGridClick(event: MouseEvent) {
@@ -60,17 +54,16 @@ export const MaiDayColumn = defineComponent({
         return;
       }
       const rect = grid.getBoundingClientRect();
-      const relativeY = Math.max(0, Math.min(event.clientY - rect.top, rect.height));
-      const ratio = rect.height > 0 ? relativeY / rect.height : 0;
-      const minute = Math.round(
-        props.visibleStartMinute + ratio * props.totalVisibleMinutes
+      props.onEmptyCellClick(
+        toEmptyCellClickPayload({
+          dayIndex: props.column.dayIndex,
+          clientY: event.clientY,
+          top: rect.top,
+          height: rect.height,
+          visibleStartMinute: props.visibleStartMinute,
+          totalVisibleMinutes: props.totalVisibleMinutes,
+        })
       );
-      const clampedMinute = Math.min(Math.max(minute, 0), 1440);
-
-      props.onEmptyCellClick({
-        dayIndex: props.column.dayIndex,
-        minuteOfDay: clampedMinute,
-      });
     }
 
     return () => (
