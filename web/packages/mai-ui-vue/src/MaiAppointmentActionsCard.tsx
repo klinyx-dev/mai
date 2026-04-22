@@ -18,8 +18,8 @@ export const MaiAppointmentActionsCard = defineComponent({
     },
   },
   emits: {
-    "delete-appointment": (payload: AppointmentActionEventPayload) =>
-      typeof payload.appointmentId === "string",
+    "delete-appointment": (payload: AppointmentActionEventPayload) => typeof payload.appointmentId === "string",
+    "cancel-appointment": (payload: AppointmentActionEventPayload) => typeof payload.appointmentId === "string",
     close: () => true,
   },
   setup(props, { emit }) {
@@ -55,6 +55,19 @@ export const MaiAppointmentActionsCard = defineComponent({
             }
           >
             Delete Appointment
+          </button>
+
+          <button
+            type="button"
+            class="mai-action-button"
+            disabled={props.busy}
+            onClick={() =>
+              emit("cancel-appointment", {
+                appointmentId: props.appointment.appointmentId,
+              })
+            }
+          >
+            Cancel Appointment
           </button>
         </div>
       </section>

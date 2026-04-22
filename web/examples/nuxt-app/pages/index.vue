@@ -154,6 +154,27 @@ async function deleteAppointment(
   actionBusy.value = false;
 }
 
+async function cancelAppointment(
+  payload: AppointmentActionEventPayload
+): Promise<void> {
+  if (!mai) return;
+  actionBusy.value = true;
+  const ok = await mai.mutate({
+    command: "cancel_appointment",
+    payload: {
+      appointment_id: payload.appointmentId,
+      cancelled_by: "ui-operator",
+    },
+  });
+  if (ok) {
+    interactionMessage.value = `cancel-appointment: ${payload.appointmentId}`;
+    await refreshWeek();
+  } else {
+    errorMessage.value = mai.error.value;
+  }
+  actionBusy.value = false;
+}
+
 onMounted(async () => {
   const { $mai } = useNuxtApp();
   mai = useMai({ adapter: $mai.adapter });
@@ -182,6 +203,7 @@ onMounted(async () => {
         @book-slot="bookSlot"
         @cancel-slot="cancelSlot"
         @delete-slot="deleteSlot"
+        @cancel-appointment="cancelAppointment"
         @delete-appointment="deleteAppointment"
       />
     </ClientOnly>

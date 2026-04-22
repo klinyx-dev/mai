@@ -135,6 +135,8 @@ export const MaiBoard = defineComponent({
     "book-slot": (payload: SlotActionEventPayload) => isSlotActionPayload(payload),
     "cancel-slot": (payload: SlotActionEventPayload) => isSlotActionPayload(payload),
     "delete-slot": (payload: SlotActionEventPayload) => isSlotActionPayload(payload),
+    "cancel-appointment": (payload: AppointmentActionEventPayload) =>
+      isAppointmentActionPayload(payload),
     "delete-appointment": (payload: AppointmentActionEventPayload) =>
       isAppointmentActionPayload(payload),
   },
@@ -367,6 +369,10 @@ export const MaiBoard = defineComponent({
               appointment={selectedAppointment.value}
               busy={props.actionBusy}
               {...{
+                "onCancel-appointment": (payload: AppointmentActionEventPayload) => {
+                  emit("cancel-appointment", payload);
+                  clearActions();
+                },
                 "onDelete-appointment": (payload: AppointmentActionEventPayload) => {
                   emit("delete-appointment", payload);
                   clearActions();
