@@ -1,5 +1,5 @@
 import { defineComponent, h, type PropType } from "vue";
-import type { CalendarEvent } from "./view-model";
+import type { CalendarEvent } from "../model/view-model";
 
 export const MaiEventCard = defineComponent({
   name: "MaiEventCard",

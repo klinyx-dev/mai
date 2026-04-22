@@ -1,17 +1,17 @@
 import { defineComponent, h, type PropType } from "vue";
 import { MaiEventCard } from "./MaiEventCard";
-import type { DayColumn } from "./view-model";
-import { clampToVisibleRange } from "./view-model";
+import type { DayColumn } from "../model/view-model";
+import { clampToVisibleRange } from "../model/view-model";
 import {
   toAppointmentClickPayload,
   toEmptyCellClickPayload,
   toSlotClickPayload,
-} from "./interaction";
+} from "../model/interaction";
 import type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
   SlotClickEventPayload,
-} from "../contracts";
+} from "../../types";
 
 export const MaiDayColumn = defineComponent({
   name: "MaiDayColumn",

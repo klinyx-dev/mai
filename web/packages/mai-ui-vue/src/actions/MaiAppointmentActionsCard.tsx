@@ -2,7 +2,7 @@ import { defineComponent, h, type PropType } from "vue";
 import type {
   AppointmentActionEventPayload,
   AppointmentClickEventPayload,
-} from "../contracts";
+} from "../types";
 import {
   MaiActionButtons,
   MaiActionCard,

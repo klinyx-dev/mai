@@ -7,12 +7,12 @@ import {
   createHourTicks,
   formatMinuteLabel,
   normalizeVisibleWindow,
-} from "../dist/board/view-model.js";
+} from "../dist/board/model/view-model.js";
 import {
   toAppointmentClickPayload,
   toEmptyCellClickPayload,
   toSlotClickPayload,
-} from "../dist/board/interaction.js";
+} from "../dist/board/model/interaction.js";
 
 test("defaults to full-day visible window", () => {
   assert.equal(DEFAULT_VISIBLE_START_MINUTE, 0);

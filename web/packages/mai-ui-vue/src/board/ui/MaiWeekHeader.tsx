@@ -1,5 +1,5 @@
 import { defineComponent, h } from "vue";
-import type { WeekShift } from "../contracts";
+import type { WeekShift } from "../../types";
 
 export const MaiWeekHeader = defineComponent({
   name: "MaiWeekHeader",

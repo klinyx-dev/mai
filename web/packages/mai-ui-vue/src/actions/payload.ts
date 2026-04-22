@@ -2,7 +2,7 @@ import type {
   AppointmentActionEventPayload,
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
-} from "../contracts";
+} from "../types";
 
 const MIN_SLOT_DURATION_MINUTES = 15;
 const MAX_SLOT_DURATION_MINUTES = 180;

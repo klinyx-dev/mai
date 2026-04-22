@@ -13,4 +13,4 @@ export type {
   SlotClickEventPayload,
   TimeLabelFormat,
   WeekShift,
-} from "./contracts";
+} from "./types";

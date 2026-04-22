@@ -2,7 +2,7 @@ import { defineComponent, h, ref, watch, type PropType } from "vue";
 import type {
   CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
-} from "../contracts";
+} from "../types";
 import { MaiActionButtons, MaiActionCard, MaiActionMetaList } from "./MaiActionCard";
 import { buildCreateSlotPayload } from "./payload";
 

@@ -1,5 +1,5 @@
 import { defineComponent, h, type PropType } from "vue";
-import type { SlotActionEventPayload, SlotClickEventPayload } from "../contracts";
+import type { SlotActionEventPayload, SlotClickEventPayload } from "../types";
 import {
   MaiActionButtons,
   MaiActionCard,

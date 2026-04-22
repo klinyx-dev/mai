@@ -2,7 +2,7 @@ import type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
   SlotClickEventPayload,
-} from "../contracts";
+} from "../../types";
 import type { CalendarEvent } from "./view-model";
 
 interface InteractionPoint {
