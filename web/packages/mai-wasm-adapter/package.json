@@ -1,0 +1,23 @@
+{
+  "name": "@mai/mai-wasm-adapter",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "WASM runtime adapter package for mai web consumers.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mai/mai-web-core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}

@@ -56,6 +56,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `feat: add wasm runtime adapter package for web consumers`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 3: Refactor Nuxt example to package-only usage
 - Update Nuxt plugin/composables to import runtime adapter from package.
 - Remove direct `../../../../core/pkg/...` imports from `examples/nuxt-app`.

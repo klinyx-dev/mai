@@ -8,7 +8,7 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "pnpm --filter @mai/mai-web-core build && pnpm --filter @mai/mai-ui-vue build",
+    "build": "pnpm --filter @mai/mai-web-core build && pnpm --filter @mai/mai-wasm-adapter build && pnpm --filter @mai/mai-ui-vue build",
     "example:dev": "pnpm --filter @mai/nuxt-app-example dev",
     "test": "pnpm --filter @mai/mai-web-core test"
   }
