@@ -20,7 +20,7 @@ Usage: ./scripts/dev.sh <command>
 
 Commands:
   setup               Prepare Podman and build the dev image
-  setup-no-tls-verify Build the dev image with Podman base-image TLS verification disabled
+  setup-no-tls-verify Build the dev image with Podman TLS verification disabled for this dev build
   dev                 Build wasm/web packages and start the Nuxt example
   verify              Run Rust, WASM, and web validation
   shell               Open a shell in the dev container
