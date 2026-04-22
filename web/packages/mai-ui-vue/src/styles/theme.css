@@ -31,27 +31,24 @@
 
 .mai-board {
   color: var(--mai-text);
-  background: linear-gradient(180deg, var(--mai-bg) 0%, #f9fafb 100%);
+  background: var(--mai-bg);
   font-family: "Inter", "Segoe UI", sans-serif;
-  min-height: 100%;
+  min-height: 100vh;
 }
 
 .mai-board__panel {
-  --mai-calendar-height: clamp(420px, calc(100vh - 230px), 1200px);
+  --mai-calendar-height: clamp(1600px, calc(100vh + 500px), 2600px);
   max-width: none;
   width: 100%;
   margin: 0;
-  padding: var(--mai-space-6);
-  border-radius: var(--mai-radius-3);
+  padding: var(--mai-space-4);
+  border-radius: 0;
   box-sizing: border-box;
-  min-height: calc(100vh - 48px);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--mai-surface);
-  box-shadow:
-    0 1px 5px -4px var(--mai-contact-shadow),
-    0 0 0 1px var(--mai-ring),
-    0 4px 8px var(--mai-soft-shadow);
+  background: var(--mai-bg);
+  box-shadow: none;
 }
 
 .mai-board__header {
@@ -181,11 +178,10 @@
 }
 
 .mai-board__calendar-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-x: auto;
-  overflow-y: auto;
-  border-radius: var(--mai-radius-2);
+  flex: none;
+  min-height: auto;
+  overflow: visible;
+  border-radius: var(--mai-radius-1);
   background: var(--mai-bg);
   box-shadow: inset 0 0 0 1px var(--mai-border);
 }
@@ -222,14 +218,19 @@
 }
 
 .mai-board__time-label {
-  min-height: 24px;
+  position: absolute;
+  left: 0;
+  right: 0;
   padding: 0 6px;
   display: flex;
   justify-content: flex-end;
-  transform: translateY(-7px);
+  align-items: center;
+  box-sizing: border-box;
   color: var(--mai-muted);
   font-size: 11px;
   font-weight: 500;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .mai-board__day-column {
@@ -280,8 +281,13 @@
 }
 
 .mai-board__hour-line {
-  min-height: 16px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  box-sizing: border-box;
   border-bottom: 1px solid var(--mai-line);
+  pointer-events: none;
 }
 
 .mai-board__event {
@@ -358,7 +364,7 @@
 
 @media (max-width: 640px) {
   .mai-board__panel {
-    --mai-calendar-height: clamp(360px, calc(100vh - 250px), 900px);
+    --mai-calendar-height: clamp(1300px, calc(100vh + 300px), 2200px);
     padding: var(--mai-space-4);
     min-height: calc(100vh - 32px);
   }

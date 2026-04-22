@@ -73,7 +73,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main style="background: #fff; padding: 24px; min-height: 100vh; box-sizing: border-box">
+  <main style="background: #fff; padding: 0; min-height: 100vh; box-sizing: border-box">
     <p style="margin: 0 0 12px; color: #5b6472; font: 500 13px/1.5 Inter, sans-serif">
       {{ interactionMessage }}
     </p>

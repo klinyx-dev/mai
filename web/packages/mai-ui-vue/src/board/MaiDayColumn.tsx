@@ -37,7 +37,7 @@ export const MaiDayColumn = defineComponent({
     },
   },
   setup(props) {
-    const slotHeight = `${100 / Math.max(props.hourTicks.length - 1, 1)}%`;
+    const tickCount = Math.max(props.hourTicks.length - 1, 1);
 
     function handleEventActivate(event: (typeof props.column.events)[number]) {
       if (event.kind === "slot") {
@@ -73,13 +73,16 @@ export const MaiDayColumn = defineComponent({
           <p class="mai-board__day-date">{props.column.dateLabel}</p>
         </header>
         <div class="mai-board__day-grid" onClick={handleGridClick}>
-          {props.hourTicks.map((tick) => (
-            <div
-              class="mai-board__hour-line"
-              key={`hour-${props.column.dayIndex}-${tick}`}
-              style={{ height: slotHeight }}
-            ></div>
-          ))}
+          {props.hourTicks.map((tick, index) => {
+            const top = (index / tickCount) * 100;
+            return (
+              <div
+                class="mai-board__hour-line"
+                key={`hour-${props.column.dayIndex}-${tick}`}
+                style={{ top: `${top}%` }}
+              ></div>
+            );
+          })}
           {props.column.events.map((event) => {
             const clamped = clampToVisibleRange(
               event.startMinute,
