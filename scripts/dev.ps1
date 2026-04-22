@@ -56,12 +56,22 @@ function Build-Image {
     podman build --tls-verify=$TlsVerify -t $ImageName -f "Containerfile" $RepoRoot
 }
 
+function Ensure-Image {
+    Prepare-Podman
+    podman image exists $ImageName
+    if ($LASTEXITCODE -ne 0) {
+        Build-Image "true"
+    }
+}
+
 function Invoke-DevContainer {
     param(
         [string]$Script,
         [switch]$Interactive,
         [switch]$ExposeWeb
     )
+
+    Ensure-Image
 
     $args = @(
         "run",

@@ -52,6 +52,11 @@ build_image() {
   podman build --tls-verify="${tls_verify}" -t "${image_name}" -f Containerfile "${repo_root}"
 }
 
+ensure_image() {
+  prepare_podman
+  podman image exists "${image_name}" || build_image true
+}
+
 container_args=(
   run
   --rm
@@ -68,15 +73,18 @@ container_args=(
 
 run_container() {
   local script="$1"
+  ensure_image
   podman "${container_args[@]}" "${image_name}" bash -lc "${script}"
 }
 
 run_web_container() {
   local script="$1"
+  ensure_image
   podman "${container_args[@]}" -p 3000:3000 "${image_name}" bash -lc "${script}"
 }
 
 open_shell() {
+  ensure_image
   podman "${container_args[@]}" -it "${image_name}" bash
 }
 
