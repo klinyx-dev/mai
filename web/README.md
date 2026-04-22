@@ -5,15 +5,22 @@ Nuxt-first workspace for consuming the Rust/wasm scheduling core in web apps.
 ## Workspace structure
 - `packages/mai-web-core`:
   framework-agnostic TypeScript contracts and JSON adapter helpers for command/query calls.
+- `packages/mai-wasm-adapter`:
+  wasm runtime bootstrap package that hides direct `core/pkg` usage behind a stable adapter factory.
 - `packages/mai-ui-vue`:
   Vue 3 UI package built on top of `mai-web-core` (current primary component is `MaiBoard` week calendar view).
 - `examples/nuxt-app`:
-  runnable integration example using `WasmBindgenAdapter` from `core/pkg`.
+  runnable integration example consuming package APIs.
 
 ## Package boundaries
 - `mai-web-core` owns data contracts and transport helpers.
+- `mai-wasm-adapter` owns wasm-bindgen runtime initialization and adapter creation.
 - `mai-ui-vue` owns presentation and user interaction patterns.
-- The example app owns app state (selected week, refresh triggers, adapter initialization).
+- The example app owns app state (selected week, refresh triggers) and composes package-level adapters only.
+
+Boundary rule:
+- App code should not import `core/pkg/*` directly.
+- App code should import runtime adapter APIs from package exports.
 
 ## Prerequisites
 - Node.js 22.x recommended (Node 23 may show experimental warnings from transitive deps).

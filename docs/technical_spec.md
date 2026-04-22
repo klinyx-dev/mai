@@ -693,6 +693,45 @@ Non-goals:
 - No change to request/response JSON shapes.
 - No new business rules.
 
+### 12.5 Web runtime package boundary (Phase 1 contract)
+For production-safe web consumption, app code must not import generated wasm artifacts (`core/pkg/*`) directly.
+
+Package responsibilities:
+- `@mai/mai-web-core`:
+  runtime-agnostic TS contracts and JSON client helpers only.
+- `@mai/mai-wasm-adapter` (new package boundary):
+  owns wasm-bindgen bootstrap and concrete adapter instantiation.
+- app/example:
+  composes dependencies through package APIs and owns app state only.
+
+Runtime adapter contract (TS):
+```ts
+import type { JsonAdapter } from "@mai/mai-web-core";
+
+export interface WasmAdapterFactoryOptions {
+  wasmModulePath?: string;
+}
+
+export function createWasmAdapter(
+  options?: WasmAdapterFactoryOptions
+): Promise<JsonAdapter>;
+```
+
+Contract rules:
+- `createWasmAdapter()` must initialize wasm and return a `JsonAdapter`-compatible instance.
+- initialization must be idempotent for repeated calls in the same runtime.
+- bootstrap/runtime failures must surface as stable JS `Error` values with deterministic messages.
+- app code should only consume package exports; no deep relative imports to generated wasm files.
+
+Migration-safe usage example:
+```ts
+import { createWasmAdapter } from "@mai/mai-wasm-adapter";
+import { createNuxtMaiState } from "@mai/mai-ui-vue";
+
+const adapter = await createWasmAdapter();
+const state = createNuxtMaiState(adapter);
+```
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests

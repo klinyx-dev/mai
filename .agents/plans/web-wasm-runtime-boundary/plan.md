@@ -39,6 +39,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `spec: define web wasm runtime adapter package boundary`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 2: Implement runtime adapter package
 - Create or update package to wrap `core/pkg`:
   - encapsulate `init` and `WasmBindgenAdapter` creation,
