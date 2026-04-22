@@ -1,12 +1,61 @@
 import { computed, defineComponent, h, type PropType } from "vue";
 import type { WeeklyLayout } from "@mai/mai-web-core";
+import type {
+  AppointmentClickEventPayload,
+  EmptyCellClickEventPayload,
+  SlotClickEventPayload,
+  TimeLabelFormat,
+  WeekShift,
+} from "./contracts";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const VISIBLE_START_MINUTE = 8 * 60;
 const VISIBLE_END_MINUTE = 20 * 60;
 const TOTAL_VISIBLE_MINUTES = VISIBLE_END_MINUTE - VISIBLE_START_MINUTE;
 
-type WeekShift = -1 | 0 | 1;
+function isMinuteRange(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= 1440
+  );
+}
+
+function isSlotClickPayload(value: unknown): value is SlotClickEventPayload {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const payload = value as Record<string, unknown>;
+  return (
+    typeof payload.slotId === "string" &&
+    Number.isInteger(payload.dayIndex) &&
+    typeof payload.startMinute === "number" &&
+    typeof payload.endMinute === "number"
+  );
+}
+
+function isAppointmentClickPayload(value: unknown): value is AppointmentClickEventPayload {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const payload = value as Record<string, unknown>;
+  return (
+    typeof payload.appointmentId === "string" &&
+    typeof payload.slotId === "string" &&
+    Number.isInteger(payload.dayIndex) &&
+    typeof payload.startMinute === "number" &&
+    typeof payload.endMinute === "number"
+  );
+}
+
+function isEmptyCellClickPayload(value: unknown): value is EmptyCellClickEventPayload {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const payload = value as Record<string, unknown>;
+  return Number.isInteger(payload.dayIndex) && typeof payload.minuteOfDay === "number";
+}
 
 interface CalendarEvent {
   id: string;
@@ -84,6 +133,11 @@ export const MaiBoard = defineComponent({
   name: "MaiBoard",
   emits: {
     "navigate-week": (shift: WeekShift) => shift === -1 || shift === 0 || shift === 1,
+    "slot-click": (payload: SlotClickEventPayload) => isSlotClickPayload(payload),
+    "appointment-click": (payload: AppointmentClickEventPayload) =>
+      isAppointmentClickPayload(payload),
+    "empty-cell-click": (payload: EmptyCellClickEventPayload) =>
+      isEmptyCellClickPayload(payload),
   },
   props: {
     layout: {
@@ -114,6 +168,29 @@ export const MaiBoard = defineComponent({
       type: String as PropType<string | null>,
       required: false,
       default: null,
+    },
+    visibleStartMinute: {
+      type: Number,
+      required: false,
+      default: 0,
+      validator: (value: unknown) => isMinuteRange(value),
+    },
+    visibleEndMinute: {
+      type: Number,
+      required: false,
+      default: 1440,
+      validator: (value: unknown) => isMinuteRange(value),
+    },
+    timeLabelFormat: {
+      type: String as PropType<TimeLabelFormat>,
+      required: false,
+      default: "24h",
+      validator: (value: unknown) => value === "24h" || value === "12h",
+    },
+    emptyStateText: {
+      type: String,
+      required: false,
+      default: "No events",
     },
   },
   setup(props, { emit }) {
@@ -248,7 +325,9 @@ export const MaiBoard = defineComponent({
                       </div>
                     );
                   })}
-                  {column.events.length === 0 ? <p class="mai-board__empty">No events</p> : null}
+                  {column.events.length === 0 ? (
+                    <p class="mai-board__empty">{props.emptyStateText}</p>
+                  ) : null}
                 </div>
               </article>
             ))}

@@ -22,6 +22,19 @@ Boundary rule:
 - App code should not import `core/pkg/*` directly.
 - App code should import runtime adapter APIs from package exports.
 
+## UI board contract (TM11 Phase 1)
+`MaiBoard` now exposes optional view/interaction contract fields for real app integration:
+- Props:
+  - `visibleStartMinute?: number` (default `0`)
+  - `visibleEndMinute?: number` (default `1440`)
+  - `timeLabelFormat?: "24h" | "12h"` (default `"24h"`)
+  - `emptyStateText?: string`
+- Events:
+  - `navigate-week`
+  - `slot-click`
+  - `appointment-click`
+  - `empty-cell-click`
+
 ## Prerequisites
 - Node.js 22.x recommended (Node 23 may show experimental warnings from transitive deps).
 - pnpm 10.x.

@@ -46,6 +46,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `spec(ui): define TM11 week board interaction and timeline contract`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 2: Refactor board into reusable UI primitives
 - Split `MaiBoard` into focused internal components/modules:
   - `MaiWeekHeader`

@@ -737,6 +737,22 @@ Current implementation status (completed on 2026-04-22):
 - app-level direct `core/pkg` imports removed from `examples/nuxt-app` source.
 - boundary regression smoke script added at `web/scripts/check-package-boundaries.mjs`.
 
+TM11 UI boundary decision (recorded on 2026-04-22):
+- day/time header rendering remains in TS/JS UI package (`@mai/mai-ui-vue`), not in Rust core.
+- Rust core continues to expose semantic layout data only.
+
+TM11 Phase 1 UI contract (current baseline):
+- `MaiBoard` adds optional timeline/view props:
+  - `visibleStartMinute?: number` (default `0`)
+  - `visibleEndMinute?: number` (default `1440`)
+  - `timeLabelFormat?: "24h" | "12h"` (default `"24h"`)
+  - `emptyStateText?: string`
+- `MaiBoard` interaction events:
+  - `navigate-week` (`-1 | 0 | 1`)
+  - `slot-click`
+  - `appointment-click`
+  - `empty-cell-click`
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests
