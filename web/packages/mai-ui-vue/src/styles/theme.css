@@ -356,6 +356,84 @@
   background: rgba(137, 137, 137, 0.08);
 }
 
+.mai-action-card {
+  display: grid;
+  gap: var(--mai-space-2);
+  padding: var(--mai-space-3);
+  border: 1px solid var(--mai-border);
+  border-radius: var(--mai-radius-2);
+  background: var(--mai-bg);
+  box-shadow: 0 1px 4px -3px var(--mai-contact-shadow);
+}
+
+.mai-action-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mai-space-2);
+}
+
+.mai-action-card__title {
+  margin: 0;
+  color: var(--mai-deep);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.mai-action-card__close {
+  border: 1px solid var(--mai-border);
+  border-radius: var(--mai-radius-1);
+  background: var(--mai-bg);
+  color: var(--mai-muted);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.mai-action-card__meta {
+  margin: 0;
+  color: var(--mai-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.mai-action-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mai-space-2);
+}
+
+.mai-action-button {
+  border: 1px solid var(--mai-border);
+  border-radius: var(--mai-radius-1);
+  background: var(--mai-bg);
+  color: var(--mai-text);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.mai-action-button--primary {
+  color: #fff;
+  border-color: var(--mai-appointment-border);
+  background: var(--mai-appointment-border);
+}
+
+.mai-action-button--danger {
+  color: #fff;
+  border-color: #b42318;
+  background: #b42318;
+}
+
+.mai-action-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1024px) {
   .mai-board__title {
     font-size: 36px;

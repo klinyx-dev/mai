@@ -21,3 +21,11 @@ export interface EmptyCellClickEventPayload {
   dayIndex: number;
   minuteOfDay: number;
 }
+
+export interface SlotActionEventPayload {
+  slotId: string;
+}
+
+export interface AppointmentActionEventPayload {
+  appointmentId: string;
+}
