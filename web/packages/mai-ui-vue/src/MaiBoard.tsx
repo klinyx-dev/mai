@@ -187,6 +187,9 @@ export const MaiBoard = defineComponent({
                 visibleStartMinute={visibleWindow.value.startMinute}
                 visibleEndMinute={visibleWindow.value.endMinute}
                 totalVisibleMinutes={totalVisibleMinutes.value}
+                onSlotClick={(payload) => emit("slot-click", payload)}
+                onAppointmentClick={(payload) => emit("appointment-click", payload)}
+                onEmptyCellClick={(payload) => emit("empty-cell-click", payload)}
                 key={column.dayIndex}
               />
             ))}

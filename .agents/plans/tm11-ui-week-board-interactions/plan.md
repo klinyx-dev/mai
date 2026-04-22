@@ -99,6 +99,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `feat(ui): expose slot and appointment interaction events`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 5: Design consistency pass
 - Align spacing, typography scale, colors, states, and affordances for consistent board appearance.
 - Add clear visual distinction between slots and appointments.

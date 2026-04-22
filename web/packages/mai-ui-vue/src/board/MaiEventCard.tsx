@@ -8,13 +8,35 @@ export const MaiEventCard = defineComponent({
     top: { type: Number, required: true },
     height: { type: Number, required: true },
     minuteLabel: { type: Function as PropType<(value: number) => string>, required: true },
+    onActivate: {
+      type: Function as PropType<(event: CalendarEvent) => void>,
+      required: true,
+    },
   },
   setup(props) {
+    function handleActivate() {
+      props.onActivate(props.event);
+    }
+
+    function handleKeydown(event: KeyboardEvent) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleActivate();
+      }
+    }
+
     return () => (
       <div
         class={`mai-board__event mai-board__event--${props.event.kind}`}
         key={`${props.event.kind}-${props.event.id}`}
         style={{ top: `${props.top}%`, height: `${props.height}%` }}
+        role="button"
+        tabindex={0}
+        onClick={(event) => {
+          event.stopPropagation();
+          handleActivate();
+        }}
+        onKeydown={handleKeydown}
       >
         <p class="mai-board__event-title">
           {props.event.kind === "slot" ? "Available slot" : "Appointment"}
