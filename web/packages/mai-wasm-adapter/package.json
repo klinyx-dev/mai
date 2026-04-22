@@ -12,7 +12,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@mai/mai-web-core": "workspace:*"

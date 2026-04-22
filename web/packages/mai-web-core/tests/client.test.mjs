@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { executeWeeklyLayoutQuery } from "../dist/index.js";
+import { executeWeeklyLayoutQuery } from "../dist/client.js";
 
 test("executeWeeklyLayoutQuery returns parsed success payload", () => {
   const adapter = {

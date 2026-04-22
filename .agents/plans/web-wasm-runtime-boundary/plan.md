@@ -87,6 +87,9 @@ Acceptance criteria:
 Commit checkpoint:
 - `test: add boundary smoke checks for package-only wasm consumption`
 
+Status:
+- Completed on 2026-04-22.
+
 ## Phase 5: Docs and migration notes
 - Update:
   - `web/README.md`,
