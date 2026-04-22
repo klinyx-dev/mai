@@ -38,14 +38,17 @@ function Require-Podman {
 
 function Prepare-Podman {
     Require-Podman
-    podman machine inspect *> $null
-    if ($LASTEXITCODE -ne 0) {
-        podman machine init
+
+    $machineName = "podman-machine-default"
+    $machineList = @(podman machine list --format "{{.Name}} {{.Running}}" 2>$null)
+    if ($LASTEXITCODE -ne 0 -or -not ($machineList | Where-Object { $_ -match "^$machineName\s+" })) {
+        podman machine init $machineName
+        $machineList = @(podman machine list --format "{{.Name}} {{.Running}}" 2>$null)
     }
 
-    podman machine start *> $null
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Podman machine is already running or does not require startup."
+    $isRunning = $machineList | Where-Object { $_ -match "^$machineName\s+true$" }
+    if (-not $isRunning) {
+        podman machine start $machineName *> $null
     }
 }
 
