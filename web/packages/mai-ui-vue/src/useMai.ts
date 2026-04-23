@@ -2,7 +2,7 @@ import { ref } from "vue";
 import {
   executeCommand,
   executeWeeklyLayoutQuery,
-  type CommandEnvelope,
+  type AnyCommandEnvelope,
   type JsonAdapter,
   type WeeklyLayout,
   type WeeklyLayoutQueryPayload,
@@ -32,7 +32,7 @@ export function useMai(options: UseMaiOptions) {
     }
   }
 
-  async function mutate<TPayload extends object>(command: CommandEnvelope<TPayload>) {
+  async function mutate(command: AnyCommandEnvelope) {
     const response = executeCommand(options.adapter, command);
     if (response.status === "error") {
       error.value = `${response.error.code}: ${response.error.message}`;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import "@mai/mai-ui-vue/styles.css";
 import { MaiBoard, useMai } from "@mai/mai-ui-vue";
+import { COMMANDS, createCommandEnvelope } from "@mai/mai-web-core";
 import { onMounted, ref, shallowRef } from "vue";
 import type {
   AppointmentActionEventPayload,
@@ -57,16 +58,15 @@ async function navigateWeek(shift: -1 | 0 | 1): Promise<void> {
 async function bookSlot(payload: SlotActionEventPayload): Promise<void> {
   if (!mai) return;
   actionBusy.value = true;
-  const ok = await mai.mutate({
-    command: "add_appointment",
-    payload: {
+  const ok = await mai.mutate(
+    createCommandEnvelope(COMMANDS.ADD_APPOINTMENT, {
       appointment_id: `appt-${Date.now()}`,
       slot_id: payload.slotId,
       invitee_ids: ["patient-demo"],
       title: "Consultation",
       created_by: "ui-operator",
-    },
-  });
+    })
+  );
   if (ok) {
     interactionMessage.value = `book-slot: ${payload.slotId}`;
     await refreshWeek();
@@ -79,16 +79,15 @@ async function bookSlot(payload: SlotActionEventPayload): Promise<void> {
 async function createSlot(payload: CreateSlotActionEventPayload): Promise<void> {
   if (!mai) return;
   actionBusy.value = true;
-  const ok = await mai.mutate({
-    command: "add_slot",
-    payload: {
+  const ok = await mai.mutate(
+    createCommandEnvelope(COMMANDS.ADD_SLOT, {
       slot_id: payload.slotId,
       start: payload.startIso,
       end: payload.endIso,
       assignee_id: payload.assigneeId,
       created_by: payload.createdBy,
-    },
-  });
+    })
+  );
   if (ok) {
     interactionMessage.value = `create-slot: ${payload.slotId}`;
     await refreshWeek();
@@ -101,12 +100,11 @@ async function createSlot(payload: CreateSlotActionEventPayload): Promise<void> 
 async function cancelSlot(payload: SlotActionEventPayload): Promise<void> {
   if (!mai) return;
   actionBusy.value = true;
-  const ok = await mai.mutate({
-    command: "cancel_slot",
-    payload: {
+  const ok = await mai.mutate(
+    createCommandEnvelope(COMMANDS.CANCEL_SLOT, {
       slot_id: payload.slotId,
-    },
-  });
+    })
+  );
   if (ok) {
     interactionMessage.value = `cancel-slot: ${payload.slotId}`;
     await refreshWeek();
@@ -119,12 +117,11 @@ async function cancelSlot(payload: SlotActionEventPayload): Promise<void> {
 async function deleteSlot(payload: SlotActionEventPayload): Promise<void> {
   if (!mai) return;
   actionBusy.value = true;
-  const ok = await mai.mutate({
-    command: "delete_slot",
-    payload: {
+  const ok = await mai.mutate(
+    createCommandEnvelope(COMMANDS.DELETE_SLOT, {
       slot_id: payload.slotId,
-    },
-  });
+    })
+  );
   if (ok) {
     interactionMessage.value = `delete-slot: ${payload.slotId}`;
     await refreshWeek();
@@ -139,12 +136,11 @@ async function deleteAppointment(
 ): Promise<void> {
   if (!mai) return;
   actionBusy.value = true;
-  const ok = await mai.mutate({
-    command: "delete_appointment",
-    payload: {
+  const ok = await mai.mutate(
+    createCommandEnvelope(COMMANDS.DELETE_APPOINTMENT, {
       appointment_id: payload.appointmentId,
-    },
-  });
+    })
+  );
   if (ok) {
     interactionMessage.value = `delete-appointment: ${payload.appointmentId}`;
     await refreshWeek();
@@ -159,13 +155,12 @@ async function cancelAppointment(
 ): Promise<void> {
   if (!mai) return;
   actionBusy.value = true;
-  const ok = await mai.mutate({
-    command: "cancel_appointment",
-    payload: {
+  const ok = await mai.mutate(
+    createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
       appointment_id: payload.appointmentId,
       cancelled_by: "ui-operator",
-    },
-  });
+    })
+  );
   if (ok) {
     interactionMessage.value = `cancel-appointment: ${payload.appointmentId}`;
     await refreshWeek();
