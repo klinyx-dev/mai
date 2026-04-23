@@ -794,6 +794,26 @@ TM11 Phase 6 completion status (2026-04-22):
 - Nuxt example app consumes UI interaction events and demonstrates payload handling.
 - workspace `pnpm run test` includes `@mai/mai-ui-vue` tests in the baseline verification chain.
 
+TM14 Phase 1 contract (planned on 2026-04-23):
+- add `MaiBoardInteractive` as the recommended application-facing wrapper in `@mai/mai-ui-vue`.
+- keep `MaiBoard` as a lower-level board primitive that remains reusable for custom orchestration.
+- `MaiBoardInteractive` ownership:
+  - controls selection/draft interaction state (`selectedSlot`, `selectedAppointment`, `pendingSlotDraft`),
+  - renders interaction cards/popovers (`MaiCreateSlotCard`, `MaiSlotActionsCard`, `MaiAppointmentActionsCard`),
+  - runs provided action handlers and emits deterministic outcome events.
+- `MaiBoardInteractive` emitted outcome events:
+  - `slot-created`
+  - `slot-booked`
+  - `slot-cancelled`
+  - `slot-deleted`
+  - `appointment-cancelled`
+  - `appointment-deleted`
+  - `interaction-error` (`{ action, message }`)
+
+Contract-level intent:
+- App consumers should be able to ship an interactive weekly board without manually wiring local popover/action state in page components.
+- Interaction orchestration lives in `@mai/mai-ui-vue`; business mutations still execute through injected callbacks and the existing web-core command contract.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests
