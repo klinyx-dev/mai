@@ -11,11 +11,13 @@ import type {
   EmptyCellClickEventPayload,
   MaiInteractionAction,
   MaiInteractionErrorPayload,
+  MaiInteractionSuccessEvent,
   SlotActionEventPayload,
   SlotClickEventPayload,
   TimeLabelFormat,
   WeekShift,
 } from "./types";
+import { INTERACTION_ACTIONS, INTERACTION_SUCCESS_EVENTS } from "./types/interactive";
 
 type ActionRunner<TPayload> = (payload: TPayload) => boolean | Promise<boolean>;
 
@@ -174,13 +176,7 @@ export const MaiBoardInteractive = defineComponent({
       action: MaiInteractionAction,
       payload: TPayload,
       handler: ActionRunner<TPayload>,
-      successEvent:
-        | "slot-created"
-        | "slot-booked"
-        | "slot-cancelled"
-        | "slot-deleted"
-        | "appointment-cancelled"
-        | "appointment-deleted"
+      successEvent: MaiInteractionSuccessEvent
     ) {
       actionBusy.value = true;
       interactionError.value = null;
@@ -256,7 +252,12 @@ export const MaiBoardInteractive = defineComponent({
               onClose={clearSelection}
               {...{
                 "onCreate-slot": (payload: CreateSlotActionEventPayload) =>
-                  runAction("create-slot", payload, props.createSlot, "slot-created"),
+                  runAction(
+                    INTERACTION_ACTIONS.CREATE_SLOT,
+                    payload,
+                    props.createSlot,
+                    INTERACTION_SUCCESS_EVENTS.SLOT_CREATED
+                  ),
               }}
             />
           </div>
@@ -270,11 +271,26 @@ export const MaiBoardInteractive = defineComponent({
               onClose={clearSelection}
               {...{
                 "onBook-slot": (payload: SlotActionEventPayload) =>
-                  runAction("book-slot", payload, props.bookSlot, "slot-booked"),
+                  runAction(
+                    INTERACTION_ACTIONS.BOOK_SLOT,
+                    payload,
+                    props.bookSlot,
+                    INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED
+                  ),
                 "onCancel-slot": (payload: SlotActionEventPayload) =>
-                  runAction("cancel-slot", payload, props.cancelSlot, "slot-cancelled"),
+                  runAction(
+                    INTERACTION_ACTIONS.CANCEL_SLOT,
+                    payload,
+                    props.cancelSlot,
+                    INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED
+                  ),
                 "onDelete-slot": (payload: SlotActionEventPayload) =>
-                  runAction("delete-slot", payload, props.deleteSlot, "slot-deleted"),
+                  runAction(
+                    INTERACTION_ACTIONS.DELETE_SLOT,
+                    payload,
+                    props.deleteSlot,
+                    INTERACTION_SUCCESS_EVENTS.SLOT_DELETED
+                  ),
               }}
             />
           </div>
@@ -289,17 +305,17 @@ export const MaiBoardInteractive = defineComponent({
               {...{
                 "onCancel-appointment": (payload: AppointmentActionEventPayload) =>
                   runAction(
-                    "cancel-appointment",
+                    INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
                     payload,
                     props.cancelAppointment,
-                    "appointment-cancelled"
+                    INTERACTION_SUCCESS_EVENTS.APPOINTMENT_CANCELLED
                   ),
                 "onDelete-appointment": (payload: AppointmentActionEventPayload) =>
                   runAction(
-                    "delete-appointment",
+                    INTERACTION_ACTIONS.DELETE_APPOINTMENT,
                     payload,
                     props.deleteAppointment,
-                    "appointment-deleted"
+                    INTERACTION_SUCCESS_EVENTS.APPOINTMENT_DELETED
                   ),
               }}
             />

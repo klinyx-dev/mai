@@ -14,6 +14,7 @@ export type {
   MaiAppointmentChangedEventPayload,
   MaiInteractionAction,
   MaiInteractionErrorPayload,
+  MaiInteractionSuccessEvent,
   MaiSlotChangedEventPayload,
   MaiSlotCreatedEventPayload,
 } from "./types/interactive";
