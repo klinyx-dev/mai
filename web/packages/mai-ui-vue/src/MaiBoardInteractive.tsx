@@ -1,4 +1,9 @@
-import type { WeeklyLayout } from "@mai/mai-web-core";
+import {
+  COMMANDS,
+  createCommandEnvelope,
+  type AnyCommandEnvelope,
+  type WeeklyLayout,
+} from "@mai/mai-web-core";
 import { computed, defineComponent, h, ref, type PropType } from "vue";
 import { MaiAppointmentActionsCard } from "./actions/MaiAppointmentActionsCard";
 import { MaiCreateSlotCard } from "./actions/MaiCreateSlotCard";
@@ -108,28 +113,67 @@ export const MaiBoardInteractive = defineComponent({
       default: 30,
     },
     createSlot: {
-      type: Function as PropType<ActionRunner<CreateSlotActionEventPayload>>,
-      required: true,
+      type:
+        Function as unknown as PropType<ActionRunner<CreateSlotActionEventPayload> | null>,
+      required: false,
+      default: null,
     },
     bookSlot: {
-      type: Function as PropType<ActionRunner<SlotActionEventPayload>>,
-      required: true,
+      type: Function as unknown as PropType<ActionRunner<SlotActionEventPayload> | null>,
+      required: false,
+      default: null,
     },
     cancelSlot: {
-      type: Function as PropType<ActionRunner<SlotActionEventPayload>>,
-      required: true,
+      type: Function as unknown as PropType<ActionRunner<SlotActionEventPayload> | null>,
+      required: false,
+      default: null,
     },
     deleteSlot: {
-      type: Function as PropType<ActionRunner<SlotActionEventPayload>>,
-      required: true,
+      type: Function as unknown as PropType<ActionRunner<SlotActionEventPayload> | null>,
+      required: false,
+      default: null,
     },
     cancelAppointment: {
-      type: Function as PropType<ActionRunner<AppointmentActionEventPayload>>,
-      required: true,
+      type:
+        Function as unknown as PropType<ActionRunner<AppointmentActionEventPayload> | null>,
+      required: false,
+      default: null,
     },
     deleteAppointment: {
-      type: Function as PropType<ActionRunner<AppointmentActionEventPayload>>,
-      required: true,
+      type:
+        Function as unknown as PropType<ActionRunner<AppointmentActionEventPayload> | null>,
+      required: false,
+      default: null,
+    },
+    mutateCommand: {
+      type: Function as unknown as PropType<ActionRunner<AnyCommandEnvelope> | null>,
+      required: false,
+      default: null,
+    },
+    appointmentIdFactory: {
+      type: Function as PropType<(slotId: string) => string>,
+      required: false,
+      default: (slotId: string) => `appt-${slotId}-${Date.now()}`,
+    },
+    bookAppointmentInviteeIds: {
+      type: Array as PropType<string[]>,
+      required: false,
+      default: () => [],
+    },
+    bookAppointmentTitle: {
+      type: String,
+      required: false,
+      default: "Consultation",
+    },
+    bookAppointmentCreatedBy: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    cancelAppointmentBy: {
+      type: String,
+      required: false,
+      default: "",
     },
   },
   emits: {
@@ -172,15 +216,103 @@ export const MaiBoardInteractive = defineComponent({
       selectedAppointment.value = null;
     }
 
+    const runCommand = async (command: AnyCommandEnvelope): Promise<boolean> => {
+      if (!props.mutateCommand) {
+        return false;
+      }
+      return await props.mutateCommand(command);
+    };
+
+    const createSlotHandler: ActionRunner<CreateSlotActionEventPayload> | null =
+      props.createSlot ??
+      (props.mutateCommand
+        ? async (payload) =>
+            runCommand(
+              createCommandEnvelope(COMMANDS.ADD_SLOT, {
+                slot_id: payload.slotId,
+                start: payload.startIso,
+                end: payload.endIso,
+                assignee_id: payload.assigneeId,
+                created_by: payload.createdBy,
+              })
+            )
+        : null);
+
+    const bookSlotHandler: ActionRunner<SlotActionEventPayload> | null =
+      props.bookSlot ??
+      (props.mutateCommand
+        ? async (payload) =>
+            runCommand(
+              createCommandEnvelope(COMMANDS.ADD_APPOINTMENT, {
+                appointment_id: props.appointmentIdFactory(payload.slotId),
+                slot_id: payload.slotId,
+                invitee_ids: props.bookAppointmentInviteeIds,
+                title: props.bookAppointmentTitle,
+                created_by: props.bookAppointmentCreatedBy || props.createdBy,
+              })
+            )
+        : null);
+
+    const cancelSlotHandler: ActionRunner<SlotActionEventPayload> | null =
+      props.cancelSlot ??
+      (props.mutateCommand
+        ? async (payload) =>
+            runCommand(
+              createCommandEnvelope(COMMANDS.CANCEL_SLOT, {
+                slot_id: payload.slotId,
+              })
+            )
+        : null);
+
+    const deleteSlotHandler: ActionRunner<SlotActionEventPayload> | null =
+      props.deleteSlot ??
+      (props.mutateCommand
+        ? async (payload) =>
+            runCommand(
+              createCommandEnvelope(COMMANDS.DELETE_SLOT, {
+                slot_id: payload.slotId,
+              })
+            )
+        : null);
+
+    const cancelAppointmentHandler: ActionRunner<AppointmentActionEventPayload> | null =
+      props.cancelAppointment ??
+      (props.mutateCommand
+        ? async (payload) =>
+            runCommand(
+              createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
+                appointment_id: payload.appointmentId,
+                cancelled_by: props.cancelAppointmentBy || props.createdBy,
+              })
+            )
+        : null);
+
+    const deleteAppointmentHandler: ActionRunner<AppointmentActionEventPayload> | null =
+      props.deleteAppointment ??
+      (props.mutateCommand
+        ? async (payload) =>
+            runCommand(
+              createCommandEnvelope(COMMANDS.DELETE_APPOINTMENT, {
+                appointment_id: payload.appointmentId,
+              })
+            )
+        : null);
+
     async function runAction<TPayload>(
       action: MaiInteractionAction,
       payload: TPayload,
-      handler: ActionRunner<TPayload>,
+      handler: ActionRunner<TPayload> | null,
       successEvent: MaiInteractionSuccessEvent
     ) {
       actionBusy.value = true;
       interactionError.value = null;
       try {
+        if (!handler) {
+          const message = "no handler configured";
+          interactionError.value = message;
+          emit("interaction-error", { action, message });
+          return;
+        }
         const ok = await handler(payload);
         if (!ok) {
           const message = "action rejected";
@@ -255,7 +387,7 @@ export const MaiBoardInteractive = defineComponent({
                   runAction(
                     INTERACTION_ACTIONS.CREATE_SLOT,
                     payload,
-                    props.createSlot,
+                    createSlotHandler,
                     INTERACTION_SUCCESS_EVENTS.SLOT_CREATED
                   ),
               }}
@@ -274,21 +406,21 @@ export const MaiBoardInteractive = defineComponent({
                   runAction(
                     INTERACTION_ACTIONS.BOOK_SLOT,
                     payload,
-                    props.bookSlot,
+                    bookSlotHandler,
                     INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED
                   ),
                 "onCancel-slot": (payload: SlotActionEventPayload) =>
                   runAction(
                     INTERACTION_ACTIONS.CANCEL_SLOT,
                     payload,
-                    props.cancelSlot,
+                    cancelSlotHandler,
                     INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED
                   ),
                 "onDelete-slot": (payload: SlotActionEventPayload) =>
                   runAction(
                     INTERACTION_ACTIONS.DELETE_SLOT,
                     payload,
-                    props.deleteSlot,
+                    deleteSlotHandler,
                     INTERACTION_SUCCESS_EVENTS.SLOT_DELETED
                   ),
               }}
@@ -307,14 +439,14 @@ export const MaiBoardInteractive = defineComponent({
                   runAction(
                     INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
                     payload,
-                    props.cancelAppointment,
+                    cancelAppointmentHandler,
                     INTERACTION_SUCCESS_EVENTS.APPOINTMENT_CANCELLED
                   ),
                 "onDelete-appointment": (payload: AppointmentActionEventPayload) =>
                   runAction(
                     INTERACTION_ACTIONS.DELETE_APPOINTMENT,
                     payload,
-                    props.deleteAppointment,
+                    deleteAppointmentHandler,
                     INTERACTION_SUCCESS_EVENTS.APPOINTMENT_DELETED
                   ),
               }}
