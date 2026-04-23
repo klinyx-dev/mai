@@ -742,6 +742,7 @@ Contract rules:
 - initialization must be idempotent for repeated calls in the same runtime.
 - bootstrap/runtime failures must surface as stable JS `Error` values with deterministic messages.
 - app code should only consume package exports; no deep relative imports to generated wasm files.
+- app mutation calls should use centralized command/query constants plus typed envelope builders from `@mai/mai-web-core` to reduce string drift and enforce payload shape at compile time.
 
 Migration-safe usage example:
 ```ts
@@ -750,6 +751,18 @@ import { createNuxtMaiState } from "@mai/mai-ui-vue";
 
 const adapter = await createWasmAdapter();
 const state = createNuxtMaiState(adapter);
+```
+
+Typed command helper usage example:
+```ts
+import { COMMANDS, createCommandEnvelope } from "@mai/mai-web-core";
+
+const command = createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
+  appointment_id: "appt-1",
+  cancelled_by: "ui-operator",
+});
+
+const response = executeCommand(adapter, command);
 ```
 
 Current implementation status (completed on 2026-04-22):

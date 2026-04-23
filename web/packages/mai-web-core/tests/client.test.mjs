@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createCommandEnvelope,
+  createQueryEnvelope,
   executeCommand,
   executeWeeklyLayoutQuery,
 } from "../dist/client.js";
-import { COMMANDS } from "../dist/types.js";
+import { COMMANDS, QUERIES } from "../dist/types.js";
 
 test("executeWeeklyLayoutQuery returns parsed success payload", () => {
   const adapter = {
@@ -51,4 +52,32 @@ test("executeCommand sends command envelope and parses success payload", () => {
   const parsed = JSON.parse(captured);
   assert.equal(parsed.command, "delete_slot");
   assert.equal(parsed.payload.slot_id, "slot-1");
+});
+
+test("createCommandEnvelope supports new cancel appointment command", () => {
+  const command = createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
+    appointment_id: "appt-1",
+    cancelled_by: "ui-operator",
+  });
+
+  assert.deepEqual(command, {
+    command: "cancel_appointment",
+    payload: {
+      appointment_id: "appt-1",
+      cancelled_by: "ui-operator",
+    },
+  });
+});
+
+test("createQueryEnvelope uses centralized query constants", () => {
+  const query = createQueryEnvelope(QUERIES.WEEKLY_LAYOUT, {
+    anchor_date: "2026-05-07",
+  });
+
+  assert.deepEqual(query, {
+    query: "weekly_layout",
+    payload: {
+      anchor_date: "2026-05-07",
+    },
+  });
 });

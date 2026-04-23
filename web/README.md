@@ -89,6 +89,25 @@ pnpm --filter @mai/nuxt-app-example dev --host 127.0.0.1 --port 3101
 - `pnpm run example:dev`:
   runs Nuxt example development server.
 
+## Recommended command execution pattern
+For robust app-side mutation calls, prefer constants + envelope builders from `@mai/mai-web-core`:
+
+```ts
+import { COMMANDS, createCommandEnvelope } from "@mai/mai-web-core";
+
+const command = createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
+  appointment_id: "appt-1",
+  cancelled_by: "ui-operator",
+});
+
+const ok = await mai.mutate(command);
+```
+
+Why:
+- centralized command names reduce string drift;
+- payload shape is inferred from command constant;
+- adapter JSON envelope remains unchanged.
+
 ## Migration notes
 Old app-level wiring (avoid):
 ```ts
