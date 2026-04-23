@@ -26,7 +26,7 @@ test("empty cell click opens create-slot popover", () => {
   assert.equal(overlayKindForSelection(next), "create-slot");
 });
 
-test("empty cell second click on same cell closes create-slot popover", () => {
+test("empty cell second click closes create-slot popover", () => {
   const firstClick = {
     dayIndex: 2,
     minuteOfDay: 540,
@@ -43,27 +43,21 @@ test("empty cell second click on same cell closes create-slot popover", () => {
   assert.equal(overlayKindForSelection(toggled), "none");
 });
 
-test("empty cell click on different target retargets draft", () => {
+test("empty cell click on different target also closes create-slot popover", () => {
   const opened = withEmptyCellDraft({
     dayIndex: 2,
     minuteOfDay: 540,
     clientX: 120,
     clientY: 240,
   });
-  const switched = applyEmptyCellClick(opened, {
+  const toggled = applyEmptyCellClick(opened, {
     dayIndex: 2,
     minuteOfDay: 555,
     clientX: 140,
     clientY: 260,
   });
 
-  assert.equal(overlayKindForSelection(switched), "create-slot");
-  assert.deepEqual(switched.pendingSlotDraft, {
-    dayIndex: 2,
-    minuteOfDay: 555,
-    clientX: 140,
-    clientY: 260,
-  });
+  assert.equal(overlayKindForSelection(toggled), "none");
 });
 
 test("slot click opens slot actions popover", () => {

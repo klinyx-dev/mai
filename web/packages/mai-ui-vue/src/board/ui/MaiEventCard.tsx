@@ -1,4 +1,4 @@
-import { defineComponent, h, type PropType } from "vue";
+import { defineComponent, h, ref, type PropType } from "vue";
 import type { CalendarEvent } from "../model/view-model";
 import type { SlotRescheduleActionEventPayload } from "../../types";
 import {
@@ -9,6 +9,7 @@ import {
 } from "../model/slot-gesture";
 
 type DragMode = "move" | "resize-top" | "resize-bottom";
+const DRAG_ACTIVATION_PX = 4;
 
 interface DragState {
   mode: DragMode;
@@ -46,8 +47,9 @@ export const MaiEventCard = defineComponent({
     },
   },
   setup(props) {
-    let dragState: DragState | null = null;
-    let suppressNextClick = false;
+    const dragState = ref<DragState | null>(null);
+    const suppressNextClick = ref(false);
+    const dragMoved = ref(false);
 
     function centerPointFromTarget(target: EventTarget | null): {
       clientX: number;
@@ -69,91 +71,93 @@ export const MaiEventCard = defineComponent({
     }
 
     function computeDraftFromPointer(clientX: number, clientY: number): DragState | null {
-      if (!dragState) {
+      if (!dragState.value) {
         return null;
       }
       const gesture = {
-        deltaClientX: clientX - dragState.startClientX,
-        deltaClientY: clientY - dragState.startClientY,
-        gridHeight: dragState.gridHeight,
-        columnWidth: dragState.columnWidth,
+        deltaClientX: clientX - dragState.value.startClientX,
+        deltaClientY: clientY - dragState.value.startClientY,
+        gridHeight: dragState.value.gridHeight,
+        columnWidth: dragState.value.columnWidth,
         totalVisibleMinutes: props.totalVisibleMinutes,
       };
 
-      if (dragState.mode === "move") {
+      if (dragState.value.mode === "move") {
         const moveDraft = computeMoveDraft({
-          baseDayIndex: dragState.baseDayIndex,
-          baseStartMinute: dragState.baseStartMinute,
-          baseEndMinute: dragState.baseEndMinute,
+          baseDayIndex: dragState.value.baseDayIndex,
+          baseStartMinute: dragState.value.baseStartMinute,
+          baseEndMinute: dragState.value.baseEndMinute,
           gesture,
         });
         return {
-          ...dragState,
+          ...dragState.value,
           draftDayIndex: moveDraft.dayIndex,
           draftStartMinute: moveDraft.startMinute,
           draftEndMinute: moveDraft.endMinute,
         };
       }
 
-      if (dragState.mode === "resize-top") {
+      if (dragState.value.mode === "resize-top") {
         const resizeDraft = computeResizeTopDraft({
-          baseStartMinute: dragState.baseStartMinute,
-          baseEndMinute: dragState.baseEndMinute,
+          baseStartMinute: dragState.value.baseStartMinute,
+          baseEndMinute: dragState.value.baseEndMinute,
           gesture,
         });
         return {
-          ...dragState,
+          ...dragState.value,
           draftStartMinute: resizeDraft.startMinute,
           draftEndMinute: resizeDraft.endMinute,
         };
       }
 
       const resizeDraft = computeResizeBottomDraft({
-        baseStartMinute: dragState.baseStartMinute,
-        baseEndMinute: dragState.baseEndMinute,
+        baseStartMinute: dragState.value.baseStartMinute,
+        baseEndMinute: dragState.value.baseEndMinute,
         gesture,
       });
       return {
-        ...dragState,
+        ...dragState.value,
         draftStartMinute: resizeDraft.startMinute,
         draftEndMinute: resizeDraft.endMinute,
       };
     }
 
     function commitDragState() {
-      if (!dragState || !props.onSlotReschedule || props.event.kind !== "slot") {
-        dragState = null;
+      if (!dragState.value || !props.onSlotReschedule || props.event.kind !== "slot") {
+        dragState.value = null;
         return;
       }
       const unchanged =
-        dragState.baseDayIndex === dragState.draftDayIndex &&
-        dragState.baseStartMinute === dragState.draftStartMinute &&
-        dragState.baseEndMinute === dragState.draftEndMinute;
+        dragState.value.baseDayIndex === dragState.value.draftDayIndex &&
+        dragState.value.baseStartMinute === dragState.value.draftStartMinute &&
+        dragState.value.baseEndMinute === dragState.value.draftEndMinute;
       if (!unchanged) {
         props.onSlotReschedule({
           slotId: props.event.slotId,
-          dayIndex: dragState.draftDayIndex,
-          startMinute: dragState.draftStartMinute,
-          endMinute: dragState.draftEndMinute,
+          dayIndex: dragState.value.draftDayIndex,
+          startMinute: dragState.value.draftStartMinute,
+          endMinute: dragState.value.draftEndMinute,
         });
       }
-      dragState = null;
+      dragState.value = null;
     }
 
     function startDrag(mode: DragMode, event: MouseEvent) {
       if (event.button !== 0) {
         return;
       }
+      event.preventDefault();
       if (props.event.kind !== "slot") {
         return;
       }
-      const card = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+      const source = event.target instanceof HTMLElement ? event.target : null;
+      const card = source?.closest(".mai-board__event") as HTMLElement | null;
       const dayGrid = card?.parentElement;
       if (!card || !dayGrid) {
         return;
       }
       const gridRect = dayGrid.getBoundingClientRect();
-      dragState = {
+      dragState.value = {
         mode,
         startClientX: event.clientX,
         startClientY: event.clientY,
@@ -166,53 +170,84 @@ export const MaiEventCard = defineComponent({
         gridHeight: gridRect.height,
         columnWidth: gridRect.width,
       };
-      suppressNextClick = true;
+      dragMoved.value = false;
 
       const onMove = (moveEvent: MouseEvent) => {
+        if (!dragState.value) {
+          return;
+        }
+        const movedX = moveEvent.clientX - dragState.value.startClientX;
+        const movedY = moveEvent.clientY - dragState.value.startClientY;
+        const dragDistance = Math.hypot(movedX, movedY);
+        if (dragDistance < DRAG_ACTIVATION_PX) {
+          return;
+        }
+        dragMoved.value = true;
         const next = computeDraftFromPointer(moveEvent.clientX, moveEvent.clientY);
         if (next) {
-          dragState = next;
+          dragState.value = next;
         }
       };
       const onUp = () => {
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("mouseup", onUp);
-        commitDragState();
+        if (dragMoved.value) {
+          swallowNextClickFromDrag();
+          commitDragState();
+        } else {
+          dragState.value = null;
+        }
+        suppressNextClick.value = dragMoved.value;
       };
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseup", onUp);
     }
 
     function currentTop(): number {
-      if (!dragState) {
+      if (!dragState.value) {
         return props.top;
       }
       return (
-        ((dragState.draftStartMinute - props.visibleStartMinute) / props.totalVisibleMinutes) *
-        100
+        ((dragState.value.draftStartMinute - props.visibleStartMinute) /
+          props.totalVisibleMinutes) *
+          100
       );
     }
 
     function currentHeight(): number {
-      if (!dragState) {
+      if (!dragState.value) {
         return props.height;
       }
       const span = Math.max(
-        dragState.draftEndMinute - dragState.draftStartMinute,
+        dragState.value.draftEndMinute - dragState.value.draftStartMinute,
         SLOT_SNAP_MINUTES
       );
       return (span / props.totalVisibleMinutes) * 100;
     }
 
     function currentTransform(): string | undefined {
-      if (!dragState || dragState.mode !== "move") {
+      if (!dragState.value || dragState.value.mode !== "move") {
         return undefined;
       }
-      const dayDelta = dragState.draftDayIndex - dragState.baseDayIndex;
+      const dayDelta = dragState.value.draftDayIndex - dragState.value.baseDayIndex;
       if (dayDelta === 0) {
         return undefined;
       }
       return `translateX(calc(${dayDelta} * 100%))`;
+    }
+
+    function ghostLabelMinuteStart(): number {
+      if (!dragState.value) {
+        return props.event.startMinute;
+      }
+      return dragState.value.draftStartMinute;
+    }
+
+    function ghostLabelMinuteEnd(): number {
+      if (!dragState.value) {
+        return props.event.endMinute;
+      }
+      return dragState.value.draftEndMinute;
     }
 
     function handleKeydown(event: KeyboardEvent) {
@@ -222,61 +257,96 @@ export const MaiEventCard = defineComponent({
       }
     }
 
-    return () => (
-      <div
-        class={`mai-board__event mai-board__event--${props.event.kind}${
-          dragState ? " mai-board__event--dragging" : ""
-        }`}
-        key={`${props.event.kind}-${props.event.id}`}
-        style={{
-          top: `${currentTop()}%`,
-          height: `${currentHeight()}%`,
-          transform: currentTransform(),
-        }}
-        role="button"
-        tabindex={0}
-        onClick={(event) => {
-          if (suppressNextClick) {
-            suppressNextClick = false;
-            return;
-          }
-          event.stopPropagation();
-          handleActivate({ clientX: event.clientX, clientY: event.clientY });
-        }}
-        onKeydown={handleKeydown}
-        onMousedown={(event) => {
-          if (props.event.kind !== "slot") {
-            return;
-          }
-          event.stopPropagation();
-          startDrag("move", event);
-        }}
-      >
-        {props.event.kind === "slot" ? (
-          <div class="mai-board__event-resize-handles">
-            <div
-              class="mai-board__event-resize-handle mai-board__event-resize-handle--top"
-              onMousedown={(event) => {
-                event.stopPropagation();
-                startDrag("resize-top", event);
-              }}
-            ></div>
-            <div
-              class="mai-board__event-resize-handle mai-board__event-resize-handle--bottom"
-              onMousedown={(event) => {
-                event.stopPropagation();
-                startDrag("resize-bottom", event);
-              }}
-            ></div>
+    return () => {
+      const showGhost = Boolean(dragState.value && dragMoved.value);
+      const originKey = `${props.event.kind}-${props.event.id}-origin`;
+      const ghostKey = `${props.event.kind}-${props.event.id}-ghost`;
+
+      return [
+        <div
+          class={`mai-board__event mai-board__event--${props.event.kind}${
+            showGhost ? " mai-board__event--origin" : ""
+          }`}
+          key={originKey}
+          style={{
+            top: `${props.top}%`,
+            height: `${props.height}%`,
+          }}
+          role="button"
+          tabindex={0}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (suppressNextClick.value) {
+              suppressNextClick.value = false;
+              return;
+            }
+            handleActivate({ clientX: event.clientX, clientY: event.clientY });
+          }}
+          onKeydown={handleKeydown}
+          onMousedown={(event) => {
+            if (props.event.kind !== "slot") {
+              return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            startDrag("move", event);
+          }}
+        >
+          {props.event.kind === "slot" ? (
+            <div class="mai-board__event-resize-handles">
+              <div
+                class="mai-board__event-resize-handle mai-board__event-resize-handle--top"
+                onMousedown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  startDrag("resize-top", event);
+                }}
+              ></div>
+              <div
+                class="mai-board__event-resize-handle mai-board__event-resize-handle--bottom"
+                onMousedown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  startDrag("resize-bottom", event);
+                }}
+              ></div>
+            </div>
+          ) : null}
+          <p class="mai-board__event-title">
+            {props.event.kind === "slot" ? "Available slot" : "Appointment"}
+          </p>
+          <p class="mai-board__event-time">
+            {props.minuteLabel(props.event.startMinute)}-{props.minuteLabel(props.event.endMinute)}
+          </p>
+        </div>,
+        showGhost ? (
+          <div
+            class={`mai-board__event mai-board__event--ghost mai-board__event--${props.event.kind}`}
+            key={ghostKey}
+            style={{
+              top: `${currentTop()}%`,
+              height: `${currentHeight()}%`,
+              transform: currentTransform(),
+            }}
+          >
+            <p class="mai-board__event-title">
+              {props.event.kind === "slot" ? "Available slot" : "Appointment"}
+            </p>
+            <p class="mai-board__event-time">
+              {props.minuteLabel(ghostLabelMinuteStart())}-
+              {props.minuteLabel(ghostLabelMinuteEnd())}
+            </p>
           </div>
-        ) : null}
-        <p class="mai-board__event-title">
-          {props.event.kind === "slot" ? "Available slot" : "Appointment"}
-        </p>
-        <p class="mai-board__event-time">
-          {props.minuteLabel(props.event.startMinute)}-{props.minuteLabel(props.event.endMinute)}
-        </p>
-      </div>
-    );
+        ) : null,
+      ];
+    };
   },
 });
+    function swallowNextClickFromDrag() {
+      const onClickCapture = (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        window.removeEventListener("click", onClickCapture, true);
+      };
+      window.addEventListener("click", onClickCapture, true);
+    }

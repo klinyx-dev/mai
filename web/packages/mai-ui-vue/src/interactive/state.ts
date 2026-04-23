@@ -86,7 +86,7 @@ export function applyEmptyCellClick(
   state: MaiInteractionSelectionState,
   payload: EmptyCellClickEventPayload
 ): MaiInteractionSelectionState {
-  if (state.pendingSlotDraft && isSameEmptyCellDraft(state.pendingSlotDraft, payload)) {
+  if (state.pendingSlotDraft) {
     return clearSelectionState();
   }
   return withEmptyCellDraft(payload);

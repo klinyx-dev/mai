@@ -1,6 +1,7 @@
 export type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
+  SlotDraftPreview,
   SlotClickEventPayload,
   TimeLabelFormat,
   WeekShift,

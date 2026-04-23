@@ -229,6 +229,22 @@ export const MaiBoardInteractive = defineComponent({
       return popoverStyleFromPoint(point.clientX, point.clientY);
     });
 
+    const previewSlotDraft = computed(() => {
+      if (!selection.value.pendingSlotDraft) {
+        return null;
+      }
+      const startMinute = Math.max(0, Math.min(1440, selection.value.pendingSlotDraft.minuteOfDay));
+      const endMinute = Math.max(
+        startMinute + 1,
+        Math.min(1440, startMinute + props.defaultSlotDurationMinutes)
+      );
+      return {
+        dayIndex: selection.value.pendingSlotDraft.dayIndex,
+        startMinute,
+        endMinute,
+      };
+    });
+
     function clearSelection() {
       selection.value = clearSelectionState();
     }
@@ -341,6 +357,7 @@ export const MaiBoardInteractive = defineComponent({
           visibleEndMinute={props.visibleEndMinute}
           timeLabelFormat={props.timeLabelFormat}
           emptyStateText={props.emptyStateText}
+          previewSlotDraft={previewSlotDraft.value}
           showActionOverlay={false}
           {...{
             "onNavigate-week": (shift: WeekShift) => emit("navigate-week", shift),

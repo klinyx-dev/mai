@@ -27,3 +27,9 @@ export interface EmptyCellClickEventPayload {
   clientX: number;
   clientY: number;
 }
+
+export interface SlotDraftPreview {
+  dayIndex: number;
+  startMinute: number;
+  endMinute: number;
+}

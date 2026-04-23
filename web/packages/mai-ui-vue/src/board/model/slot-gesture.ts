@@ -1,5 +1,6 @@
 const MINUTES_PER_DAY = 1440;
-export const SLOT_SNAP_MINUTES = 15;
+export const SLOT_SNAP_MINUTES = 1;
+const MIN_SLOT_SPAN_MINUTES = 1;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -61,7 +62,7 @@ export function computeResizeTopDraft(params: {
   const startMinute = clamp(
     params.baseStartMinute + minuteDelta,
     0,
-    params.baseEndMinute - SLOT_SNAP_MINUTES
+    params.baseEndMinute - MIN_SLOT_SPAN_MINUTES
   );
   return {
     startMinute,
@@ -77,7 +78,7 @@ export function computeResizeBottomDraft(params: {
   const minuteDelta = minuteDeltaFromGesture(params.gesture);
   const endMinute = clamp(
     params.baseEndMinute + minuteDelta,
-    params.baseStartMinute + SLOT_SNAP_MINUTES,
+    params.baseStartMinute + MIN_SLOT_SPAN_MINUTES,
     MINUTES_PER_DAY
   );
   return {

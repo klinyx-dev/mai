@@ -12,6 +12,7 @@ import type {
   MaiAppointmentChangedEventPayload,
   MaiInteractionErrorPayload,
   MaiSlotCreatedEventPayload,
+  MaiSlotRescheduledEventPayload,
   SlotActionEventPayload,
 } from "@mai/mai-ui-vue";
 
@@ -27,6 +28,7 @@ const assigneeId = "doctor-42";
 let mai: ReturnType<typeof useMai> | null = null;
 const SUCCESS_EVENT_TO_ACTION = {
   [INTERACTION_SUCCESS_EVENTS.SLOT_CREATED]: INTERACTION_ACTIONS.CREATE_SLOT,
+  [INTERACTION_SUCCESS_EVENTS.SLOT_RESCHEDULED]: INTERACTION_ACTIONS.RESCHEDULE_SLOT,
   [INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED]: INTERACTION_ACTIONS.BOOK_SLOT,
   [INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED]: INTERACTION_ACTIONS.CANCEL_SLOT,
   [INTERACTION_SUCCESS_EVENTS.SLOT_DELETED]: INTERACTION_ACTIONS.DELETE_SLOT,
@@ -102,6 +104,13 @@ async function onSlotBooked(payload: SlotActionEventPayload): Promise<void> {
   await refreshWeek();
 }
 
+async function onSlotRescheduled(
+  payload: MaiSlotRescheduledEventPayload
+): Promise<void> {
+  setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_RESCHEDULED, payload.slotId);
+  await refreshWeek();
+}
+
 async function onSlotCancelled(payload: SlotActionEventPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED, payload.slotId);
   await refreshWeek();
@@ -166,6 +175,7 @@ onMounted(async () => {
         cancel-appointment-by="ui-operator"
         @navigate-week="navigateWeek"
         @slot-created="onSlotCreated"
+        @slot-rescheduled="onSlotRescheduled"
         @slot-booked="onSlotBooked"
         @slot-cancelled="onSlotCancelled"
         @slot-deleted="onSlotDeleted"

@@ -203,6 +203,8 @@
   min-width: 980px;
   display: grid;
   grid-template-columns: 74px repeat(7, minmax(120px, 1fr));
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .mai-board__time-column {
@@ -353,13 +355,39 @@
   border-left-color: var(--mai-appointment-border);
 }
 
+.mai-board__event--origin {
+  opacity: 0.45;
+}
+
+.mai-board__event--ghost {
+  z-index: 9;
+  pointer-events: none;
+  border-style: dashed;
+  border-width: 1px;
+  border-left-width: 3px;
+  box-shadow:
+    0 10px 20px rgba(31, 111, 235, 0.18),
+    inset 0 0 0 1px rgba(31, 111, 235, 0.3);
+}
+
+.mai-board__event--draft {
+  z-index: 2;
+  pointer-events: none;
+  border-style: dashed;
+  border-width: 1px;
+  border-left-width: 3px;
+  background: rgba(31, 111, 235, 0.09);
+  box-shadow: none;
+}
+
 .mai-board__event-resize-handle {
   position: absolute;
   left: 8px;
   right: 8px;
-  height: 8px;
+  height: 12px;
   border-radius: 999px;
   z-index: 2;
+  background: transparent;
 }
 
 .mai-board__event-resize-handles {

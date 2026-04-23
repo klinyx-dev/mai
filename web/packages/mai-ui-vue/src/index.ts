@@ -12,6 +12,7 @@ export type {
   AppointmentClickEventPayload,
   CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
+  SlotDraftPreview,
   SlotActionEventPayload,
   SlotRescheduleActionEventPayload,
   SlotClickEventPayload,

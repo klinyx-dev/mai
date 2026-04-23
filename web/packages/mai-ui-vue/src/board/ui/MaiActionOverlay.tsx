@@ -30,16 +30,19 @@ export const MaiActionOverlay = defineComponent({
   props: {
     show: { type: Boolean, required: true },
     pendingSlotDraft: {
-      type: Object as PropType<EmptyCellClickEventPayload | null>,
-      required: true,
+      type: null as unknown as PropType<EmptyCellClickEventPayload | null>,
+      required: false,
+      default: null,
     },
     selectedSlot: {
-      type: Object as PropType<SlotClickEventPayload | null>,
-      required: true,
+      type: null as unknown as PropType<SlotClickEventPayload | null>,
+      required: false,
+      default: null,
     },
     selectedAppointment: {
-      type: Object as PropType<AppointmentClickEventPayload | null>,
-      required: true,
+      type: null as unknown as PropType<AppointmentClickEventPayload | null>,
+      required: false,
+      default: null,
     },
     weekStartIso: { type: String, required: true },
     actionAssigneeId: { type: String, required: true },

@@ -1,6 +1,6 @@
 import type { WeeklyLayout } from "@mai/mai-web-core";
 import type { ExtractPropTypes, PropType } from "vue";
-import type { TimeLabelFormat } from "../../types";
+import type { SlotDraftPreview, TimeLabelFormat } from "../../types";
 import { isMinuteRange } from "./validators";
 
 export const maiBoardProps = {
@@ -80,6 +80,11 @@ export const maiBoardProps = {
     type: Boolean,
     required: false,
     default: true,
+  },
+  previewSlotDraft: {
+    type: null as unknown as PropType<SlotDraftPreview | null>,
+    required: false,
+    default: null,
   },
 };
 

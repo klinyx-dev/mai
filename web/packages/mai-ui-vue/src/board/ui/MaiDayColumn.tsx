@@ -10,6 +10,7 @@ import {
 import type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
+  SlotDraftPreview,
   SlotClickEventPayload,
   SlotRescheduleActionEventPayload,
 } from "../../types";
@@ -38,6 +39,11 @@ export const MaiDayColumn = defineComponent({
     },
     onSlotReschedule: {
       type: Function as PropType<(payload: SlotRescheduleActionEventPayload) => void>,
+      required: false,
+      default: null,
+    },
+    previewSlotDraft: {
+      type: null as unknown as PropType<SlotDraftPreview | null>,
       required: false,
       default: null,
     },
@@ -119,6 +125,34 @@ export const MaiDayColumn = defineComponent({
               />
             );
           })}
+          {props.previewSlotDraft &&
+          props.previewSlotDraft.dayIndex === props.column.dayIndex ? (() => {
+            const clamped = clampToVisibleRange(
+              props.previewSlotDraft.startMinute,
+              props.previewSlotDraft.endMinute,
+              props.visibleStartMinute,
+              props.visibleEndMinute
+            );
+            if (!clamped) {
+              return null;
+            }
+            const span = Math.max(clamped.end - clamped.start, 1);
+            const top =
+              ((clamped.start - props.visibleStartMinute) / props.totalVisibleMinutes) * 100;
+            const height = (span / props.totalVisibleMinutes) * 100;
+            return (
+              <div
+                class="mai-board__event mai-board__event--draft"
+                style={{ top: `${top}%`, height: `${height}%` }}
+              >
+                <p class="mai-board__event-title">New slot</p>
+                <p class="mai-board__event-time">
+                  {props.minuteLabel(props.previewSlotDraft.startMinute)}-
+                  {props.minuteLabel(props.previewSlotDraft.endMinute)}
+                </p>
+              </div>
+            );
+          })() : null}
           {props.column.events.length === 0 ? (
             <p class="mai-board__empty">{props.emptyStateText}</p>
           ) : null}

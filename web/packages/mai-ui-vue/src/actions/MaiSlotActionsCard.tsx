@@ -33,43 +33,48 @@ export const MaiSlotActionsCard = defineComponent({
   setup(props, { emit }) {
     const slotPayload = () => buildSlotActionPayload(props.slot.slotId);
 
-    return () => (
-      <MaiActionCard
-        title="Selected Slot"
-        closeAriaLabel="Close slot actions"
-        onClose={() => emit("close")}
-      >
-        <MaiActionMetaList
-          lines={[
-            `${props.slot.slotId} - day ${props.slot.dayIndex}`,
-            `${props.slot.startMinute} - ${props.slot.endMinute}`,
-          ]}
-        />
-        <MaiActionButtons
-          buttons={[
-            {
-              key: INTERACTION_ACTIONS.BOOK_SLOT,
-              label: "Book Slot",
-              tone: "primary",
-              disabled: props.busy,
-              onClick: () => emit(INTERACTION_ACTIONS.BOOK_SLOT, slotPayload()),
-            },
-            {
-              key: INTERACTION_ACTIONS.CANCEL_SLOT,
-              label: "Cancel Slot",
-              disabled: props.busy,
-              onClick: () => emit(INTERACTION_ACTIONS.CANCEL_SLOT, slotPayload()),
-            },
-            {
-              key: INTERACTION_ACTIONS.DELETE_SLOT,
-              label: "Delete Slot",
-              tone: "danger",
-              disabled: props.busy,
-              onClick: () => emit(INTERACTION_ACTIONS.DELETE_SLOT, slotPayload()),
-            },
-          ]}
-        />
-      </MaiActionCard>
-    );
+    return () =>
+      h(
+        MaiActionCard,
+        {
+          title: "Selected Slot",
+          closeAriaLabel: "Close slot actions",
+          onClose: () => emit("close"),
+        },
+        {
+          default: () => [
+            h(MaiActionMetaList, {
+              lines: [
+                `${props.slot.slotId} - day ${props.slot.dayIndex}`,
+                `${props.slot.startMinute} - ${props.slot.endMinute}`,
+              ],
+            }),
+            h(MaiActionButtons, {
+              buttons: [
+                {
+                  key: INTERACTION_ACTIONS.BOOK_SLOT,
+                  label: "Book Slot",
+                  tone: "primary",
+                  disabled: props.busy,
+                  onClick: () => emit(INTERACTION_ACTIONS.BOOK_SLOT, slotPayload()),
+                },
+                {
+                  key: INTERACTION_ACTIONS.CANCEL_SLOT,
+                  label: "Cancel Slot",
+                  disabled: props.busy,
+                  onClick: () => emit(INTERACTION_ACTIONS.CANCEL_SLOT, slotPayload()),
+                },
+                {
+                  key: INTERACTION_ACTIONS.DELETE_SLOT,
+                  label: "Delete Slot",
+                  tone: "danger",
+                  disabled: props.busy,
+                  onClick: () => emit(INTERACTION_ACTIONS.DELETE_SLOT, slotPayload()),
+                },
+              ],
+            }),
+          ],
+        }
+      );
   },
 });

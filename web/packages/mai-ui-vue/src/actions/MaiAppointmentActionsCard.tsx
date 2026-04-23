@@ -39,38 +39,43 @@ export const MaiAppointmentActionsCard = defineComponent({
     const appointmentPayload = () =>
       buildAppointmentActionPayload(props.appointment.appointmentId);
 
-    return () => (
-      <MaiActionCard
-        title="Selected Appointment"
-        closeAriaLabel="Close appointment actions"
-        onClose={() => emit("close")}
-      >
-        <MaiActionMetaList
-          lines={[
-            `${props.appointment.appointmentId} - slot ${props.appointment.slotId}`,
-            `day ${props.appointment.dayIndex} - ${props.appointment.startMinute} - ${props.appointment.endMinute}`,
-          ]}
-        />
-        <MaiActionButtons
-          buttons={[
-            {
-              key: INTERACTION_ACTIONS.DELETE_APPOINTMENT,
-              label: "Delete Appointment",
-              tone: "danger",
-              disabled: props.busy,
-              onClick: () =>
-                emit(INTERACTION_ACTIONS.DELETE_APPOINTMENT, appointmentPayload()),
-            },
-            {
-              key: INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
-              label: "Cancel Appointment",
-              disabled: props.busy,
-              onClick: () =>
-                emit(INTERACTION_ACTIONS.CANCEL_APPOINTMENT, appointmentPayload()),
-            },
-          ]}
-        />
-      </MaiActionCard>
-    );
+    return () =>
+      h(
+        MaiActionCard,
+        {
+          title: "Selected Appointment",
+          closeAriaLabel: "Close appointment actions",
+          onClose: () => emit("close"),
+        },
+        {
+          default: () => [
+            h(MaiActionMetaList, {
+              lines: [
+                `${props.appointment.appointmentId} - slot ${props.appointment.slotId}`,
+                `day ${props.appointment.dayIndex} - ${props.appointment.startMinute} - ${props.appointment.endMinute}`,
+              ],
+            }),
+            h(MaiActionButtons, {
+              buttons: [
+                {
+                  key: INTERACTION_ACTIONS.DELETE_APPOINTMENT,
+                  label: "Delete Appointment",
+                  tone: "danger",
+                  disabled: props.busy,
+                  onClick: () =>
+                    emit(INTERACTION_ACTIONS.DELETE_APPOINTMENT, appointmentPayload()),
+                },
+                {
+                  key: INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
+                  label: "Cancel Appointment",
+                  disabled: props.busy,
+                  onClick: () =>
+                    emit(INTERACTION_ACTIONS.CANCEL_APPOINTMENT, appointmentPayload()),
+                },
+              ],
+            }),
+          ],
+        }
+      );
   },
 });

@@ -13,7 +13,7 @@ const gestureBaseline = {
   totalVisibleMinutes: 1440,
 };
 
-test("computeMoveDraft snaps to 15-minute increments and moves day by column width", () => {
+test("computeMoveDraft snaps to minute precision and moves day by column width", () => {
   const draft = computeMoveDraft({
     baseDayIndex: 2,
     baseStartMinute: 540,
@@ -27,12 +27,12 @@ test("computeMoveDraft snaps to 15-minute increments and moves day by column wid
 
   assert.deepEqual(draft, {
     dayIndex: 3,
-    startMinute: 570,
-    endMinute: 630,
+    startMinute: 566,
+    endMinute: 626,
   });
 });
 
-test("computeResizeTopDraft clamps to minimum 15-minute span", () => {
+test("computeResizeTopDraft clamps to minimum 1-minute span", () => {
   const draft = computeResizeTopDraft({
     baseStartMinute: 600,
     baseEndMinute: 660,
@@ -44,7 +44,7 @@ test("computeResizeTopDraft clamps to minimum 15-minute span", () => {
   });
 
   assert.deepEqual(draft, {
-    startMinute: 645,
+    startMinute: 659,
     endMinute: 660,
   });
 });
