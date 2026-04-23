@@ -1,8 +1,12 @@
 import type {
+  CommandPayloadMap,
   CommandName,
   CommandEnvelope,
+  TypedCommandEnvelope,
   QueryName,
+  QueryPayloadMap,
   QueryEnvelope,
+  TypedQueryEnvelope,
   WasmResponse,
   WeeklyLayout,
   WeeklyLayoutQueryPayload,
@@ -14,20 +18,24 @@ export interface JsonAdapter {
   execute_query_json(input: string): string;
 }
 
-export function createCommandEnvelope<TPayload extends object>(
-  command: CommandName,
-  payload: TPayload
-): CommandEnvelope<TPayload> {
+export function createCommandEnvelope<TCommand extends CommandName>(
+  command: TCommand,
+  payload: CommandPayloadMap[TCommand]
+): TypedCommandEnvelope<TCommand> {
   return { command, payload };
 }
 
-export function createQueryEnvelope<TPayload extends object>(
-  query: QueryName,
-  payload: TPayload
-): QueryEnvelope<TPayload> {
+export function createQueryEnvelope<TQuery extends QueryName>(
+  query: TQuery,
+  payload: QueryPayloadMap[TQuery]
+): TypedQueryEnvelope<TQuery> {
   return { query, payload };
 }
 
+export function executeCommand<TCommand extends CommandName>(
+  adapter: JsonAdapter,
+  command: TypedCommandEnvelope<TCommand>
+): WasmResponse<"applied">;
 export function executeCommand<TPayload extends object>(
   adapter: JsonAdapter,
   command: CommandEnvelope<TPayload>
