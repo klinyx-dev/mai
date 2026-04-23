@@ -10,3 +10,10 @@ export type {
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
 } from "./types/actions";
+export type {
+  MaiAppointmentChangedEventPayload,
+  MaiInteractionAction,
+  MaiInteractionErrorPayload,
+  MaiSlotChangedEventPayload,
+  MaiSlotCreatedEventPayload,
+} from "./types/interactive";
