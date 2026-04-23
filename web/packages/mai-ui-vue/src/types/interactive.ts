@@ -2,10 +2,12 @@ import type {
   AppointmentActionEventPayload,
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
+  SlotRescheduleActionEventPayload,
 } from "./actions";
 
 export const INTERACTION_ACTIONS = {
   CREATE_SLOT: "create-slot",
+  RESCHEDULE_SLOT: "reschedule-slot",
   BOOK_SLOT: "book-slot",
   CANCEL_SLOT: "cancel-slot",
   DELETE_SLOT: "delete-slot",
@@ -15,6 +17,7 @@ export const INTERACTION_ACTIONS = {
 
 export const INTERACTION_SUCCESS_EVENTS = {
   SLOT_CREATED: "slot-created",
+  SLOT_RESCHEDULED: "slot-rescheduled",
   SLOT_BOOKED: "slot-booked",
   SLOT_CANCELLED: "slot-cancelled",
   SLOT_DELETED: "slot-deleted",
@@ -35,6 +38,9 @@ export interface MaiInteractionErrorPayload {
 export interface MaiSlotCreatedEventPayload extends CreateSlotActionEventPayload {}
 
 export interface MaiSlotChangedEventPayload extends SlotActionEventPayload {}
+
+export interface MaiSlotRescheduledEventPayload
+  extends SlotRescheduleActionEventPayload {}
 
 export interface MaiAppointmentChangedEventPayload
   extends AppointmentActionEventPayload {}

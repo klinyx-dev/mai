@@ -7,7 +7,9 @@ import type {
   AppointmentActionEventPayload,
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
+  SlotRescheduleActionEventPayload,
 } from "../types";
+import { dateFromWeekPoint, isoFromDate } from "../actions/payload.js";
 
 export interface CommandModeOptions {
   createdBy: string;
@@ -16,6 +18,7 @@ export interface CommandModeOptions {
   bookAppointmentTitle: string;
   bookAppointmentCreatedBy?: string;
   cancelAppointmentBy?: string;
+  weekStartIso: string;
 }
 
 export function buildAddSlotCommand(
@@ -48,6 +51,22 @@ export function buildCancelSlotCommand(
 ): AnyCommandEnvelope {
   return createCommandEnvelope(COMMANDS.CANCEL_SLOT, {
     slot_id: payload.slotId,
+  });
+}
+
+export function buildRescheduleSlotCommand(
+  payload: SlotRescheduleActionEventPayload,
+  options: CommandModeOptions
+): AnyCommandEnvelope {
+  return createCommandEnvelope(COMMANDS.RESCHEDULE_SLOT, {
+    slot_id: payload.slotId,
+    new_start: isoFromDate(
+      dateFromWeekPoint(options.weekStartIso, payload.dayIndex, payload.startMinute)
+    ),
+    new_end: isoFromDate(
+      dateFromWeekPoint(options.weekStartIso, payload.dayIndex, payload.endMinute)
+    ),
+    updated_by: options.createdBy,
   });
 }
 

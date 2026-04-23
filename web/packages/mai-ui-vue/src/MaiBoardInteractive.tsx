@@ -11,6 +11,7 @@ import {
   buildCancelSlotCommand,
   buildDeleteAppointmentCommand,
   buildDeleteSlotCommand,
+  buildRescheduleSlotCommand,
   type CommandModeOptions,
 } from "./interactive/command-mode";
 import {
@@ -33,10 +34,12 @@ import type {
   MaiInteractionSuccessEvent,
   SlotActionEventPayload,
   SlotClickEventPayload,
+  SlotRescheduleActionEventPayload,
   TimeLabelFormat,
   WeekShift,
 } from "./types";
 import { INTERACTION_ACTIONS, INTERACTION_SUCCESS_EVENTS } from "./types/interactive";
+import { startOfWeekIso } from "./board/model/view-model";
 
 type ActionRunner<TPayload> = (payload: TPayload) => boolean | Promise<boolean>;
 
@@ -130,6 +133,12 @@ export const MaiBoardInteractive = defineComponent({
       required: false,
       default: null,
     },
+    rescheduleSlot: {
+      type:
+        Function as unknown as PropType<ActionRunner<SlotRescheduleActionEventPayload> | null>,
+      required: false,
+      default: null,
+    },
     cancelSlot: {
       type: Function as unknown as PropType<ActionRunner<SlotActionEventPayload> | null>,
       required: false,
@@ -191,6 +200,8 @@ export const MaiBoardInteractive = defineComponent({
     "empty-cell-click": (payload: EmptyCellClickEventPayload) =>
       Number.isInteger(payload.dayIndex),
     "slot-created": (payload: CreateSlotActionEventPayload) => typeof payload.slotId === "string",
+    "slot-rescheduled": (payload: SlotRescheduleActionEventPayload) =>
+      typeof payload.slotId === "string",
     "slot-booked": (payload: SlotActionEventPayload) => typeof payload.slotId === "string",
     "slot-cancelled": (payload: SlotActionEventPayload) => typeof payload.slotId === "string",
     "slot-deleted": (payload: SlotActionEventPayload) => typeof payload.slotId === "string",
@@ -236,6 +247,7 @@ export const MaiBoardInteractive = defineComponent({
       bookAppointmentTitle: props.bookAppointmentTitle,
       bookAppointmentCreatedBy: props.bookAppointmentCreatedBy,
       cancelAppointmentBy: props.cancelAppointmentBy,
+      weekStartIso: props.layout?.week_start ?? startOfWeekIso(props.anchorDate),
     };
 
     const createSlotHandler: ActionRunner<CreateSlotActionEventPayload> | null =
@@ -250,6 +262,13 @@ export const MaiBoardInteractive = defineComponent({
       (props.mutateCommand
         ? async (payload) =>
             runCommand(buildAddAppointmentCommand(payload, commandModeOptions))
+        : null);
+
+    const rescheduleSlotHandler: ActionRunner<SlotRescheduleActionEventPayload> | null =
+      props.rescheduleSlot ??
+      (props.mutateCommand
+        ? async (payload) =>
+            runCommand(buildRescheduleSlotCommand(payload, commandModeOptions))
         : null);
 
     const cancelSlotHandler: ActionRunner<SlotActionEventPayload> | null =
@@ -340,6 +359,13 @@ export const MaiBoardInteractive = defineComponent({
               interactionError.value = null;
               emit("empty-cell-click", payload);
             },
+            "onReschedule-slot": (payload: SlotRescheduleActionEventPayload) =>
+              runAction(
+                INTERACTION_ACTIONS.RESCHEDULE_SLOT,
+                payload,
+                rescheduleSlotHandler,
+                INTERACTION_SUCCESS_EVENTS.SLOT_RESCHEDULED
+              ),
           }}
         />
 

@@ -2,6 +2,13 @@ export interface SlotActionEventPayload {
   slotId: string;
 }
 
+export interface SlotRescheduleActionEventPayload {
+  slotId: string;
+  dayIndex: number;
+  startMinute: number;
+  endMinute: number;
+}
+
 export interface AppointmentActionEventPayload {
   appointmentId: string;
 }

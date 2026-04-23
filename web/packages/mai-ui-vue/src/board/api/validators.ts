@@ -5,6 +5,7 @@ import type {
   EmptyCellClickEventPayload,
   SlotActionEventPayload,
   SlotClickEventPayload,
+  SlotRescheduleActionEventPayload,
 } from "../../types";
 
 export function isMinuteRange(value: unknown): value is number {
@@ -69,6 +70,21 @@ export function isSlotActionPayload(value: unknown): value is SlotActionEventPay
     value &&
       typeof value === "object" &&
       typeof (value as Record<string, unknown>).slotId === "string"
+  );
+}
+
+export function isSlotReschedulePayload(
+  value: unknown
+): value is SlotRescheduleActionEventPayload {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const payload = value as Record<string, unknown>;
+  return (
+    typeof payload.slotId === "string" &&
+    Number.isInteger(payload.dayIndex) &&
+    typeof payload.startMinute === "number" &&
+    typeof payload.endMinute === "number"
   );
 }
 

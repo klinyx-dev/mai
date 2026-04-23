@@ -5,6 +5,7 @@ import type {
   EmptyCellClickEventPayload,
   SlotActionEventPayload,
   SlotClickEventPayload,
+  SlotRescheduleActionEventPayload,
   WeekShift,
 } from "../../types";
 import { MAI_BOARD_EVENTS } from "./events";
@@ -15,6 +16,7 @@ import {
   isEmptyCellClickPayload,
   isSlotActionPayload,
   isSlotClickPayload,
+  isSlotReschedulePayload,
 } from "./validators";
 
 export const maiBoardEmits = {
@@ -28,6 +30,8 @@ export const maiBoardEmits = {
     isEmptyCellClickPayload(payload),
   [MAI_BOARD_EVENTS.CREATE_SLOT]: (payload: CreateSlotActionEventPayload) =>
     isCreateSlotPayload(payload),
+  [MAI_BOARD_EVENTS.RESCHEDULE_SLOT]: (payload: SlotRescheduleActionEventPayload) =>
+    isSlotReschedulePayload(payload),
   [MAI_BOARD_EVENTS.BOOK_SLOT]: (payload: SlotActionEventPayload) =>
     isSlotActionPayload(payload),
   [MAI_BOARD_EVENTS.CANCEL_SLOT]: (payload: SlotActionEventPayload) =>
@@ -52,6 +56,10 @@ export interface MaiBoardEmit {
     payload: EmptyCellClickEventPayload
   ): void;
   (event: typeof MAI_BOARD_EVENTS.CREATE_SLOT, payload: CreateSlotActionEventPayload): void;
+  (
+    event: typeof MAI_BOARD_EVENTS.RESCHEDULE_SLOT,
+    payload: SlotRescheduleActionEventPayload
+  ): void;
   (event: typeof MAI_BOARD_EVENTS.BOOK_SLOT, payload: SlotActionEventPayload): void;
   (event: typeof MAI_BOARD_EVENTS.CANCEL_SLOT, payload: SlotActionEventPayload): void;
   (event: typeof MAI_BOARD_EVENTS.DELETE_SLOT, payload: SlotActionEventPayload): void;

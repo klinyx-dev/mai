@@ -9,6 +9,7 @@ export type {
   AppointmentActionEventPayload,
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
+  SlotRescheduleActionEventPayload,
 } from "./types/actions";
 export type {
   MaiAppointmentChangedEventPayload,
@@ -17,4 +18,5 @@ export type {
   MaiInteractionSuccessEvent,
   MaiSlotChangedEventPayload,
   MaiSlotCreatedEventPayload,
+  MaiSlotRescheduledEventPayload,
 } from "./types/interactive";

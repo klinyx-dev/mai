@@ -4,6 +4,7 @@ export const MAI_BOARD_EVENTS = {
   APPOINTMENT_CLICK: "appointment-click",
   EMPTY_CELL_CLICK: "empty-cell-click",
   CREATE_SLOT: "create-slot",
+  RESCHEDULE_SLOT: "reschedule-slot",
   BOOK_SLOT: "book-slot",
   CANCEL_SLOT: "cancel-slot",
   DELETE_SLOT: "delete-slot",

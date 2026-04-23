@@ -11,6 +11,7 @@ import type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
   SlotClickEventPayload,
+  SlotRescheduleActionEventPayload,
 } from "../../types";
 
 export const MaiDayColumn = defineComponent({
@@ -34,6 +35,11 @@ export const MaiDayColumn = defineComponent({
     onEmptyCellClick: {
       type: Function as PropType<(payload: EmptyCellClickEventPayload) => void>,
       required: true,
+    },
+    onSlotReschedule: {
+      type: Function as PropType<(payload: SlotRescheduleActionEventPayload) => void>,
+      required: false,
+      default: null,
     },
   },
   setup(props) {
@@ -104,8 +110,11 @@ export const MaiDayColumn = defineComponent({
                 event={event}
                 top={top}
                 height={height}
+                visibleStartMinute={props.visibleStartMinute}
+                totalVisibleMinutes={props.totalVisibleMinutes}
                 minuteLabel={props.minuteLabel}
                 onActivate={handleEventActivate}
+                onSlotReschedule={props.onSlotReschedule}
                 key={`${event.kind}-${event.id}`}
               />
             );

@@ -6,6 +6,7 @@ import type {
   EmptyCellClickEventPayload,
   SlotActionEventPayload,
   SlotClickEventPayload,
+  SlotRescheduleActionEventPayload,
 } from "../../types";
 import { MAI_BOARD_EVENTS, type MaiBoardEmit, type MaiBoardProps } from "../api";
 import {
@@ -84,6 +85,11 @@ export function useMaiBoardController(props: MaiBoardProps, emit: MaiBoardEmit) 
     clearActions();
   }
 
+  function emitRescheduleSlot(payload: SlotRescheduleActionEventPayload) {
+    emit(MAI_BOARD_EVENTS.RESCHEDULE_SLOT, payload);
+    clearActions();
+  }
+
   function emitBookSlot(payload: SlotActionEventPayload) {
     emit(MAI_BOARD_EVENTS.BOOK_SLOT, payload);
     clearActions();
@@ -127,6 +133,7 @@ export function useMaiBoardController(props: MaiBoardProps, emit: MaiBoardEmit) 
     handleAppointmentClick,
     handleEmptyCellClick,
     emitCreateSlot,
+    emitRescheduleSlot,
     emitBookSlot,
     emitCancelSlot,
     emitDeleteSlot,

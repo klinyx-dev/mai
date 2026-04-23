@@ -48,6 +48,7 @@ export const MaiBoard = defineComponent({
                 onSlotClick={controller.handleSlotClick}
                 onAppointmentClick={controller.handleAppointmentClick}
                 onEmptyCellClick={controller.handleEmptyCellClick}
+                onSlotReschedule={controller.emitRescheduleSlot}
                 key={column.dayIndex}
               />
             ))}
