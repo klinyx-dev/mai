@@ -844,6 +844,17 @@ TM16 UI interaction contract update (planned on 2026-04-23):
   - emitted create-slot payload is recomputed from edited time range deterministically,
   - invalid range (`start >= end`) is normalized at UI boundary before emit.
 
+TM16 implementation status (completed on 2026-04-23):
+- Empty-cell repeated-click toggle is implemented in interaction state orchestration:
+  - same cell second click closes create-slot card,
+  - different cell click retargets active draft.
+- Create-slot card now exposes editable `start` and `end` time fields.
+- Create-slot payload generation now supports explicit range input and deterministic normalization helpers at UI boundary.
+- UI tests cover:
+  - empty-cell toggle/retarget behavior,
+  - create-slot time parse/format helpers,
+  - deterministic invalid-range normalization and payload generation.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests

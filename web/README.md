@@ -69,7 +69,7 @@ UI package tests now cover:
   - click blank cell to open create-slot card,
   - click the same blank cell again to close it,
   - click another blank cell to retarget the current draft.
-- Create-slot card supports editable start/end times; emitted payload is normalized deterministically when the edited range is invalid.
+- Create-slot card supports editable start/end times (`HH:MM`, minute precision); emitted payload is normalized deterministically when the edited range is invalid (`start >= end`).
 
 Example consumption:
 ```vue
