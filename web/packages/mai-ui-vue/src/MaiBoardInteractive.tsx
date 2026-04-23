@@ -9,6 +9,16 @@ import { MaiAppointmentActionsCard } from "./actions/MaiAppointmentActionsCard";
 import { MaiCreateSlotCard } from "./actions/MaiCreateSlotCard";
 import { MaiSlotActionsCard } from "./actions/MaiSlotActionsCard";
 import { MaiBoard } from "./MaiBoard";
+import {
+  clearSelectionState,
+  initialSelectionState,
+  overlayKindForSelection,
+  runInteractionAction,
+  withAppointmentSelected,
+  withEmptyCellDraft,
+  withSlotSelected,
+  type MaiInteractionSelectionState,
+} from "./interactive/state";
 import type {
   AppointmentActionEventPayload,
   AppointmentClickEventPayload,
@@ -38,13 +48,6 @@ function popoverStyleFromPoint(clientX: number, clientY: number): Record<string,
     top: `${top}px`,
     width: `${width}px`,
   };
-}
-
-function resolveActionError(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return "interaction action failed";
 }
 
 export const MaiBoardInteractive = defineComponent({
@@ -195,15 +198,16 @@ export const MaiBoardInteractive = defineComponent({
       typeof payload.action === "string" && typeof payload.message === "string",
   },
   setup(props, { emit }) {
-    const pendingSlotDraft = ref<EmptyCellClickEventPayload | null>(null);
-    const selectedSlot = ref<SlotClickEventPayload | null>(null);
-    const selectedAppointment = ref<AppointmentClickEventPayload | null>(null);
+    const selection = ref<MaiInteractionSelectionState>(initialSelectionState());
     const actionBusy = ref(false);
     const interactionError = ref<string | null>(null);
 
     const activePopoverStyle = computed(() => {
       const point =
-        pendingSlotDraft.value ?? selectedSlot.value ?? selectedAppointment.value ?? null;
+        selection.value.pendingSlotDraft ??
+        selection.value.selectedSlot ??
+        selection.value.selectedAppointment ??
+        null;
       if (!point) {
         return {};
       }
@@ -211,9 +215,7 @@ export const MaiBoardInteractive = defineComponent({
     });
 
     function clearSelection() {
-      pendingSlotDraft.value = null;
-      selectedSlot.value = null;
-      selectedAppointment.value = null;
+      selection.value = clearSelectionState();
     }
 
     const runCommand = async (command: AnyCommandEnvelope): Promise<boolean> => {
@@ -306,29 +308,24 @@ export const MaiBoardInteractive = defineComponent({
     ) {
       actionBusy.value = true;
       interactionError.value = null;
-      try {
-        if (!handler) {
-          const message = "no handler configured";
-          interactionError.value = message;
-          emit("interaction-error", { action, message });
-          return;
-        }
-        const ok = await handler(payload);
-        if (!ok) {
-          const message = "action rejected";
-          interactionError.value = message;
-          emit("interaction-error", { action, message });
-          return;
-        }
-        (emit as (event: string, payload: unknown) => void)(successEvent, payload);
-        clearSelection();
-      } catch (error) {
-        const message = resolveActionError(error);
-        interactionError.value = message;
-        emit("interaction-error", { action, message });
-      } finally {
-        actionBusy.value = false;
+      const outcome = await runInteractionAction({
+        action,
+        successEvent,
+        payload,
+        handler,
+        state: selection.value,
+      });
+      if (outcome.emittedEvent === "interaction-error") {
+        interactionError.value = outcome.emittedPayload.message;
+        emit("interaction-error", outcome.emittedPayload);
+      } else {
+        selection.value = outcome.nextState;
+        (emit as (event: string, payload: unknown) => void)(
+          outcome.emittedEvent,
+          outcome.emittedPayload
+        );
       }
+      actionBusy.value = false;
     }
 
     return () => (
@@ -349,33 +346,28 @@ export const MaiBoardInteractive = defineComponent({
           {...{
             "onNavigate-week": (shift: WeekShift) => emit("navigate-week", shift),
             "onSlot-click": (payload: SlotClickEventPayload) => {
-              selectedSlot.value = payload;
-              selectedAppointment.value = null;
-              pendingSlotDraft.value = null;
+              selection.value = withSlotSelected(payload);
               interactionError.value = null;
               emit("slot-click", payload);
             },
             "onAppointment-click": (payload: AppointmentClickEventPayload) => {
-              selectedAppointment.value = payload;
-              selectedSlot.value = null;
-              pendingSlotDraft.value = null;
+              selection.value = withAppointmentSelected(payload);
               interactionError.value = null;
               emit("appointment-click", payload);
             },
             "onEmpty-cell-click": (payload: EmptyCellClickEventPayload) => {
-              pendingSlotDraft.value = payload;
-              selectedSlot.value = null;
-              selectedAppointment.value = null;
+              selection.value = withEmptyCellDraft(payload);
               interactionError.value = null;
               emit("empty-cell-click", payload);
             },
           }}
         />
 
-        {pendingSlotDraft.value ? (
+        {overlayKindForSelection(selection.value) === "create-slot" &&
+        selection.value.pendingSlotDraft ? (
           <div class="mai-action-popover" style={activePopoverStyle.value}>
             <MaiCreateSlotCard
-              draft={pendingSlotDraft.value}
+              draft={selection.value.pendingSlotDraft}
               weekStartIso={props.layout?.week_start ?? props.anchorDate}
               assigneeId={props.assigneeId}
               createdBy={props.createdBy}
@@ -395,10 +387,11 @@ export const MaiBoardInteractive = defineComponent({
           </div>
         ) : null}
 
-        {selectedSlot.value ? (
+        {overlayKindForSelection(selection.value) === "slot-actions" &&
+        selection.value.selectedSlot ? (
           <div class="mai-action-popover" style={activePopoverStyle.value}>
             <MaiSlotActionsCard
-              slot={selectedSlot.value}
+              slot={selection.value.selectedSlot}
               busy={actionBusy.value}
               onClose={clearSelection}
               {...{
@@ -428,10 +421,11 @@ export const MaiBoardInteractive = defineComponent({
           </div>
         ) : null}
 
-        {selectedAppointment.value ? (
+        {overlayKindForSelection(selection.value) === "appointment-actions" &&
+        selection.value.selectedAppointment ? (
           <div class="mai-action-popover" style={activePopoverStyle.value}>
             <MaiAppointmentActionsCard
-              appointment={selectedAppointment.value}
+              appointment={selection.value.selectedAppointment}
               busy={actionBusy.value}
               onClose={clearSelection}
               {...{
