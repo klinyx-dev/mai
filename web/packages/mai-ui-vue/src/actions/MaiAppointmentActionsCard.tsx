@@ -3,6 +3,7 @@ import type {
   AppointmentActionEventPayload,
   AppointmentClickEventPayload,
 } from "../types";
+import { INTERACTION_ACTIONS } from "../types/interactive";
 import {
   MaiActionButtons,
   MaiActionCard,
@@ -24,9 +25,13 @@ export const MaiAppointmentActionsCard = defineComponent({
     },
   },
   emits: {
-    "delete-appointment": (payload: AppointmentActionEventPayload) =>
+    [INTERACTION_ACTIONS.DELETE_APPOINTMENT]: (
+      payload: AppointmentActionEventPayload
+    ) =>
       typeof payload.appointmentId === "string",
-    "cancel-appointment": (payload: AppointmentActionEventPayload) =>
+    [INTERACTION_ACTIONS.CANCEL_APPOINTMENT]: (
+      payload: AppointmentActionEventPayload
+    ) =>
       typeof payload.appointmentId === "string",
     close: () => true,
   },
@@ -49,17 +54,19 @@ export const MaiAppointmentActionsCard = defineComponent({
         <MaiActionButtons
           buttons={[
             {
-              key: "delete-appointment",
+              key: INTERACTION_ACTIONS.DELETE_APPOINTMENT,
               label: "Delete Appointment",
               tone: "danger",
               disabled: props.busy,
-              onClick: () => emit("delete-appointment", appointmentPayload()),
+              onClick: () =>
+                emit(INTERACTION_ACTIONS.DELETE_APPOINTMENT, appointmentPayload()),
             },
             {
-              key: "cancel-appointment",
+              key: INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
               label: "Cancel Appointment",
               disabled: props.busy,
-              onClick: () => emit("cancel-appointment", appointmentPayload()),
+              onClick: () =>
+                emit(INTERACTION_ACTIONS.CANCEL_APPOINTMENT, appointmentPayload()),
             },
           ]}
         />

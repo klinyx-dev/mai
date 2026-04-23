@@ -3,6 +3,7 @@ import type {
   CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
 } from "../types";
+import { INTERACTION_ACTIONS } from "../types/interactive";
 import { MaiActionButtons, MaiActionCard, MaiActionMetaList } from "./MaiActionCard";
 import { buildCreateSlotPayload } from "./payload";
 
@@ -37,7 +38,7 @@ export const MaiCreateSlotCard = defineComponent({
     },
   },
   emits: {
-    "create-slot": (payload: CreateSlotActionEventPayload) =>
+    [INTERACTION_ACTIONS.CREATE_SLOT]: (payload: CreateSlotActionEventPayload) =>
       typeof payload.slotId === "string" &&
       typeof payload.startIso === "string" &&
       typeof payload.endIso === "string" &&
@@ -94,11 +95,12 @@ export const MaiCreateSlotCard = defineComponent({
         <MaiActionButtons
           buttons={[
             {
-              key: "create-slot",
+              key: INTERACTION_ACTIONS.CREATE_SLOT,
               label: "Create Slot",
               tone: "primary",
               disabled: props.busy,
-              onClick: () => emit("create-slot", createPayload()),
+              onClick: () =>
+                emit(INTERACTION_ACTIONS.CREATE_SLOT, createPayload()),
             },
           ]}
         />

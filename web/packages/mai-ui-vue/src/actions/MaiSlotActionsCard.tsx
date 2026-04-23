@@ -1,5 +1,6 @@
 import { defineComponent, h, type PropType } from "vue";
 import type { SlotActionEventPayload, SlotClickEventPayload } from "../types";
+import { INTERACTION_ACTIONS } from "../types/interactive";
 import {
   MaiActionButtons,
   MaiActionCard,
@@ -21,9 +22,12 @@ export const MaiSlotActionsCard = defineComponent({
     },
   },
   emits: {
-    "book-slot": (payload: SlotActionEventPayload) => typeof payload.slotId === "string",
-    "cancel-slot": (payload: SlotActionEventPayload) => typeof payload.slotId === "string",
-    "delete-slot": (payload: SlotActionEventPayload) => typeof payload.slotId === "string",
+    [INTERACTION_ACTIONS.BOOK_SLOT]: (payload: SlotActionEventPayload) =>
+      typeof payload.slotId === "string",
+    [INTERACTION_ACTIONS.CANCEL_SLOT]: (payload: SlotActionEventPayload) =>
+      typeof payload.slotId === "string",
+    [INTERACTION_ACTIONS.DELETE_SLOT]: (payload: SlotActionEventPayload) =>
+      typeof payload.slotId === "string",
     close: () => true,
   },
   setup(props, { emit }) {
@@ -44,24 +48,24 @@ export const MaiSlotActionsCard = defineComponent({
         <MaiActionButtons
           buttons={[
             {
-              key: "book-slot",
+              key: INTERACTION_ACTIONS.BOOK_SLOT,
               label: "Book Slot",
               tone: "primary",
               disabled: props.busy,
-              onClick: () => emit("book-slot", slotPayload()),
+              onClick: () => emit(INTERACTION_ACTIONS.BOOK_SLOT, slotPayload()),
             },
             {
-              key: "cancel-slot",
+              key: INTERACTION_ACTIONS.CANCEL_SLOT,
               label: "Cancel Slot",
               disabled: props.busy,
-              onClick: () => emit("cancel-slot", slotPayload()),
+              onClick: () => emit(INTERACTION_ACTIONS.CANCEL_SLOT, slotPayload()),
             },
             {
-              key: "delete-slot",
+              key: INTERACTION_ACTIONS.DELETE_SLOT,
               label: "Delete Slot",
               tone: "danger",
               disabled: props.busy,
-              onClick: () => emit("delete-slot", slotPayload()),
+              onClick: () => emit(INTERACTION_ACTIONS.DELETE_SLOT, slotPayload()),
             },
           ]}
         />

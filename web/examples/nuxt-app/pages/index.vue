@@ -2,6 +2,7 @@
 import "@mai/mai-ui-vue/styles.css";
 import {
   INTERACTION_ACTIONS,
+  INTERACTION_SUCCESS_EVENTS,
   MaiBoardInteractive,
   useMai,
 } from "@mai/mai-ui-vue";
@@ -24,6 +25,16 @@ const anchorDate = ref("2026-05-07");
 const assigneeId = "doctor-42";
 
 let mai: ReturnType<typeof useMai> | null = null;
+const SUCCESS_EVENT_TO_ACTION = {
+  [INTERACTION_SUCCESS_EVENTS.SLOT_CREATED]: INTERACTION_ACTIONS.CREATE_SLOT,
+  [INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED]: INTERACTION_ACTIONS.BOOK_SLOT,
+  [INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED]: INTERACTION_ACTIONS.CANCEL_SLOT,
+  [INTERACTION_SUCCESS_EVENTS.SLOT_DELETED]: INTERACTION_ACTIONS.DELETE_SLOT,
+  [INTERACTION_SUCCESS_EVENTS.APPOINTMENT_CANCELLED]:
+    INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
+  [INTERACTION_SUCCESS_EVENTS.APPOINTMENT_DELETED]:
+    INTERACTION_ACTIONS.DELETE_APPOINTMENT,
+} as const;
 
 function isoTodayUtc(): string {
   return new Date().toISOString().slice(0, 10);
@@ -60,7 +71,7 @@ async function navigateWeek(shift: -1 | 0 | 1): Promise<void> {
 }
 
 async function mutateCommand(command: AnyCommandEnvelope): Promise<boolean> {
-  if (!mai) return;
+  if (!mai) return false;
   const ok = await mai.mutate(command);
   if (ok) {
     errorMessage.value = null;
@@ -70,43 +81,60 @@ async function mutateCommand(command: AnyCommandEnvelope): Promise<boolean> {
   return ok;
 }
 
+function setActionMessage(action: string, targetId: string): void {
+  interactionMessage.value = `${action}: ${targetId}`;
+}
+
+function setSuccessMessage(
+  eventName: keyof typeof SUCCESS_EVENT_TO_ACTION,
+  targetId: string
+): void {
+  setActionMessage(SUCCESS_EVENT_TO_ACTION[eventName], targetId);
+}
+
 async function onSlotCreated(payload: MaiSlotCreatedEventPayload): Promise<void> {
-  interactionMessage.value = `create-slot: ${payload.slotId}`;
+  setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_CREATED, payload.slotId);
   await refreshWeek();
 }
 
 async function onSlotBooked(payload: SlotActionEventPayload): Promise<void> {
-  interactionMessage.value = `book-slot: ${payload.slotId}`;
+  setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED, payload.slotId);
   await refreshWeek();
 }
 
 async function onSlotCancelled(payload: SlotActionEventPayload): Promise<void> {
-  interactionMessage.value = `cancel-slot: ${payload.slotId}`;
+  setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED, payload.slotId);
   await refreshWeek();
 }
 
 async function onSlotDeleted(payload: SlotActionEventPayload): Promise<void> {
-  interactionMessage.value = `delete-slot: ${payload.slotId}`;
+  setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_DELETED, payload.slotId);
   await refreshWeek();
 }
 
 async function onAppointmentCancelled(
   payload: MaiAppointmentChangedEventPayload
 ): Promise<void> {
-  interactionMessage.value = `cancel-appointment: ${payload.appointmentId}`;
+  setSuccessMessage(
+    INTERACTION_SUCCESS_EVENTS.APPOINTMENT_CANCELLED,
+    payload.appointmentId
+  );
   await refreshWeek();
 }
 
 async function onAppointmentDeleted(
   payload: MaiAppointmentChangedEventPayload
 ): Promise<void> {
-  interactionMessage.value = `delete-appointment: ${payload.appointmentId}`;
+  setSuccessMessage(
+    INTERACTION_SUCCESS_EVENTS.APPOINTMENT_DELETED,
+    payload.appointmentId
+  );
   await refreshWeek();
 }
 
 function onInteractionError(payload: MaiInteractionErrorPayload): void {
   errorMessage.value = `${payload.action}: ${payload.message}`;
-  interactionMessage.value = `interaction-error: ${payload.action}`;
+  setActionMessage("interaction-error", payload.action);
 }
 
 onMounted(async () => {
