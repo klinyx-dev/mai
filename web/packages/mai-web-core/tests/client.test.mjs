@@ -69,6 +69,25 @@ test("createCommandEnvelope supports new cancel appointment command", () => {
   });
 });
 
+test("createCommandEnvelope supports slot reschedule command", () => {
+  const command = createCommandEnvelope(COMMANDS.RESCHEDULE_SLOT, {
+    slot_id: "slot-1",
+    new_start: "2026-05-07T09:00:00Z",
+    new_end: "2026-05-07T09:45:00Z",
+    updated_by: "ui-operator",
+  });
+
+  assert.deepEqual(command, {
+    command: "reschedule_slot",
+    payload: {
+      slot_id: "slot-1",
+      new_start: "2026-05-07T09:00:00Z",
+      new_end: "2026-05-07T09:45:00Z",
+      updated_by: "ui-operator",
+    },
+  });
+});
+
 test("createQueryEnvelope uses centralized query constants", () => {
   const query = createQueryEnvelope(QUERIES.WEEKLY_LAYOUT, {
     anchor_date: "2026-05-07",

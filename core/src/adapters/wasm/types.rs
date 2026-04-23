@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     AddAppointmentCommand, AddSlotCommand, CancelAppointmentCommand, CancelSlotCommand,
-    DeleteAppointmentCommand, DeleteSlotCommand, WeeklyLayout,
+    DeleteAppointmentCommand, DeleteSlotCommand, RescheduleSlotCommand, WeeklyLayout,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -32,6 +32,7 @@ pub enum WasmCommandRequest {
     AddAppointment(AddAppointmentCommand),
     CancelAppointment(CancelAppointmentCommand),
     DeleteAppointment(DeleteAppointmentCommand),
+    RescheduleSlot(RescheduleSlotCommand),
 }
 
 /// Serialized query envelope for the WASM boundary.

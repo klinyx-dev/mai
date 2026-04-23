@@ -9,6 +9,7 @@ use crate::commands::cancel_appointment::CancelAppointmentCommand;
 use crate::commands::cancel_slot::CancelSlotCommand;
 use crate::commands::delete_appointment::DeleteAppointmentCommand;
 use crate::commands::delete_slot::DeleteSlotCommand;
+use crate::commands::reschedule_slot::RescheduleSlotCommand;
 use crate::domain::enums::SlotStatus;
 use crate::domain::ids::{ActorId, AppointmentId, SlotId};
 use crate::layout::WeeklyLayoutQuery;
@@ -200,6 +201,77 @@ fn deleting_available_slot_removes_it_by_id() {
 }
 
 #[test]
+fn rescheduling_available_slot_updates_time_range() {
+    let mut service = SchedulerService::new();
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+
+    service
+        .reschedule_slot(RescheduleSlotCommand {
+            slot_id: SlotId::new("slot-1"),
+            new_start: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+            new_end: Utc.with_ymd_and_hms(2026, 1, 5, 12, 0, 0).unwrap(),
+            updated_by: ActorId::new("creator-1"),
+        })
+        .unwrap();
+
+    let slot = service
+        .state()
+        .slots
+        .get(&SlotId::new("slot-1"))
+        .expect("slot exists");
+    assert_eq!(slot.time.start, Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap());
+    assert_eq!(slot.time.end, Utc.with_ymd_and_hms(2026, 1, 5, 12, 0, 0).unwrap());
+}
+
+#[test]
+fn rescheduling_slot_rejects_overlap_for_same_assignee() {
+    let mut service = SchedulerService::new();
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+    service
+        .add_slot(AddSlotCommand {
+            slot_id: SlotId::new("slot-2"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+            assignee_id: ActorId::new("assignee-1"),
+            created_by: ActorId::new("creator-1"),
+        })
+        .unwrap();
+
+    let result = service.reschedule_slot(RescheduleSlotCommand {
+        slot_id: SlotId::new("slot-1"),
+        new_start: Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
+        new_end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 30, 0).unwrap(),
+        updated_by: ActorId::new("creator-1"),
+    });
+
+    assert_eq!(
+        result.expect_err("overlapping reschedule should fail"),
+        SchedulerError::Business(BusinessRuleError::SlotOverlap)
+    );
+}
+
+#[test]
+fn rescheduling_booked_slot_is_rejected() {
+    let mut service = SchedulerService::new();
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+    service
+        .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
+        .unwrap();
+
+    let result = service.reschedule_slot(RescheduleSlotCommand {
+        slot_id: SlotId::new("slot-1"),
+        new_start: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+        new_end: Utc.with_ymd_and_hms(2026, 1, 5, 12, 0, 0).unwrap(),
+        updated_by: ActorId::new("creator-1"),
+    });
+
+    assert_eq!(
+        result.expect_err("booked slot reschedule should fail"),
+        SchedulerError::Business(BusinessRuleError::SlotNotAvailable)
+    );
+}
+
+#[test]
 fn cannot_book_cancelled_slot() {
     let mut service = SchedulerService::new();
     service.add_slot(add_slot_cmd("slot-1")).unwrap();
@@ -374,6 +446,25 @@ fn add_appointment_rejects_missing_creator_when_lookup_is_enabled() {
 
     assert_eq!(
         result.expect_err("missing appointment creator should fail"),
+        SchedulerError::Referential(ReferentialError::CreatorNotFound)
+    );
+}
+
+#[test]
+fn reschedule_slot_rejects_missing_updater_when_lookup_is_enabled() {
+    let mut service =
+        SchedulerService::with_actor_lookup(actor_lookup(&["assignee-1", "creator-1"]));
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+
+    let result = service.reschedule_slot(RescheduleSlotCommand {
+        slot_id: SlotId::new("slot-1"),
+        new_start: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+        new_end: Utc.with_ymd_and_hms(2026, 1, 5, 12, 0, 0).unwrap(),
+        updated_by: ActorId::new("missing-updater"),
+    });
+
+    assert_eq!(
+        result.expect_err("missing updater should fail"),
         SchedulerError::Referential(ReferentialError::CreatorNotFound)
     );
 }

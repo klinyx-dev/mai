@@ -6,6 +6,7 @@ use crate::commands::cancel_appointment::CancelAppointmentCommand;
 use crate::commands::cancel_slot::CancelSlotCommand;
 use crate::commands::delete_appointment::DeleteAppointmentCommand;
 use crate::commands::delete_slot::DeleteSlotCommand;
+use crate::commands::reschedule_slot::RescheduleSlotCommand;
 use crate::domain::appointment::Appointment;
 use crate::domain::enums::SlotStatus;
 use crate::domain::slot::Slot;
@@ -126,6 +127,35 @@ impl SchedulerService {
             .get_mut(&slot_id)
             .ok_or(ReferentialError::SlotNotFound)?;
         slot.status = SlotStatus::Available;
+
+        validate_slot_appointment_invariants(&self.state)?;
+        Ok(())
+    }
+
+    pub fn reschedule_slot(&mut self, cmd: RescheduleSlotCommand) -> CommandResult {
+        self.ensure_actor_exists(&cmd.updated_by, ReferentialError::CreatorNotFound)?;
+
+        let slot = ensure_slot_exists(&self.state, &cmd.slot_id)?;
+        ensure_slot_is_cancellable(slot)?;
+
+        let time = TimeRange::new(cmd.new_start, cmd.new_end)
+            .map_err(|_| StructuralError::InvalidTimeRange)?;
+
+        let candidate = Slot::with_status(
+            slot.id.clone(),
+            time.clone(),
+            slot.assignee_id.clone(),
+            slot.created_by.clone(),
+            slot.status,
+        );
+        ensure_no_overlap_for_assignee(&self.state, &candidate)?;
+
+        let slot = self
+            .state
+            .slots
+            .get_mut(&cmd.slot_id)
+            .ok_or(ReferentialError::SlotNotFound)?;
+        slot.time = time;
 
         validate_slot_appointment_invariants(&self.state)?;
         Ok(())

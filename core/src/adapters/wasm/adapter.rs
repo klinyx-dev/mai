@@ -29,6 +29,7 @@ impl WasmSchedulerAdapter {
             WasmCommandRequest::AddAppointment(cmd) => self.service.add_appointment(cmd),
             WasmCommandRequest::CancelAppointment(cmd) => self.service.cancel_appointment(cmd),
             WasmCommandRequest::DeleteAppointment(cmd) => self.service.delete_appointment(cmd),
+            WasmCommandRequest::RescheduleSlot(cmd) => self.service.reschedule_slot(cmd),
         };
 
         match result {

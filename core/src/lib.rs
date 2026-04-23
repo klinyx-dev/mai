@@ -12,7 +12,7 @@ pub use application::{
 };
 pub use commands::{
     AddAppointmentCommand, AddSlotCommand, CancelAppointmentCommand, CancelSlotCommand,
-    DeleteAppointmentCommand, DeleteSlotCommand,
+    DeleteAppointmentCommand, DeleteSlotCommand, RescheduleSlotCommand,
 };
 pub use domain::{
     ActorId, ActorRef, Appointment, AppointmentId, Slot, SlotId, SlotStatus, TimeRange,

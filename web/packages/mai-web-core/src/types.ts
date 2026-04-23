@@ -46,6 +46,7 @@ export interface WeeklyLayoutQueryPayload {
 
 export const COMMANDS = {
   ADD_SLOT: "add_slot",
+  RESCHEDULE_SLOT: "reschedule_slot",
   DELETE_SLOT: "delete_slot",
   CANCEL_SLOT: "cancel_slot",
   ADD_APPOINTMENT: "add_appointment",
@@ -65,6 +66,13 @@ export interface AddSlotCommandPayload {
 
 export interface DeleteSlotCommandPayload {
   slot_id: string;
+}
+
+export interface RescheduleSlotCommandPayload {
+  slot_id: string;
+  new_start: string;
+  new_end: string;
+  updated_by: string;
 }
 
 export interface CancelSlotCommandPayload {
@@ -90,6 +98,7 @@ export interface DeleteAppointmentCommandPayload {
 
 export interface CommandPayloadMap {
   [COMMANDS.ADD_SLOT]: AddSlotCommandPayload;
+  [COMMANDS.RESCHEDULE_SLOT]: RescheduleSlotCommandPayload;
   [COMMANDS.DELETE_SLOT]: DeleteSlotCommandPayload;
   [COMMANDS.CANCEL_SLOT]: CancelSlotCommandPayload;
   [COMMANDS.ADD_APPOINTMENT]: AddAppointmentCommandPayload;

@@ -8,6 +8,7 @@ export type {
   CommandPayloadMap,
   CommandEnvelope,
   CommandName,
+  RescheduleSlotCommandPayload,
   DeleteAppointmentCommandPayload,
   DeleteSlotCommandPayload,
   QueryName,
