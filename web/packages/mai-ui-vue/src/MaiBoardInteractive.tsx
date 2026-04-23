@@ -1,14 +1,18 @@
-import {
-  COMMANDS,
-  createCommandEnvelope,
-  type AnyCommandEnvelope,
-  type WeeklyLayout,
-} from "@mai/mai-web-core";
+import { type AnyCommandEnvelope, type WeeklyLayout } from "@mai/mai-web-core";
 import { computed, defineComponent, h, ref, type PropType } from "vue";
 import { MaiAppointmentActionsCard } from "./actions/MaiAppointmentActionsCard";
 import { MaiCreateSlotCard } from "./actions/MaiCreateSlotCard";
 import { MaiSlotActionsCard } from "./actions/MaiSlotActionsCard";
 import { MaiBoard } from "./MaiBoard";
+import {
+  buildAddAppointmentCommand,
+  buildAddSlotCommand,
+  buildCancelAppointmentCommand,
+  buildCancelSlotCommand,
+  buildDeleteAppointmentCommand,
+  buildDeleteSlotCommand,
+  type CommandModeOptions,
+} from "./interactive/command-mode";
 import {
   clearSelectionState,
   initialSelectionState,
@@ -225,79 +229,55 @@ export const MaiBoardInteractive = defineComponent({
       return await props.mutateCommand(command);
     };
 
+    const commandModeOptions: CommandModeOptions = {
+      createdBy: props.createdBy,
+      appointmentIdFactory: props.appointmentIdFactory,
+      bookAppointmentInviteeIds: props.bookAppointmentInviteeIds,
+      bookAppointmentTitle: props.bookAppointmentTitle,
+      bookAppointmentCreatedBy: props.bookAppointmentCreatedBy,
+      cancelAppointmentBy: props.cancelAppointmentBy,
+    };
+
     const createSlotHandler: ActionRunner<CreateSlotActionEventPayload> | null =
       props.createSlot ??
       (props.mutateCommand
         ? async (payload) =>
-            runCommand(
-              createCommandEnvelope(COMMANDS.ADD_SLOT, {
-                slot_id: payload.slotId,
-                start: payload.startIso,
-                end: payload.endIso,
-                assignee_id: payload.assigneeId,
-                created_by: payload.createdBy,
-              })
-            )
+            runCommand(buildAddSlotCommand(payload))
         : null);
 
     const bookSlotHandler: ActionRunner<SlotActionEventPayload> | null =
       props.bookSlot ??
       (props.mutateCommand
         ? async (payload) =>
-            runCommand(
-              createCommandEnvelope(COMMANDS.ADD_APPOINTMENT, {
-                appointment_id: props.appointmentIdFactory(payload.slotId),
-                slot_id: payload.slotId,
-                invitee_ids: props.bookAppointmentInviteeIds,
-                title: props.bookAppointmentTitle,
-                created_by: props.bookAppointmentCreatedBy || props.createdBy,
-              })
-            )
+            runCommand(buildAddAppointmentCommand(payload, commandModeOptions))
         : null);
 
     const cancelSlotHandler: ActionRunner<SlotActionEventPayload> | null =
       props.cancelSlot ??
       (props.mutateCommand
         ? async (payload) =>
-            runCommand(
-              createCommandEnvelope(COMMANDS.CANCEL_SLOT, {
-                slot_id: payload.slotId,
-              })
-            )
+            runCommand(buildCancelSlotCommand(payload))
         : null);
 
     const deleteSlotHandler: ActionRunner<SlotActionEventPayload> | null =
       props.deleteSlot ??
       (props.mutateCommand
         ? async (payload) =>
-            runCommand(
-              createCommandEnvelope(COMMANDS.DELETE_SLOT, {
-                slot_id: payload.slotId,
-              })
-            )
+            runCommand(buildDeleteSlotCommand(payload))
         : null);
 
     const cancelAppointmentHandler: ActionRunner<AppointmentActionEventPayload> | null =
       props.cancelAppointment ??
       (props.mutateCommand
         ? async (payload) =>
-            runCommand(
-              createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
-                appointment_id: payload.appointmentId,
-                cancelled_by: props.cancelAppointmentBy || props.createdBy,
-              })
-            )
+            runCommand(buildCancelAppointmentCommand(payload, commandModeOptions))
         : null);
 
     const deleteAppointmentHandler: ActionRunner<AppointmentActionEventPayload> | null =
       props.deleteAppointment ??
       (props.mutateCommand
         ? async (payload) =>
-            runCommand(
-              createCommandEnvelope(COMMANDS.DELETE_APPOINTMENT, {
-                appointment_id: payload.appointmentId,
-              })
-            )
+            runCommand(buildDeleteAppointmentCommand(payload))
         : null);
 
     async function runAction<TPayload>(
