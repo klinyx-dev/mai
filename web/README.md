@@ -62,9 +62,13 @@ UI package tests now cover:
   - callback mode (`createSlot`, `bookSlot`, `cancelSlot`, etc.)
   - adapter mode (`mutateCommand`) that builds typed commands with `COMMANDS + createCommandEnvelope`.
 - It emits high-level outcome events:
-  - `slot-created`, `slot-booked`, `slot-cancelled`, `slot-deleted`
+  - `slot-created`, `slot-rescheduled`, `slot-booked`, `slot-cancelled`, `slot-deleted`
   - `appointment-cancelled`, `appointment-deleted`
   - `interaction-error`
+- Slot direct manipulation behavior:
+  - drag slot chip body to move time/day (15-minute snap),
+  - drag top/bottom slot edge to resize time range (15-minute snap),
+  - on drop/end, wrapper emits `slot-rescheduled` and supports callback mode (`rescheduleSlot`) or adapter mode (`mutateCommand` -> `reschedule_slot`).
 - Empty-cell behavior:
   - click blank cell to open create-slot card,
   - click the same blank cell again to close it,
@@ -84,6 +88,7 @@ Example consumption:
   book-appointment-created-by="ui-operator"
   cancel-appointment-by="ui-operator"
   @slot-created="onSlotCreated"
+  @slot-rescheduled="onSlotRescheduled"
   @slot-booked="onSlotBooked"
   @slot-cancelled="onSlotCancelled"
   @slot-deleted="onSlotDeleted"

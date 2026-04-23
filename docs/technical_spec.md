@@ -865,6 +865,27 @@ TM16 implementation status (completed on 2026-04-23):
   - create-slot time parse/format helpers,
   - deterministic invalid-range normalization and payload generation.
 
+TM17 UI interaction contract update (completed on 2026-04-23):
+- `MaiBoard` now emits `reschedule-slot` payloads for slot drag/resize gestures:
+  - payload shape: `{ slotId, dayIndex, startMinute, endMinute }`.
+- `MaiBoardInteractive` now supports slot-reschedule mutation in both modes:
+  - callback mode: `rescheduleSlot(payload)`,
+  - adapter mode: maps to `COMMANDS.RESCHEDULE_SLOT` command envelope.
+- `MaiBoardInteractive` emits `slot-rescheduled` on successful drop/resize completion.
+
+TM17 implementation status (completed on 2026-04-23):
+- Slot chips in `@mai/mai-ui-vue` support:
+  - drag-to-move (vertical time + horizontal day),
+  - resize-from-top,
+  - resize-from-bottom.
+- Gesture policy is deterministic:
+  - 15-minute snapping,
+  - clamp to day bounds (`0..=1440`),
+  - minimum span preserved on resize.
+- UI test coverage includes:
+  - drag/resize gesture math,
+  - command envelope mapping for `reschedule_slot`.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests
