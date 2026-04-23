@@ -1,14 +1,31 @@
 import type {
+  CommandName,
   CommandEnvelope,
+  QueryName,
   QueryEnvelope,
   WasmResponse,
   WeeklyLayout,
   WeeklyLayoutQueryPayload,
-} from "./types";
+} from "./types.js";
+import { QUERIES } from "./types.js";
 
 export interface JsonAdapter {
   execute_command_json(input: string): string;
   execute_query_json(input: string): string;
+}
+
+export function createCommandEnvelope<TPayload extends object>(
+  command: CommandName,
+  payload: TPayload
+): CommandEnvelope<TPayload> {
+  return { command, payload };
+}
+
+export function createQueryEnvelope<TPayload extends object>(
+  query: QueryName,
+  payload: TPayload
+): QueryEnvelope<TPayload> {
+  return { query, payload };
 }
 
 export function executeCommand<TPayload extends object>(
@@ -24,10 +41,7 @@ export function executeWeeklyLayoutQuery(
   adapter: JsonAdapter,
   payload: WeeklyLayoutQueryPayload
 ): WasmResponse<WeeklyLayout> {
-  const query: QueryEnvelope<WeeklyLayoutQueryPayload> = {
-    query: "weekly_layout",
-    payload,
-  };
+  const query = createQueryEnvelope(QUERIES.WEEKLY_LAYOUT, payload);
 
   return parseJsonResponse<WeeklyLayout>(
     adapter.execute_query_json(JSON.stringify(query))

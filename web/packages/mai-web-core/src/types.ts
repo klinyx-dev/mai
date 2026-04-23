@@ -44,13 +44,22 @@ export interface WeeklyLayoutQueryPayload {
   visible_end_minute?: number;
 }
 
-export type CommandName =
-  | "add_slot"
-  | "delete_slot"
-  | "cancel_slot"
-  | "add_appointment"
-  | "cancel_appointment"
-  | "delete_appointment";
+export const COMMANDS = {
+  ADD_SLOT: "add_slot",
+  DELETE_SLOT: "delete_slot",
+  CANCEL_SLOT: "cancel_slot",
+  ADD_APPOINTMENT: "add_appointment",
+  CANCEL_APPOINTMENT: "cancel_appointment",
+  DELETE_APPOINTMENT: "delete_appointment",
+} as const;
+
+export type CommandName = (typeof COMMANDS)[keyof typeof COMMANDS];
+
+export const QUERIES = {
+  WEEKLY_LAYOUT: "weekly_layout",
+} as const;
+
+export type QueryName = (typeof QUERIES)[keyof typeof QUERIES];
 
 export interface CommandEnvelope<TPayload extends object> {
   command: CommandName;
@@ -58,6 +67,6 @@ export interface CommandEnvelope<TPayload extends object> {
 }
 
 export interface QueryEnvelope<TPayload extends object> {
-  query: "weekly_layout";
+  query: QueryName;
   payload: TPayload;
 }
