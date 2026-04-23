@@ -213,6 +213,16 @@ System must:
   - start/end outside `0..=1440`
   - start >= end
 
+### FR-14: Slot Drag/Resize Rescheduling
+System must:
+- Support rescheduling an existing slot by updating its start/end time via a single command.
+- Support UI interactions for slot drag-to-move and top/bottom edge resize.
+- Keep command validation deterministic:
+  - start < end
+  - no overlap with other active slots for same assignee
+  - reject reschedule when slot state is not reschedulable for this phase.
+- Keep adapter error envelope shape unchanged for rejected operations.
+
 ---
 
 ## 5. Business Rules

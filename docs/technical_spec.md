@@ -336,6 +336,16 @@ pub struct CancelAppointmentCommand {
 }
 ```
 
+### 6.7 Reschedule slot
+```rust
+pub struct RescheduleSlotCommand {
+    pub slot_id: SlotId,
+    pub new_start: DateTime<Utc>,
+    pub new_end: DateTime<Utc>,
+    pub updated_by: ActorId,
+}
+```
+
 All mutation entrypoints should use these command structs rather than loose parameters
 
 ## 7. Validation Design
