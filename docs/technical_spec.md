@@ -834,6 +834,16 @@ TM15 runtime stability note (completed on 2026-04-23):
 - Nuxt dependency drift is constrained by pinning `nuxt` in example app and overriding `@nuxt/cli` version in web workspace.
 - Interactive wrapper adapter-mode command mapping is covered by dedicated UI package tests for all supported mutation routes.
 
+TM16 UI interaction contract update (planned on 2026-04-23):
+- Empty-cell create-slot behavior:
+  - first click on empty cell opens create-slot card,
+  - second click on the same empty cell closes create-slot card,
+  - click on a different empty cell keeps card open and updates draft anchor.
+- `MaiCreateSlotCard` editing contract:
+  - supports explicit editable start/end time inputs (minute precision),
+  - emitted create-slot payload is recomputed from edited time range deterministically,
+  - invalid range (`start >= end`) is normalized at UI boundary before emit.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests

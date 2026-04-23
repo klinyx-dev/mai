@@ -65,6 +65,11 @@ UI package tests now cover:
   - `slot-created`, `slot-booked`, `slot-cancelled`, `slot-deleted`
   - `appointment-cancelled`, `appointment-deleted`
   - `interaction-error`
+- Empty-cell behavior:
+  - click blank cell to open create-slot card,
+  - click the same blank cell again to close it,
+  - click another blank cell to retarget the current draft.
+- Create-slot card supports editable start/end times; emitted payload is normalized deterministically when the edited range is invalid.
 
 Example consumption:
 ```vue
