@@ -9,8 +9,13 @@
   ],
   "scripts": {
     "build": "pnpm --filter @mai/mai-web-core build && pnpm --filter @mai/mai-wasm-adapter build && pnpm --filter @mai/mai-ui-vue build",
-    "example:dev": "pnpm --filter @mai/nuxt-app-example dev",
+    "example:dev": "node ./scripts/reset-nuxt-dev-cache.mjs && pnpm --filter @mai/nuxt-app-example dev",
     "test:boundary": "node ./scripts/check-package-boundaries.mjs",
     "test": "pnpm run build && pnpm --filter @mai/mai-web-core test && pnpm --filter @mai/mai-wasm-adapter test && pnpm --filter @mai/mai-ui-vue test && pnpm run test:boundary"
+  },
+  "pnpm": {
+    "overrides": {
+      "@nuxt/cli": "3.21.1"
+    }
   }
 }
