@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import "@mai/mai-ui-vue/styles.css";
-import { MaiBoard, useMai } from "@mai/mai-ui-vue";
-import { COMMANDS, createCommandEnvelope } from "@mai/mai-web-core";
+import {
+  INTERACTION_ACTIONS,
+  MaiBoardInteractive,
+  useMai,
+} from "@mai/mai-ui-vue";
+import type { AnyCommandEnvelope } from "@mai/mai-web-core";
 import { onMounted, ref, shallowRef } from "vue";
 import type {
-  AppointmentActionEventPayload,
-  CreateSlotActionEventPayload,
+  MaiAppointmentChangedEventPayload,
+  MaiInteractionErrorPayload,
+  MaiSlotCreatedEventPayload,
   SlotActionEventPayload,
 } from "@mai/mai-ui-vue";
 
@@ -17,7 +22,6 @@ const errorMessage = ref<string | null>(null);
 const interactionMessage = ref<string>("No UI interaction yet.");
 const anchorDate = ref("2026-05-07");
 const assigneeId = "doctor-42";
-const actionBusy = ref(false);
 
 let mai: ReturnType<typeof useMai> | null = null;
 
@@ -55,119 +59,54 @@ async function navigateWeek(shift: -1 | 0 | 1): Promise<void> {
   await refreshWeek();
 }
 
-async function bookSlot(payload: SlotActionEventPayload): Promise<void> {
+async function mutateCommand(command: AnyCommandEnvelope): Promise<boolean> {
   if (!mai) return;
-  actionBusy.value = true;
-  const ok = await mai.mutate(
-    createCommandEnvelope(COMMANDS.ADD_APPOINTMENT, {
-      appointment_id: `appt-${Date.now()}`,
-      slot_id: payload.slotId,
-      invitee_ids: ["patient-demo"],
-      title: "Consultation",
-      created_by: "ui-operator",
-    })
-  );
+  const ok = await mai.mutate(command);
   if (ok) {
-    interactionMessage.value = `book-slot: ${payload.slotId}`;
-    await refreshWeek();
+    errorMessage.value = null;
   } else {
     errorMessage.value = mai.error.value;
   }
-  actionBusy.value = false;
+  return ok;
 }
 
-async function createSlot(payload: CreateSlotActionEventPayload): Promise<void> {
-  if (!mai) return;
-  actionBusy.value = true;
-  const ok = await mai.mutate(
-    createCommandEnvelope(COMMANDS.ADD_SLOT, {
-      slot_id: payload.slotId,
-      start: payload.startIso,
-      end: payload.endIso,
-      assignee_id: payload.assigneeId,
-      created_by: payload.createdBy,
-    })
-  );
-  if (ok) {
-    interactionMessage.value = `create-slot: ${payload.slotId}`;
-    await refreshWeek();
-  } else {
-    errorMessage.value = mai.error.value;
-  }
-  actionBusy.value = false;
+async function onSlotCreated(payload: MaiSlotCreatedEventPayload): Promise<void> {
+  interactionMessage.value = `create-slot: ${payload.slotId}`;
+  await refreshWeek();
 }
 
-async function cancelSlot(payload: SlotActionEventPayload): Promise<void> {
-  if (!mai) return;
-  actionBusy.value = true;
-  const ok = await mai.mutate(
-    createCommandEnvelope(COMMANDS.CANCEL_SLOT, {
-      slot_id: payload.slotId,
-    })
-  );
-  if (ok) {
-    interactionMessage.value = `cancel-slot: ${payload.slotId}`;
-    await refreshWeek();
-  } else {
-    errorMessage.value = mai.error.value;
-  }
-  actionBusy.value = false;
+async function onSlotBooked(payload: SlotActionEventPayload): Promise<void> {
+  interactionMessage.value = `book-slot: ${payload.slotId}`;
+  await refreshWeek();
 }
 
-async function deleteSlot(payload: SlotActionEventPayload): Promise<void> {
-  if (!mai) return;
-  actionBusy.value = true;
-  const ok = await mai.mutate(
-    createCommandEnvelope(COMMANDS.DELETE_SLOT, {
-      slot_id: payload.slotId,
-    })
-  );
-  if (ok) {
-    interactionMessage.value = `delete-slot: ${payload.slotId}`;
-    await refreshWeek();
-  } else {
-    errorMessage.value = mai.error.value;
-  }
-  actionBusy.value = false;
+async function onSlotCancelled(payload: SlotActionEventPayload): Promise<void> {
+  interactionMessage.value = `cancel-slot: ${payload.slotId}`;
+  await refreshWeek();
 }
 
-async function deleteAppointment(
-  payload: AppointmentActionEventPayload
+async function onSlotDeleted(payload: SlotActionEventPayload): Promise<void> {
+  interactionMessage.value = `delete-slot: ${payload.slotId}`;
+  await refreshWeek();
+}
+
+async function onAppointmentCancelled(
+  payload: MaiAppointmentChangedEventPayload
 ): Promise<void> {
-  if (!mai) return;
-  actionBusy.value = true;
-  const ok = await mai.mutate(
-    createCommandEnvelope(COMMANDS.DELETE_APPOINTMENT, {
-      appointment_id: payload.appointmentId,
-    })
-  );
-  if (ok) {
-    interactionMessage.value = `delete-appointment: ${payload.appointmentId}`;
-    await refreshWeek();
-  } else {
-    errorMessage.value = mai.error.value;
-  }
-  actionBusy.value = false;
+  interactionMessage.value = `cancel-appointment: ${payload.appointmentId}`;
+  await refreshWeek();
 }
 
-async function cancelAppointment(
-  payload: AppointmentActionEventPayload
+async function onAppointmentDeleted(
+  payload: MaiAppointmentChangedEventPayload
 ): Promise<void> {
-  if (!mai) return;
-  actionBusy.value = true;
-  const ok = await mai.mutate(
-    createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
-      appointment_id: payload.appointmentId,
-      cancelled_by: "ui-operator",
-    })
-  );
-  if (ok) {
-    interactionMessage.value = `cancel-appointment: ${payload.appointmentId}`;
-    await refreshWeek();
-  } else {
-    errorMessage.value = mai.error.value;
-  }
-  actionBusy.value = false;
+  interactionMessage.value = `delete-appointment: ${payload.appointmentId}`;
+  await refreshWeek();
+}
+
+function onInteractionError(payload: MaiInteractionErrorPayload): void {
+  errorMessage.value = `${payload.action}: ${payload.message}`;
+  interactionMessage.value = `interaction-error: ${payload.action}`;
 }
 
 onMounted(async () => {
@@ -183,23 +122,28 @@ onMounted(async () => {
       {{ interactionMessage }}
     </p>
     <ClientOnly>
-      <MaiBoard
+      <MaiBoardInteractive
         :layout="layout"
         :anchor-date="anchorDate"
         :is-loading="loading"
         :error-message="errorMessage"
         title="Doctor Availability Board"
         subtitle="Weekly schedule with appointment and availability timeline"
-        :action-busy="actionBusy"
-        action-assignee-id="doctor-42"
-        action-created-by="ui-operator"
+        :assignee-id="assigneeId"
+        created-by="ui-operator"
+        :mutate-command="mutateCommand"
+        :book-appointment-invitee-ids="['patient-demo']"
+        book-appointment-title="Consultation"
+        book-appointment-created-by="ui-operator"
+        cancel-appointment-by="ui-operator"
         @navigate-week="navigateWeek"
-        @create-slot="createSlot"
-        @book-slot="bookSlot"
-        @cancel-slot="cancelSlot"
-        @delete-slot="deleteSlot"
-        @cancel-appointment="cancelAppointment"
-        @delete-appointment="deleteAppointment"
+        @slot-created="onSlotCreated"
+        @slot-booked="onSlotBooked"
+        @slot-cancelled="onSlotCancelled"
+        @slot-deleted="onSlotDeleted"
+        @appointment-cancelled="onAppointmentCancelled"
+        @appointment-deleted="onAppointmentDeleted"
+        @interaction-error="onInteractionError"
       />
     </ClientOnly>
   </main>
