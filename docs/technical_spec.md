@@ -828,6 +828,12 @@ TM14 implementation status (completed on 2026-04-23):
   - error path emits deterministic `interaction-error`
 - Nuxt example migrated to thin consumer integration with `MaiBoardInteractive`.
 
+TM15 runtime stability note (completed on 2026-04-23):
+- Nuxt example dev startup hardened to reduce stale-manifest startup failures (`#app-manifest` resolution errors).
+- Workspace dev entrypoint now performs scoped cache reset before booting the example runtime.
+- Nuxt dependency drift is constrained by pinning `nuxt` in example app and overriding `@nuxt/cli` version in web workspace.
+- Interactive wrapper adapter-mode command mapping is covered by dedicated UI package tests for all supported mutation routes.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests

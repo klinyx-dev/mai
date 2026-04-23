@@ -107,6 +107,8 @@ pnpm run example:dev
 
 Default URL: `http://localhost:3000/`
 
+`example:dev` now performs a scoped Nuxt cache reset (`examples/nuxt-app/.nuxt`, `.output`, and `node_modules/.vite`) before startup to avoid stale manifest/cache startup failures.
+
 If `3000` is taken:
 ```bash
 pnpm --filter @mai/nuxt-app-example dev --host 127.0.0.1 --port 3101
@@ -162,5 +164,7 @@ const adapter = await createWasmAdapter();
   run with `pnpm` (not `npm`).
 - `IPC connection closed` / unstable Nuxt dev startup:
   use Node.js `22.x` (Node `25.x` is not supported in this workspace).
+- `Failed to resolve import "#app-manifest"` during `nuxt dev`:
+  run `pnpm run example:dev` from `web/` (this now auto-resets Nuxt caches before startup). If you run `nuxt dev` directly and hit this, execute `node ./scripts/reset-nuxt-dev-cache.mjs` from `web/`, then retry.
 - Vite fs-allow error for wasm (`mai_bg.wasm` outside allow list):
   check `examples/nuxt-app/nuxt.config.ts` includes `../../../core/pkg` in `vite.server.fs.allow`.
