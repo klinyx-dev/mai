@@ -5,7 +5,12 @@ import type {
 } from "../types";
 import { INTERACTION_ACTIONS } from "../types/interactive";
 import { MaiActionButtons, MaiActionCard, MaiActionMetaList } from "./MaiActionCard";
-import { buildCreateSlotPayload } from "./payload";
+import {
+  buildCreateSlotPayloadFromRange,
+  clampSlotDurationMinutes,
+  minuteOfDayFromTimeLabel,
+  timeLabelFromMinuteOfDay,
+} from "./payload";
 
 export const MaiCreateSlotCard = defineComponent({
   name: "MaiCreateSlotCard",
@@ -47,24 +52,37 @@ export const MaiCreateSlotCard = defineComponent({
     close: () => true,
   },
   setup(props, { emit }) {
-    const durationMinutes = ref(props.defaultDurationMinutes);
+    const startTimeLabel = ref("00:00");
+    const endTimeLabel = ref("00:00");
+
+    function resetDraftTimeFields() {
+      const safeDuration = clampSlotDurationMinutes(props.defaultDurationMinutes);
+      startTimeLabel.value = timeLabelFromMinuteOfDay(props.draft.minuteOfDay);
+      endTimeLabel.value = timeLabelFromMinuteOfDay(props.draft.minuteOfDay + safeDuration);
+    }
 
     watch(
-      () => props.draft.minuteOfDay,
-      () => {
-        durationMinutes.value = props.defaultDurationMinutes;
-      }
+      () => [props.draft.dayIndex, props.draft.minuteOfDay],
+      () => resetDraftTimeFields(),
+      { immediate: true }
     );
 
-    const createPayload = () =>
-      buildCreateSlotPayload({
+    const createPayload = () => {
+      const parsedStartMinute = minuteOfDayFromTimeLabel(startTimeLabel.value);
+      const parsedEndMinute = minuteOfDayFromTimeLabel(endTimeLabel.value);
+      const fallbackDuration = clampSlotDurationMinutes(props.defaultDurationMinutes);
+      const fallbackStart = props.draft.minuteOfDay;
+      const fallbackEnd = props.draft.minuteOfDay + fallbackDuration;
+
+      return buildCreateSlotPayloadFromRange({
         weekStartIso: props.weekStartIso,
         dayIndex: props.draft.dayIndex,
-        minuteOfDay: props.draft.minuteOfDay,
-        durationMinutes: durationMinutes.value,
+        startMinute: parsedStartMinute ?? fallbackStart,
+        endMinute: parsedEndMinute ?? fallbackEnd,
         assigneeId: props.assigneeId,
         createdBy: props.createdBy,
       });
+    };
 
     return () => (
       <MaiActionCard
@@ -75,23 +93,32 @@ export const MaiCreateSlotCard = defineComponent({
         <MaiActionMetaList
           lines={[`day ${props.draft.dayIndex} - minute ${props.draft.minuteOfDay}`]}
         />
-        <label class="mai-action-field">
-          <span class="mai-action-field__label">Duration (minutes)</span>
-          <input
-            class="mai-action-input"
-            type="number"
-            min={15}
-            max={180}
-            step={15}
-            value={durationMinutes.value}
-            onInput={(event) => {
-              const value = Number((event.target as HTMLInputElement).value);
-              if (Number.isFinite(value)) {
-                durationMinutes.value = value;
-              }
-            }}
-          />
-        </label>
+        <div class="mai-action-field-grid">
+          <label class="mai-action-field">
+            <span class="mai-action-field__label">Start</span>
+            <input
+              class="mai-action-input"
+              type="time"
+              step={60}
+              value={startTimeLabel.value}
+              onInput={(event) => {
+                startTimeLabel.value = (event.target as HTMLInputElement).value;
+              }}
+            />
+          </label>
+          <label class="mai-action-field">
+            <span class="mai-action-field__label">End</span>
+            <input
+              class="mai-action-input"
+              type="time"
+              step={60}
+              value={endTimeLabel.value}
+              onInput={(event) => {
+                endTimeLabel.value = (event.target as HTMLInputElement).value;
+              }}
+            />
+          </label>
+        </div>
         <MaiActionButtons
           buttons={[
             {
