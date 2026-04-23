@@ -14,12 +14,12 @@ import {
   type CommandModeOptions,
 } from "./interactive/command-mode";
 import {
+  applyEmptyCellClick,
   clearSelectionState,
   initialSelectionState,
   overlayKindForSelection,
   runInteractionAction,
   withAppointmentSelected,
-  withEmptyCellDraft,
   withSlotSelected,
   type MaiInteractionSelectionState,
 } from "./interactive/state";
@@ -336,7 +336,7 @@ export const MaiBoardInteractive = defineComponent({
               emit("appointment-click", payload);
             },
             "onEmpty-cell-click": (payload: EmptyCellClickEventPayload) => {
-              selection.value = withEmptyCellDraft(payload);
+              selection.value = applyEmptyCellClick(selection.value, payload);
               interactionError.value = null;
               emit("empty-cell-click", payload);
             },

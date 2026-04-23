@@ -6,6 +6,7 @@ import {
   INTERACTION_SUCCESS_EVENTS,
 } from "../dist/types/interactive.js";
 import {
+  applyEmptyCellClick,
   clearSelectionState,
   overlayKindForSelection,
   runInteractionAction,
@@ -23,6 +24,46 @@ test("empty cell click opens create-slot popover", () => {
   });
 
   assert.equal(overlayKindForSelection(next), "create-slot");
+});
+
+test("empty cell second click on same cell closes create-slot popover", () => {
+  const firstClick = {
+    dayIndex: 2,
+    minuteOfDay: 540,
+    clientX: 120,
+    clientY: 240,
+  };
+  const opened = withEmptyCellDraft(firstClick);
+  const toggled = applyEmptyCellClick(opened, {
+    ...firstClick,
+    clientX: 121,
+    clientY: 241,
+  });
+
+  assert.equal(overlayKindForSelection(toggled), "none");
+});
+
+test("empty cell click on different target retargets draft", () => {
+  const opened = withEmptyCellDraft({
+    dayIndex: 2,
+    minuteOfDay: 540,
+    clientX: 120,
+    clientY: 240,
+  });
+  const switched = applyEmptyCellClick(opened, {
+    dayIndex: 2,
+    minuteOfDay: 555,
+    clientX: 140,
+    clientY: 260,
+  });
+
+  assert.equal(overlayKindForSelection(switched), "create-slot");
+  assert.deepEqual(switched.pendingSlotDraft, {
+    dayIndex: 2,
+    minuteOfDay: 555,
+    clientX: 140,
+    clientY: 260,
+  });
 });
 
 test("slot click opens slot actions popover", () => {

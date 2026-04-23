@@ -75,6 +75,23 @@ export function withEmptyCellDraft(
   };
 }
 
+export function isSameEmptyCellDraft(
+  left: EmptyCellClickEventPayload,
+  right: EmptyCellClickEventPayload
+): boolean {
+  return left.dayIndex === right.dayIndex && left.minuteOfDay === right.minuteOfDay;
+}
+
+export function applyEmptyCellClick(
+  state: MaiInteractionSelectionState,
+  payload: EmptyCellClickEventPayload
+): MaiInteractionSelectionState {
+  if (state.pendingSlotDraft && isSameEmptyCellDraft(state.pendingSlotDraft, payload)) {
+    return clearSelectionState();
+  }
+  return withEmptyCellDraft(payload);
+}
+
 export function overlayKindForSelection(
   state: MaiInteractionSelectionState
 ): MaiInteractionOverlayKind {
