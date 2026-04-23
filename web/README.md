@@ -22,7 +22,7 @@ Boundary rule:
 - App code should not import `core/pkg/*` directly.
 - App code should import runtime adapter APIs from package exports.
 
-## UI board contract (TM11)
+## UI board contract (TM11/TM14)
 `MaiBoard` exposes view/interaction contract fields for real app integration:
 - Props:
   - `visibleStartMinute?: number` (default `0`)
@@ -54,6 +54,39 @@ UI package tests now cover:
 - full-day timeline defaults and window normalization,
 - 12h/24h label formatting,
 - interaction payload mapping for slot/appointment/empty-cell events.
+
+`MaiBoardInteractive` is the recommended app-facing component when you want built-in action cards/popovers and mutation orchestration without page-level wiring.
+
+- It composes `MaiBoard`, `MaiCreateSlotCard`, `MaiSlotActionsCard`, and `MaiAppointmentActionsCard`.
+- It supports two action modes:
+  - callback mode (`createSlot`, `bookSlot`, `cancelSlot`, etc.)
+  - adapter mode (`mutateCommand`) that builds typed commands with `COMMANDS + createCommandEnvelope`.
+- It emits high-level outcome events:
+  - `slot-created`, `slot-booked`, `slot-cancelled`, `slot-deleted`
+  - `appointment-cancelled`, `appointment-deleted`
+  - `interaction-error`
+
+Example consumption:
+```vue
+<MaiBoardInteractive
+  :layout="layout"
+  :anchor-date="anchorDate"
+  :assignee-id="assigneeId"
+  created-by="ui-operator"
+  :mutate-command="mutateCommand"
+  :book-appointment-invitee-ids="['patient-demo']"
+  book-appointment-title="Consultation"
+  book-appointment-created-by="ui-operator"
+  cancel-appointment-by="ui-operator"
+  @slot-created="onSlotCreated"
+  @slot-booked="onSlotBooked"
+  @slot-cancelled="onSlotCancelled"
+  @slot-deleted="onSlotDeleted"
+  @appointment-cancelled="onAppointmentCancelled"
+  @appointment-deleted="onAppointmentDeleted"
+  @interaction-error="onInteractionError"
+/>
+```
 
 ## Prerequisites
 - Node.js 22.x recommended (Node 23 may show experimental warnings from transitive deps).

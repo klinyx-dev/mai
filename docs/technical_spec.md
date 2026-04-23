@@ -814,6 +814,20 @@ Contract-level intent:
 - App consumers should be able to ship an interactive weekly board without manually wiring local popover/action state in page components.
 - Interaction orchestration lives in `@mai/mai-ui-vue`; business mutations still execute through injected callbacks and the existing web-core command contract.
 
+TM14 implementation status (completed on 2026-04-23):
+- `MaiBoardInteractive` added in `@mai/mai-ui-vue` as the recommended app-facing wrapper.
+- Wrapper supports:
+  - callback action mode (`createSlot` / `bookSlot` / `cancelSlot` / `deleteSlot` / `cancelAppointment` / `deleteAppointment`)
+  - adapter-driven action mode via `mutateCommand`, internally using `COMMANDS + createCommandEnvelope`.
+- Selection/popover orchestration is centralized in UI package interaction state utilities.
+- Interaction tests cover:
+  - empty-cell -> create-slot overlay
+  - slot -> slot-actions overlay
+  - appointment -> appointment-actions overlay
+  - success path emits expected event and clears selection
+  - error path emits deterministic `interaction-error`
+- Nuxt example migrated to thin consumer integration with `MaiBoardInteractive`.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests
