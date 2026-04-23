@@ -4,8 +4,12 @@ import test from "node:test";
 import {
   buildAppointmentActionPayload,
   buildCreateSlotPayload,
+  buildCreateSlotPayloadFromRange,
   buildSlotActionPayload,
   clampSlotDurationMinutes,
+  minuteOfDayFromTimeLabel,
+  normalizeSlotMinuteRange,
+  timeLabelFromMinuteOfDay,
 } from "../dist/actions/payload.js";
 
 test("builds slot and appointment action payloads", () => {
@@ -36,6 +40,67 @@ test("builds deterministic create-slot payload when slotId provided", () => {
     slotId: "slot-fixed",
     startIso: "2026-05-06T10:00:00.000Z",
     endIso: "2026-05-06T10:30:00.000Z",
+    assigneeId: "doctor-42",
+    createdBy: "ui-operator",
+  });
+});
+
+test("parses and formats minute labels for create-slot time editing", () => {
+  assert.equal(minuteOfDayFromTimeLabel("00:00"), 0);
+  assert.equal(minuteOfDayFromTimeLabel("09:30"), 570);
+  assert.equal(minuteOfDayFromTimeLabel("24:00"), 1440);
+  assert.equal(minuteOfDayFromTimeLabel("24:30"), null);
+  assert.equal(minuteOfDayFromTimeLabel("9:30"), null);
+
+  assert.equal(timeLabelFromMinuteOfDay(0), "00:00");
+  assert.equal(timeLabelFromMinuteOfDay(570), "09:30");
+  assert.equal(timeLabelFromMinuteOfDay(1450), "24:00");
+});
+
+test("normalizes invalid create-slot minute range deterministically", () => {
+  assert.deepEqual(normalizeSlotMinuteRange(600, 580), {
+    startMinute: 600,
+    endMinute: 615,
+  });
+  assert.deepEqual(normalizeSlotMinuteRange(1439, 1430), {
+    startMinute: 1425,
+    endMinute: 1430,
+  });
+});
+
+test("builds create-slot payload from edited range and normalizes invalid range", () => {
+  const valid = buildCreateSlotPayloadFromRange({
+    weekStartIso: "2026-05-04",
+    dayIndex: 2,
+    startMinute: 615,
+    endMinute: 690,
+    assigneeId: "doctor-42",
+    createdBy: "ui-operator",
+    slotId: "slot-range",
+  });
+
+  assert.deepEqual(valid, {
+    slotId: "slot-range",
+    startIso: "2026-05-06T10:15:00.000Z",
+    endIso: "2026-05-06T11:30:00.000Z",
+    assigneeId: "doctor-42",
+    createdBy: "ui-operator",
+  });
+
+  const invalid = buildCreateSlotPayloadFromRange({
+    weekStartIso: "2026-05-04",
+    dayIndex: 2,
+    startMinute: 620,
+    endMinute: 620,
+    assigneeId: "doctor-42",
+    createdBy: "ui-operator",
+    slotId: "slot-range-invalid",
+  });
+
+  assert.deepEqual(invalid, {
+    slotId: "slot-range-invalid",
+    startIso: "2026-05-06T10:20:00.000Z",
+    endIso: "2026-05-06T10:35:00.000Z",
     assigneeId: "doctor-42",
     createdBy: "ui-operator",
   });
