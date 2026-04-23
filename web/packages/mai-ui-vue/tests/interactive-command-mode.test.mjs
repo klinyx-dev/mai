@@ -8,6 +8,7 @@ import {
   buildCancelSlotCommand,
   buildDeleteAppointmentCommand,
   buildDeleteSlotCommand,
+  buildRescheduleSlotCommand,
 } from "../dist/interactive/command-mode.js";
 
 const options = {
@@ -17,6 +18,7 @@ const options = {
   bookAppointmentTitle: "Consultation",
   bookAppointmentCreatedBy: "",
   cancelAppointmentBy: "",
+  weekStartIso: "2026-05-05",
 };
 
 test("maps create-slot payload to add_slot command envelope", () => {
@@ -64,6 +66,28 @@ test("maps slot cancellation/deletion payloads to stable slot commands", () => {
   assert.deepEqual(buildDeleteSlotCommand({ slotId: "slot-3" }), {
     command: "delete_slot",
     payload: { slot_id: "slot-3" },
+  });
+});
+
+test("maps slot reschedule payload to reschedule_slot command envelope", () => {
+  const command = buildRescheduleSlotCommand(
+    {
+      slotId: "slot-5",
+      dayIndex: 2,
+      startMinute: 555,
+      endMinute: 615,
+    },
+    options
+  );
+
+  assert.deepEqual(command, {
+    command: "reschedule_slot",
+    payload: {
+      slot_id: "slot-5",
+      new_start: "2026-05-07T09:15:00.000Z",
+      new_end: "2026-05-07T10:15:00.000Z",
+      updated_by: "ui-operator",
+    },
   });
 });
 
