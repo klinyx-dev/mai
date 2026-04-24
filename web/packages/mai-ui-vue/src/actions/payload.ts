@@ -4,7 +4,7 @@ import type {
   SlotActionEventPayload,
 } from "../types";
 
-const MIN_SLOT_DURATION_MINUTES = 15;
+const MIN_SLOT_DURATION_MINUTES = 5;
 const MAX_SLOT_DURATION_MINUTES = 180;
 const MINUTE_PER_DAY = 1440;
 

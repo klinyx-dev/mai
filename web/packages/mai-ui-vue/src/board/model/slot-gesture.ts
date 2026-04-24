@@ -1,6 +1,6 @@
 const MINUTES_PER_DAY = 1440;
-export const SLOT_SNAP_MINUTES = 1;
-const MIN_SLOT_SPAN_MINUTES = 1;
+export const SLOT_SNAP_MINUTES = 15;
+export const MIN_SLOT_SPAN_MINUTES = 5;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));

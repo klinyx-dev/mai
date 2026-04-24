@@ -2,9 +2,9 @@ import { defineComponent, h, ref, type PropType } from "vue";
 import type { SlotRescheduleActionEventPayload } from "../../types";
 import {
   computeMoveDraft,
+  MIN_SLOT_SPAN_MINUTES,
   computeResizeBottomDraft,
   computeResizeTopDraft,
-  SLOT_SNAP_MINUTES,
 } from "../model/slot-gesture";
 import type { CalendarEvent } from "../model/view-model";
 
@@ -245,7 +245,7 @@ export const MaiEventCard = defineComponent({
     function draftHeightPercent(state: DragState): number {
       const span = Math.max(
         state.draftEndMinute - state.draftStartMinute,
-        SLOT_SNAP_MINUTES
+        MIN_SLOT_SPAN_MINUTES
       );
       return (span / props.totalVisibleMinutes) * 100;
     }
@@ -266,14 +266,12 @@ export const MaiEventCard = defineComponent({
     }
 
     function renderBody(startMinute: number, endMinute: number) {
-      return [
-        <p class="mai-board__event-title" key="title">
-          {eventTitle(props.event.kind)}
-        </p>,
-        <p class="mai-board__event-time" key="time">
-          {timeText(startMinute, endMinute)}
-        </p>,
-      ];
+      return (
+        <p class="mai-board__event-summary" key="summary">
+          <span class="mai-board__event-title">{eventTitle(props.event.kind)}</span>
+          <span class="mai-board__event-time">{timeText(startMinute, endMinute)}</span>
+        </p>
+      );
     }
 
     function renderResizeHandles() {

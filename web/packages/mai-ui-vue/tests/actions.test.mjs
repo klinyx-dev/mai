@@ -20,7 +20,7 @@ test("builds slot and appointment action payloads", () => {
 });
 
 test("clamps create-slot duration to configured bounds", () => {
-  assert.equal(clampSlotDurationMinutes(5), 15);
+  assert.equal(clampSlotDurationMinutes(5), 5);
   assert.equal(clampSlotDurationMinutes(45), 45);
   assert.equal(clampSlotDurationMinutes(240), 180);
 });
@@ -60,11 +60,11 @@ test("parses and formats minute labels for create-slot time editing", () => {
 test("normalizes invalid create-slot minute range deterministically", () => {
   assert.deepEqual(normalizeSlotMinuteRange(600, 580), {
     startMinute: 600,
-    endMinute: 615,
+    endMinute: 605,
   });
   assert.deepEqual(normalizeSlotMinuteRange(1439, 1430), {
-    startMinute: 1425,
-    endMinute: 1430,
+    startMinute: 1435,
+    endMinute: 1440,
   });
 });
 
@@ -100,7 +100,7 @@ test("builds create-slot payload from edited range and normalizes invalid range"
   assert.deepEqual(invalid, {
     slotId: "slot-range-invalid",
     startIso: "2026-05-06T10:20:00.000Z",
-    endIso: "2026-05-06T10:35:00.000Z",
+    endIso: "2026-05-06T10:25:00.000Z",
     assigneeId: "doctor-42",
     createdBy: "ui-operator",
   });

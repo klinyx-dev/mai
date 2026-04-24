@@ -2,6 +2,7 @@ import { defineComponent, h, type PropType } from "vue";
 import { MaiEventCard } from "./MaiEventCard";
 import type { DayColumn } from "../model/view-model";
 import { clampToVisibleRange } from "../model/view-model";
+import { MIN_SLOT_SPAN_MINUTES } from "../model/slot-gesture";
 import {
   toAppointmentClickPayload,
   toEmptyCellClickPayload,
@@ -106,7 +107,7 @@ export const MaiDayColumn = defineComponent({
               props.visibleStartMinute,
               props.visibleEndMinute
             );
-            const span = Math.max(clamped.end - clamped.start, 20);
+            const span = Math.max(clamped.end - clamped.start, MIN_SLOT_SPAN_MINUTES);
             const top =
               ((clamped.start - props.visibleStartMinute) / props.totalVisibleMinutes) * 100;
             const height = (span / props.totalVisibleMinutes) * 100;
@@ -136,7 +137,7 @@ export const MaiDayColumn = defineComponent({
             if (!clamped) {
               return null;
             }
-            const span = Math.max(clamped.end - clamped.start, 1);
+            const span = Math.max(clamped.end - clamped.start, MIN_SLOT_SPAN_MINUTES);
             const top =
               ((clamped.start - props.visibleStartMinute) / props.totalVisibleMinutes) * 100;
             const height = (span / props.totalVisibleMinutes) * 100;

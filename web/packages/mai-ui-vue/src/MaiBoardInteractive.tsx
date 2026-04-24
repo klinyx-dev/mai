@@ -39,6 +39,7 @@ import type {
   WeekShift,
 } from "./types";
 import { INTERACTION_ACTIONS, INTERACTION_SUCCESS_EVENTS } from "./types/interactive";
+import { MIN_SLOT_SPAN_MINUTES } from "./board/model/slot-gesture";
 import { startOfWeekIso } from "./board/model/view-model";
 
 type ActionRunner<TPayload> = (payload: TPayload) => boolean | Promise<boolean>;
@@ -235,7 +236,7 @@ export const MaiBoardInteractive = defineComponent({
       }
       const startMinute = Math.max(0, Math.min(1440, selection.value.pendingSlotDraft.minuteOfDay));
       const endMinute = Math.max(
-        startMinute + 1,
+        startMinute + MIN_SLOT_SPAN_MINUTES,
         Math.min(1440, startMinute + props.defaultSlotDurationMinutes)
       );
       return {
