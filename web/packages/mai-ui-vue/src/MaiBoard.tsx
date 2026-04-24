@@ -1,10 +1,7 @@
 import { defineComponent, h } from "vue";
 import { MAI_BOARD_EVENTS, maiBoardEmits, maiBoardProps } from "./board/api";
 import { useMaiBoardController } from "./board/state/controller";
-import { MaiActionOverlay } from "./board/ui/MaiActionOverlay";
-import { MaiDayColumn } from "./board/ui/MaiDayColumn";
-import { MaiTimeGutter } from "./board/ui/MaiTimeGutter";
-import { MaiWeekHeader } from "./board/ui/MaiWeekHeader";
+import { MaiActionOverlay, MaiDayColumn, MaiTimeGutter, MaiWeekHeader } from "./board/ui";
 import type { WeekShift } from "./types";
 
 export const MaiBoard = defineComponent({

@@ -1,6 +1,7 @@
 import type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
+  InteractionAnchorRect,
   SlotClickEventPayload,
 } from "../../types";
 import type { CalendarEvent } from "./view-model";
@@ -10,9 +11,19 @@ interface InteractionPoint {
   clientY: number;
 }
 
+function toAnchorRect(rect: InteractionAnchorRect): InteractionAnchorRect {
+  return {
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height,
+  };
+}
+
 export function toSlotClickPayload(
   event: CalendarEvent,
-  point: InteractionPoint
+  point: InteractionPoint,
+  anchorRect: InteractionAnchorRect
 ): SlotClickEventPayload {
   return {
     slotId: event.slotId,
@@ -21,12 +32,14 @@ export function toSlotClickPayload(
     endMinute: event.endMinute,
     clientX: point.clientX,
     clientY: point.clientY,
+    anchorRect: toAnchorRect(anchorRect),
   };
 }
 
 export function toAppointmentClickPayload(
   event: CalendarEvent,
-  point: InteractionPoint
+  point: InteractionPoint,
+  anchorRect: InteractionAnchorRect
 ): AppointmentClickEventPayload {
   return {
     appointmentId: event.id,
@@ -36,6 +49,7 @@ export function toAppointmentClickPayload(
     endMinute: event.endMinute,
     clientX: point.clientX,
     clientY: point.clientY,
+    anchorRect: toAnchorRect(anchorRect),
   };
 }
 
@@ -47,6 +61,7 @@ export function toEmptyCellClickPayload(input: {
   height: number;
   visibleStartMinute: number;
   totalVisibleMinutes: number;
+  columnRect: InteractionAnchorRect;
 }): EmptyCellClickEventPayload {
   const relativeY = Math.max(0, Math.min(input.clientY - input.top, input.height));
   const ratio = input.height > 0 ? relativeY / input.height : 0;
@@ -59,5 +74,6 @@ export function toEmptyCellClickPayload(input: {
     minuteOfDay: Math.min(Math.max(minute, 0), 1440),
     clientX: input.clientX,
     clientY: input.clientY,
+    columnRect: toAnchorRect(input.columnRect),
   };
 }

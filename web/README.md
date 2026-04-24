@@ -61,6 +61,10 @@ UI package tests now cover:
 - It supports two action modes:
   - callback mode (`createSlot`, `bookSlot`, `cancelSlot`, etc.)
   - adapter mode (`mutateCommand`) that builds typed commands with `COMMANDS + createCommandEnvelope`.
+- Preferred configuration shape is grouped:
+  - `view`: title/subtitle/timeline formatting
+  - `actor`: assignee and command actor defaults
+  - `actions`: action callbacks or `mutateCommand`
 - It emits high-level outcome events:
   - `slot-created`, `slot-rescheduled`, `slot-booked`, `slot-cancelled`, `slot-deleted`
   - `appointment-cancelled`, `appointment-deleted`
@@ -80,13 +84,19 @@ Example consumption:
 <MaiBoardInteractive
   :layout="layout"
   :anchor-date="anchorDate"
-  :assignee-id="assigneeId"
-  created-by="ui-operator"
-  :mutate-command="mutateCommand"
-  :book-appointment-invitee-ids="['patient-demo']"
-  book-appointment-title="Consultation"
-  book-appointment-created-by="ui-operator"
-  cancel-appointment-by="ui-operator"
+  :view="{
+    title: 'Doctor Availability Board',
+    subtitle: 'Weekly schedule with appointment and availability timeline'
+  }"
+  :actor="{
+    assigneeId,
+    createdBy: 'ui-operator',
+    bookAppointmentInviteeIds: ['patient-demo'],
+    bookAppointmentTitle: 'Consultation',
+    bookAppointmentCreatedBy: 'ui-operator',
+    cancelAppointmentBy: 'ui-operator'
+  }"
+  :actions="{ mutateCommand }"
   @slot-created="onSlotCreated"
   @slot-rescheduled="onSlotRescheduled"
   @slot-booked="onSlotBooked"

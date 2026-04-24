@@ -21,6 +21,7 @@ test("empty cell click opens create-slot popover", () => {
     minuteOfDay: 540,
     clientX: 120,
     clientY: 240,
+    columnRect: { left: 80, top: 120, width: 160, height: 600 },
   });
 
   assert.equal(overlayKindForSelection(next), "create-slot");
@@ -32,6 +33,7 @@ test("empty cell second click closes create-slot popover", () => {
     minuteOfDay: 540,
     clientX: 120,
     clientY: 240,
+    columnRect: { left: 80, top: 120, width: 160, height: 600 },
   };
   const opened = withEmptyCellDraft(firstClick);
   const toggled = applyEmptyCellClick(opened, {
@@ -49,12 +51,14 @@ test("empty cell click on different target also closes create-slot popover", () 
     minuteOfDay: 540,
     clientX: 120,
     clientY: 240,
+    columnRect: { left: 80, top: 120, width: 160, height: 600 },
   });
   const toggled = applyEmptyCellClick(opened, {
     dayIndex: 2,
     minuteOfDay: 555,
     clientX: 140,
     clientY: 260,
+    columnRect: { left: 80, top: 120, width: 160, height: 600 },
   });
 
   assert.equal(overlayKindForSelection(toggled), "none");
@@ -68,6 +72,7 @@ test("slot click opens slot actions popover", () => {
     endMinute: 660,
     clientX: 200,
     clientY: 300,
+    anchorRect: { left: 180, top: 280, width: 164, height: 36 },
   });
 
   assert.equal(overlayKindForSelection(next), "slot-actions");
@@ -82,6 +87,7 @@ test("appointment click opens appointment actions popover", () => {
     endMinute: 660,
     clientX: 220,
     clientY: 320,
+    anchorRect: { left: 180, top: 280, width: 164, height: 36 },
   });
 
   assert.equal(overlayKindForSelection(next), "appointment-actions");
@@ -95,6 +101,7 @@ test("successful actions clear selection and emit expected success event", async
     endMinute: 660,
     clientX: 210,
     clientY: 340,
+    anchorRect: { left: 180, top: 280, width: 164, height: 36 },
   });
   const payload = { slotId: "slot-1" };
 
@@ -120,6 +127,7 @@ test("failed actions emit deterministic interaction-error payload", async () => 
     endMinute: 660,
     clientX: 220,
     clientY: 320,
+    anchorRect: { left: 180, top: 280, width: 164, height: 36 },
   });
   const payload = { appointmentId: "appt-1" };
 

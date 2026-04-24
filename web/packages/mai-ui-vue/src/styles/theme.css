@@ -309,7 +309,8 @@
   position: absolute;
   left: var(--mai-space-2);
   right: var(--mai-space-2);
-  padding: 0 9px;
+  min-height: 18px;
+  padding: 4px 9px 3px;
   border-radius: var(--mai-radius-1);
   border-left: 3px solid transparent;
   overflow: hidden;
@@ -317,7 +318,7 @@
   box-shadow: var(--mai-card-shadow);
   cursor: pointer;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   transition: box-shadow 120ms ease, background-color 120ms ease;
 }
 
@@ -410,7 +411,7 @@
   color: var(--mai-text);
   font-size: 11px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.1;
   white-space: nowrap;
 }
 
@@ -425,17 +426,20 @@
 .mai-board__event-summary {
   margin: 0;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2px;
   width: 100%;
   height: 100%;
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
+  overflow: clip;
 }
 
 .mai-board__event-summary .mai-board__event-title,
 .mai-board__event-summary .mai-board__event-time {
+  width: 100%;
+  white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }

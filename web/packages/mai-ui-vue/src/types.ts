@@ -1,6 +1,7 @@
 export type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
+  InteractionAnchorRect,
   SlotDraftPreview,
   SlotClickEventPayload,
   TimeLabelFormat,
@@ -13,7 +14,11 @@ export type {
   SlotRescheduleActionEventPayload,
 } from "./types/actions";
 export type {
+  MaiActionRunner,
   MaiAppointmentChangedEventPayload,
+  MaiBoardInteractiveActionConfig,
+  MaiBoardInteractiveActorConfig,
+  MaiBoardInteractiveViewConfig,
   MaiInteractionAction,
   MaiInteractionErrorPayload,
   MaiInteractionSuccessEvent,

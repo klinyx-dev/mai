@@ -24,6 +24,7 @@ const errorMessage = ref<string | null>(null);
 const interactionMessage = ref<string>("No UI interaction yet.");
 const anchorDate = ref("2026-05-07");
 const assigneeId = "doctor-42";
+const operatorId = "ui-operator";
 
 let mai: ReturnType<typeof useMai> | null = null;
 const SUCCESS_EVENT_TO_ACTION = {
@@ -146,6 +147,24 @@ function onInteractionError(payload: MaiInteractionErrorPayload): void {
   setActionMessage("interaction-error", payload.action);
 }
 
+const boardView = {
+  title: "mai",
+  subtitle: "Weekly schedule with appointment and availability timeline",
+} as const;
+
+const boardActor = {
+  assigneeId,
+  createdBy: operatorId,
+  bookAppointmentInviteeIds: ["patient-demo"],
+  bookAppointmentTitle: "Consultation",
+  bookAppointmentCreatedBy: operatorId,
+  cancelAppointmentBy: operatorId,
+} as const;
+
+const boardActions = {
+  mutateCommand,
+} as const;
+
 onMounted(async () => {
   const { $mai } = useNuxtApp();
   mai = useMai({ adapter: $mai.adapter });
@@ -164,15 +183,9 @@ onMounted(async () => {
         :anchor-date="anchorDate"
         :is-loading="loading"
         :error-message="errorMessage"
-        title="Doctor Availability Board"
-        subtitle="Weekly schedule with appointment and availability timeline"
-        :assignee-id="assigneeId"
-        created-by="ui-operator"
-        :mutate-command="mutateCommand"
-        :book-appointment-invitee-ids="['patient-demo']"
-        book-appointment-title="Consultation"
-        book-appointment-created-by="ui-operator"
-        cancel-appointment-by="ui-operator"
+        :view="boardView"
+        :actor="boardActor"
+        :actions="boardActions"
         @navigate-week="navigateWeek"
         @slot-created="onSlotCreated"
         @slot-rescheduled="onSlotRescheduled"

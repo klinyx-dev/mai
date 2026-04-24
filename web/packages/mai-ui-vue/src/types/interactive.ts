@@ -4,6 +4,8 @@ import type {
   SlotActionEventPayload,
   SlotRescheduleActionEventPayload,
 } from "./actions";
+import type { AnyCommandEnvelope } from "@mai/mai-web-core";
+import type { TimeLabelFormat } from "./board";
 
 export const INTERACTION_ACTIONS = {
   CREATE_SLOT: "create-slot",
@@ -44,3 +46,36 @@ export interface MaiSlotRescheduledEventPayload
 
 export interface MaiAppointmentChangedEventPayload
   extends AppointmentActionEventPayload {}
+
+export type MaiActionRunner<TPayload> = (payload: TPayload) => boolean | Promise<boolean>;
+
+export interface MaiBoardInteractiveViewConfig {
+  title: string;
+  subtitle: string;
+  visibleStartMinute: number;
+  visibleEndMinute: number;
+  timeLabelFormat: TimeLabelFormat;
+  emptyStateText: string;
+}
+
+export interface MaiBoardInteractiveActorConfig {
+  assigneeId: string;
+  createdBy: string;
+  defaultSlotDurationMinutes: number;
+  appointmentIdFactory: (slotId: string) => string;
+  bookAppointmentInviteeIds: string[];
+  bookAppointmentTitle: string;
+  bookAppointmentCreatedBy: string;
+  cancelAppointmentBy: string;
+}
+
+export interface MaiBoardInteractiveActionConfig {
+  createSlot: MaiActionRunner<CreateSlotActionEventPayload> | null;
+  bookSlot: MaiActionRunner<SlotActionEventPayload> | null;
+  rescheduleSlot: MaiActionRunner<SlotRescheduleActionEventPayload> | null;
+  cancelSlot: MaiActionRunner<SlotActionEventPayload> | null;
+  deleteSlot: MaiActionRunner<SlotActionEventPayload> | null;
+  cancelAppointment: MaiActionRunner<AppointmentActionEventPayload> | null;
+  deleteAppointment: MaiActionRunner<AppointmentActionEventPayload> | null;
+  mutateCommand: MaiActionRunner<AnyCommandEnvelope> | null;
+}

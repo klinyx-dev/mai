@@ -1,5 +1,6 @@
 import { defineComponent, h, type PropType } from "vue";
 import { MaiEventCard } from "./MaiEventCard";
+import { MaiDraftEventCard } from "./day-column/MaiDraftEventCard";
 import type { DayColumn } from "../model/view-model";
 import { clampToVisibleRange } from "../model/view-model";
 import { MIN_SLOT_SPAN_MINUTES } from "../model/slot-gesture";
@@ -11,6 +12,7 @@ import {
 import type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,
+  InteractionAnchorRect,
   SlotDraftPreview,
   SlotClickEventPayload,
   SlotRescheduleActionEventPayload,
@@ -52,16 +54,33 @@ export const MaiDayColumn = defineComponent({
   setup(props) {
     const tickCount = Math.max(props.hourTicks.length - 1, 1);
 
+    function computePosition(startMinute: number, endMinute: number) {
+      const clamped = clampToVisibleRange(
+        startMinute,
+        endMinute,
+        props.visibleStartMinute,
+        props.visibleEndMinute
+      );
+      if (!clamped) {
+        return null;
+      }
+      const span = Math.max(clamped.end - clamped.start, MIN_SLOT_SPAN_MINUTES);
+      const top = ((clamped.start - props.visibleStartMinute) / props.totalVisibleMinutes) * 100;
+      const height = (span / props.totalVisibleMinutes) * 100;
+      return { top, height };
+    }
+
     function handleEventActivate(
       event: (typeof props.column.events)[number],
-      point: { clientX: number; clientY: number }
+      point: { clientX: number; clientY: number },
+      anchorRect: InteractionAnchorRect
     ) {
       if (event.kind === "slot") {
-        props.onSlotClick(toSlotClickPayload(event, point));
+        props.onSlotClick(toSlotClickPayload(event, point, anchorRect));
         return;
       }
 
-      props.onAppointmentClick(toAppointmentClickPayload(event, point));
+      props.onAppointmentClick(toAppointmentClickPayload(event, point, anchorRect));
     }
 
     function handleGridClick(event: MouseEvent) {
@@ -79,6 +98,12 @@ export const MaiDayColumn = defineComponent({
           height: rect.height,
           visibleStartMinute: props.visibleStartMinute,
           totalVisibleMinutes: props.totalVisibleMinutes,
+          columnRect: {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+          },
         })
       );
     }
@@ -101,22 +126,16 @@ export const MaiDayColumn = defineComponent({
             );
           })}
           {props.column.events.map((event) => {
-            const clamped = clampToVisibleRange(
-              event.startMinute,
-              event.endMinute,
-              props.visibleStartMinute,
-              props.visibleEndMinute
-            );
-            const span = Math.max(clamped.end - clamped.start, MIN_SLOT_SPAN_MINUTES);
-            const top =
-              ((clamped.start - props.visibleStartMinute) / props.totalVisibleMinutes) * 100;
-            const height = (span / props.totalVisibleMinutes) * 100;
+            const position = computePosition(event.startMinute, event.endMinute);
+            if (!position) {
+              return null;
+            }
 
             return (
               <MaiEventCard
                 event={event}
-                top={top}
-                height={height}
+                top={position.top}
+                height={position.height}
                 visibleStartMinute={props.visibleStartMinute}
                 totalVisibleMinutes={props.totalVisibleMinutes}
                 minuteLabel={props.minuteLabel}
@@ -128,30 +147,21 @@ export const MaiDayColumn = defineComponent({
           })}
           {props.previewSlotDraft &&
           props.previewSlotDraft.dayIndex === props.column.dayIndex ? (() => {
-            const clamped = clampToVisibleRange(
+            const position = computePosition(
               props.previewSlotDraft.startMinute,
-              props.previewSlotDraft.endMinute,
-              props.visibleStartMinute,
-              props.visibleEndMinute
+              props.previewSlotDraft.endMinute
             );
-            if (!clamped) {
+            if (!position) {
               return null;
             }
-            const span = Math.max(clamped.end - clamped.start, MIN_SLOT_SPAN_MINUTES);
-            const top =
-              ((clamped.start - props.visibleStartMinute) / props.totalVisibleMinutes) * 100;
-            const height = (span / props.totalVisibleMinutes) * 100;
             return (
-              <div
-                class="mai-board__event mai-board__event--draft"
-                style={{ top: `${top}%`, height: `${height}%` }}
-              >
-                <p class="mai-board__event-title">New slot</p>
-                <p class="mai-board__event-time">
-                  {props.minuteLabel(props.previewSlotDraft.startMinute)}-
-                  {props.minuteLabel(props.previewSlotDraft.endMinute)}
-                </p>
-              </div>
+              <MaiDraftEventCard
+                top={position.top}
+                height={position.height}
+                startMinute={props.previewSlotDraft.startMinute}
+                endMinute={props.previewSlotDraft.endMinute}
+                minuteLabel={props.minuteLabel}
+              />
             );
           })() : null}
           {props.column.events.length === 0 ? (
