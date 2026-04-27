@@ -18,14 +18,14 @@ export const MaiWeekHeader = defineComponent({
     return () => (
       <header class="mai-board__header">
         <div class="mai-board__heading-block">
-          <p class="mai-board__kicker">Doctor workspace</p>
+          <p class="mai-board__kicker">Weekly board</p>
           <h2 class="mai-board__title">{props.title}</h2>
           <p class="mai-board__subtitle">{props.subtitle}</p>
         </div>
         <div class="mai-board__toolbar">
           <div class="mai-board__navigation">
             <button type="button" class="mai-board__nav-button" onClick={() => emit("navigateWeek", -1)}>
-              Prev
+              Previous
             </button>
             <button
               type="button"

@@ -28,6 +28,7 @@ export interface DayColumn {
   dayIndex: number;
   label: string;
   dateLabel: string;
+  isToday: boolean;
   events: CalendarEvent[];
 }
 
@@ -65,6 +66,10 @@ function dateFromIso(isoDate: string): Date {
 
 function isoFromDate(date: Date): string {
   return date.toISOString().slice(0, 10);
+}
+
+function todayIsoUtc(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 export function startOfWeekIso(anchorDate: string): string {
@@ -176,10 +181,12 @@ export function mapCalendarEvents(layout: WeeklyLayout | null): CalendarEvent[] 
 
 export function buildDayColumns(weekStartIso: string, events: CalendarEvent[]): DayColumn[] {
   const dayDates = DAY_LABELS.map((_, dayIndex) => addDaysIso(weekStartIso, dayIndex));
+  const todayIso = todayIsoUtc();
   return DAY_LABELS.map((_, dayIndex) => ({
     dayIndex,
     label: weekdayLabel(dayDates[dayIndex]),
     dateLabel: monthDayLabel(dayDates[dayIndex]),
+    isToday: dayDates[dayIndex] === todayIso,
     events: events
       .filter((event) => event.dayIndex === dayIndex)
       .sort((a, b) => a.startMinute - b.startMinute || a.endMinute - b.endMinute),

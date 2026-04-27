@@ -1,162 +1,198 @@
 @import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:wght@300;400;500;600&display=swap");
 
 :root {
-  --mai-bg: #ffffff;
-  --mai-surface: #ffffff;
-  --mai-surface-soft: #f7f8fa;
-  --mai-text: #242424;
-  --mai-deep: #111111;
-  --mai-muted: #898989;
-  --mai-border: #e4e4e4;
-  --mai-line: #eceff3;
-  --mai-slot: #ffffff;
-  --mai-slot-border: rgba(62, 167, 106, 0.45);
-  --mai-appointment: #fcfcfd;
-  --mai-appointment-border: rgba(78, 111, 214, 0.5);
-  --mai-ring: rgba(34, 42, 53, 0.08);
-  --mai-soft-shadow: rgba(34, 42, 53, 0.05);
-  --mai-contact-shadow: rgba(19, 19, 22, 0.7);
-  --mai-focus: #1f6feb;
-  --mai-card-surface: #ffffff;
-  --mai-card-ring-shadow: 0 0 0 1px rgba(34, 42, 53, 0.08);
-  --mai-card-soft-shadow: 0 4px 8px rgba(34, 42, 53, 0.05);
-  --mai-card-contact-shadow: 0 1px 5px -4px rgba(19, 19, 22, 0.7);
-  --mai-card-shadow:
-    var(--mai-card-contact-shadow),
-    var(--mai-card-ring-shadow),
-    var(--mai-card-soft-shadow);
-  --mai-card-shadow-hover:
-    0 2px 6px -4px rgba(19, 19, 22, 0.7),
+  --color-bg: #ffffff;
+  --color-bg-subtle: #f8f8f8;
+  --color-bg-muted: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-text: #242424;
+  --color-text-strong: #111111;
+  --color-text-muted: #6f6f6f;
+  --color-text-subtle: #898989;
+  --color-text-disabled: #b5b5b5;
+  --color-text-inverse: #ffffff;
+  --color-border: rgba(34, 42, 53, 0.1);
+  --color-border-subtle: rgba(34, 42, 53, 0.06);
+  --color-border-strong: rgba(17, 17, 17, 0.18);
+  --color-action: #242424;
+  --color-action-hover: #111111;
+  --color-action-muted: #f5f5f5;
+  --color-link: #006adc;
+  --color-focus: rgba(59, 130, 246, 0.5);
+  --color-success: #0f766e;
+  --color-success-bg: #f0fdfa;
+  --color-success-border: #99f6e4;
+  --color-warning: #92400e;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-danger: #b91c1c;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+  --font-display: "Cal Sans", "Inter", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+  --space-0: 0;
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+  --shadow-ring: 0 0 0 1px rgba(34, 42, 53, 0.08);
+  --shadow-sm:
+    0 1px 2px rgba(17, 17, 17, 0.04),
+    0 0 0 1px rgba(34, 42, 53, 0.08);
+  --shadow-md:
+    0 1px 5px -4px rgba(19, 19, 22, 0.7),
+    0 0 0 1px rgba(34, 42, 53, 0.08),
+    0 4px 8px rgba(34, 42, 53, 0.05);
+  --shadow-lg:
+    0 1px 5px -4px rgba(19, 19, 22, 0.7),
     0 0 0 1px rgba(34, 42, 53, 0.1),
-    0 8px 14px rgba(34, 42, 53, 0.08);
-  --mai-action-danger: #b42318;
-  --mai-space-1: 4px;
-  --mai-space-2: 8px;
-  --mai-space-3: 12px;
-  --mai-space-4: 16px;
-  --mai-space-5: 20px;
-  --mai-space-6: 24px;
-  --mai-radius-1: 8px;
-  --mai-radius-2: 12px;
-  --mai-radius-3: 16px;
+    0 12px 24px rgba(34, 42, 53, 0.08);
+  --shadow-inset: inset 0 1px 1.5px rgba(0, 0, 0, 0.12);
+  --shadow-button-inset: inset 0 1px 0 rgba(255, 255, 255, 0.15);
   --mai-sticky-offset: 0px;
 }
 
 .mai-board {
-  color: var(--mai-text);
-  background: var(--mai-bg);
-  font-family: "Inter", "Segoe UI", sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-family: var(--font-sans);
   min-height: 100vh;
+  width: 100%;
 }
 
 .mai-board__panel {
   --mai-calendar-height: clamp(1600px, calc(100vh + 500px), 2600px);
-  max-width: none;
   width: 100%;
   margin: 0;
-  padding: var(--mai-space-4);
+  padding: 0;
   border-radius: 0;
   box-sizing: border-box;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--mai-bg);
+  background: var(--color-bg);
   box-shadow: none;
 }
 
 .mai-board__header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  gap: var(--mai-space-4);
-  margin-bottom: var(--mai-space-5);
+  align-items: flex-start;
+  gap: 32px;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .mai-board__heading-block {
   display: grid;
-  gap: var(--mai-space-2);
+  gap: 8px;
   min-width: 0;
+  max-width: 640px;
 }
 
 .mai-board__kicker {
   margin: 0;
-  color: var(--mai-muted);
+  color: var(--color-text-subtle);
   font-size: 12px;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
 }
 
 .mai-board__title {
   margin: 0;
-  color: var(--mai-text);
-  font-family: "Cal Sans", "Inter", sans-serif;
-  font-size: 48px;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: clamp(40px, 4vw, 48px);
   font-weight: 600;
   line-height: 1.1;
 }
 
 .mai-board__subtitle {
   margin: 0;
-  color: var(--mai-muted);
+  color: var(--color-text-muted);
   font-size: 15px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
+  max-width: 52ch;
 }
 
 .mai-board__toolbar {
   display: grid;
   justify-items: end;
-  gap: var(--mai-space-2);
+  gap: 12px;
+  padding: 16px;
+  min-width: 300px;
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-subtle);
+  box-shadow: var(--shadow-ring);
 }
 
 .mai-board__navigation {
   display: flex;
-  gap: var(--mai-space-2);
+  gap: 8px;
   align-items: center;
 }
 
 .mai-board__nav-button {
-  border: 1px solid var(--mai-border);
-  background: var(--mai-bg);
-  color: var(--mai-text);
-  border-radius: var(--mai-radius-1);
-  padding: 7px 12px;
-  font-size: 13px;
-  font-weight: 600;
+  border: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  height: 36px;
+  font-size: 14px;
+  font-weight: 500;
   line-height: 1;
   cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+  box-shadow: var(--shadow-sm);
+  transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 
 .mai-board__nav-button:hover {
-  background: var(--mai-surface-soft);
-  border-color: #d5dbe4;
+  background: var(--color-action-muted);
   transform: translateY(-1px);
 }
 
 .mai-board__nav-button:focus-visible {
-  outline: 2px solid var(--mai-focus);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
 .mai-board__nav-button--today {
-  background: var(--mai-text);
-  color: #ffffff;
-  border-color: var(--mai-text);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  background: var(--color-action);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-button-inset);
 }
 
 .mai-board__range-label {
   margin: 0;
-  color: var(--mai-deep);
-  font-family: "Cal Sans", "Inter", sans-serif;
+  color: var(--color-text-strong);
+  font-family: var(--font-display);
   font-size: 20px;
   line-height: 1.2;
 }
 
 .mai-board__metrics {
   display: flex;
-  gap: var(--mai-space-2);
+  gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -164,28 +200,27 @@
 .mai-board__metric {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
-  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
   font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: #ffffff;
-  background: var(--mai-text);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.15);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-text-inverse);
+  background: var(--color-action);
+  box-shadow: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .mai-board__metric--soft {
-  color: var(--mai-text);
-  background: var(--mai-bg);
-  box-shadow:
-    0 1px 5px -4px var(--mai-contact-shadow),
-    0 0 0 1px var(--mai-ring),
-    0 4px 8px var(--mai-soft-shadow);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-ring);
 }
 
 .mai-board__error {
-  margin: 0 0 var(--mai-space-3);
-  color: #b42318;
+  margin: 0;
+  padding: 12px 24px 0;
+  color: var(--color-danger);
   font-size: 13px;
   font-weight: 600;
 }
@@ -194,9 +229,9 @@
   flex: none;
   min-height: auto;
   overflow: visible;
-  border-radius: var(--mai-radius-1);
-  background: var(--mai-bg);
-  box-shadow: inset 0 0 0 1px var(--mai-border);
+  border-radius: 0;
+  background: var(--color-surface);
+  box-shadow: none;
 }
 
 .mai-board__calendar {
@@ -208,8 +243,8 @@
 }
 
 .mai-board__time-column {
-  border-right: 1px solid var(--mai-border);
-  background: var(--mai-bg);
+  border-right: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-subtle);
 }
 
 .mai-board__time-column-header {
@@ -221,10 +256,11 @@
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 600;
-  color: var(--mai-muted);
-  background: var(--mai-surface-soft);
-  border-bottom: 1px solid var(--mai-border);
+  font-weight: 500;
+  color: var(--color-text-subtle);
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-variant-numeric: tabular-nums;
 }
 
 .mai-board__time-grid {
@@ -241,16 +277,18 @@
   justify-content: flex-end;
   align-items: center;
   box-sizing: border-box;
-  color: var(--mai-muted);
+  color: var(--color-text-subtle);
   font-size: 11px;
   font-weight: 500;
+  line-height: 1;
   transform: translateY(-50%);
   pointer-events: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .mai-board__day-column {
-  border-right: 1px solid var(--mai-border);
-  background: var(--mai-bg);
+  border-right: 1px solid var(--color-border-subtle);
+  background: var(--color-surface);
 }
 
 .mai-board__day-column:last-child {
@@ -261,12 +299,16 @@
   position: sticky;
   top: var(--mai-sticky-offset);
   z-index: 3;
-  height: 54px;
-  border-bottom: 1px solid var(--mai-border);
+  height: 64px;
+  border-bottom: 1px solid var(--color-border-subtle);
   display: grid;
   place-content: center;
-  gap: 2px;
-  background: var(--mai-surface-soft);
+  gap: 4px;
+  background: var(--color-surface);
+}
+
+.mai-board__day-header--today {
+  background: #fafafa;
 }
 
 .mai-board__day-grid {
@@ -274,25 +316,36 @@
   height: var(--mai-calendar-height);
 }
 
-.mai-board__day-grid:hover {
-  background: linear-gradient(180deg, rgba(31, 111, 235, 0.02) 0%, transparent 40%);
+.mai-board__day-column--today .mai-board__day-grid {
+  background: #fafafa;
 }
 
 .mai-board__day-label {
   margin: 0;
-  color: var(--mai-deep);
-  font-size: 13px;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.1;
-  text-align: center;
+  line-height: 1.2;
+  text-align: left;
 }
 
 .mai-board__day-date {
   margin: 0;
-  color: var(--mai-muted);
+  color: var(--color-text-subtle);
   font-size: 12px;
   line-height: 1.1;
-  text-align: center;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.mai-board__day-date--today {
+  display: inline-flex;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-text-strong);
+  color: var(--color-text-inverse);
 }
 
 .mai-board__hour-line {
@@ -301,29 +354,48 @@
   right: 0;
   height: 0;
   box-sizing: border-box;
-  border-bottom: 1px solid var(--mai-line);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
   pointer-events: none;
 }
 
 .mai-board__event {
   position: absolute;
-  left: var(--mai-space-2);
-  right: var(--mai-space-2);
-  min-height: 18px;
-  padding: 4px 9px 3px;
-  border-radius: var(--mai-radius-1);
-  border-left: 3px solid transparent;
+  left: 10px;
+  right: 10px;
+  min-height: 24px;
+  padding: 10px 11px 11px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--mai-card-surface);
-  box-shadow: var(--mai-card-shadow);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   display: flex;
   align-items: stretch;
-  transition: box-shadow 120ms ease, background-color 120ms ease;
+  transition:
+    box-shadow 160ms ease,
+    transform 160ms ease,
+    background-color 160ms ease,
+    opacity 160ms ease;
 }
 
 .mai-board__event:hover {
-  box-shadow: var(--mai-card-shadow-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.mai-board__event--compact {
+  min-height: 20px;
+  padding: 8px 9px;
+}
+
+.mai-board__event--tight {
+  min-height: 17px;
+  padding: 4px 7px;
+}
+
+.mai-board__event--micro {
+  min-height: 14px;
+  padding: 2px 6px;
 }
 
 .mai-board__event--slot {
@@ -332,9 +404,7 @@
 
 .mai-board__event--dragging {
   opacity: 0.9;
-  box-shadow:
-    0 16px 26px rgba(17, 24, 39, 0.18),
-    inset 0 0 0 1px rgba(31, 111, 235, 0.28);
+  box-shadow: var(--shadow-md);
   z-index: 6;
 }
 
@@ -343,43 +413,39 @@
 }
 
 .mai-board__event:focus-visible {
-  outline: 2px solid var(--mai-focus);
+  outline: 2px solid var(--color-focus);
   outline-offset: 1px;
 }
 
 .mai-board__event--slot {
-  background: var(--mai-slot);
-  border-left-color: var(--mai-slot-border);
+  background: #ffffff;
+  border: 1px solid rgba(15, 118, 110, 0.24);
 }
 
 .mai-board__event--appointment {
-  background: var(--mai-appointment);
-  border-left-color: var(--mai-appointment-border);
+  background: #242424;
+  color: #ffffff;
+  box-shadow: var(--shadow-md);
 }
 
 .mai-board__event--origin {
-  opacity: 0.45;
+  opacity: 0.35;
 }
 
 .mai-board__event--ghost {
   z-index: 9;
   pointer-events: none;
-  border-style: dashed;
-  border-width: 1px;
-  border-left-width: 3px;
-  box-shadow:
-    0 10px 20px rgba(31, 111, 235, 0.18),
-    inset 0 0 0 1px rgba(31, 111, 235, 0.3);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-ring);
+  border: 1px dashed var(--color-border-strong);
 }
 
 .mai-board__event--draft {
   z-index: 2;
   pointer-events: none;
-  border-style: dashed;
-  border-width: 1px;
-  border-left-width: 3px;
-  background: rgba(31, 111, 235, 0.09);
-  box-shadow: none;
+  background: var(--color-bg-muted);
+  box-shadow: var(--shadow-ring);
+  border: 1px dashed var(--color-border-strong);
 }
 
 .mai-board__event-resize-handle {
@@ -387,7 +453,7 @@
   left: 8px;
   right: 8px;
   height: 12px;
-  border-radius: 999px;
+  border-radius: 2px;
   z-index: 2;
   background: transparent;
 }
@@ -408,65 +474,230 @@
 }
 
 .mai-board__event-title {
-  color: var(--mai-text);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.1;
-  white-space: nowrap;
+  color: inherit;
 }
 
 .mai-board__event-time {
-  color: #6f6f6f;
+  color: inherit;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
 }
 
 .mai-board__event-summary {
   margin: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  align-content: start;
   align-items: flex-start;
-  justify-content: flex-start;
-  gap: 2px;
+  gap: 6px;
   width: 100%;
   height: 100%;
   min-width: 0;
   overflow: clip;
 }
 
-.mai-board__event-summary .mai-board__event-title,
+.mai-board__event-summary--compact {
+  gap: 4px;
+}
+
+.mai-board__event-summary--inline {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: center;
+  align-content: center;
+  gap: 6px;
+}
+
+.mai-board__event-meta,
+.mai-board__event-heading,
+.mai-board__event-time-row,
 .mai-board__event-summary .mai-board__event-time {
   width: 100%;
+  min-width: 0;
+}
+
+.mai-board__event-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mai-board__event-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg-muted);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.mai-board__event-duration {
+  color: var(--color-text-subtle);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.mai-board__event-duration--inline {
+  flex: none;
+}
+
+.mai-board__event-heading {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
+.mai-board__event-heading--inline {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.mai-board__event-heading--compact {
+  flex: 1 1 auto;
+  width: auto;
+  font-size: 12px;
+  line-height: 1.1;
+}
+
+.mai-board__event-time-row {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.mai-board__event-time-row--inline {
+  display: inline-flex;
+  justify-content: flex-end;
+  width: auto;
+  color: var(--color-text-muted);
+  gap: 6px;
+}
+
+.mai-board__event-time-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.55;
+  flex: none;
+}
+
+.mai-board__event--appointment .mai-board__event-badge {
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mai-board__event--appointment .mai-board__event-duration,
+.mai-board__event--appointment .mai-board__event-time-row {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mai-board__event--appointment .mai-board__event-heading {
+  color: #ffffff;
+}
+
+.mai-board__event-summary--compact .mai-board__event-heading {
+  font-size: 12px;
+}
+
+.mai-board__event-summary--compact .mai-board__event-badge,
+.mai-board__event-summary--compact .mai-board__event-duration {
+  font-size: 9px;
+}
+
+.mai-board__event-summary--compact .mai-board__event-meta {
+  align-items: center;
+  gap: 6px;
+}
+
+.mai-board__event-summary--compact .mai-board__event-time-row {
+  gap: 4px;
+}
+
+.mai-board__event-summary--tight {
+  gap: 4px;
+}
+
+.mai-board__event-summary--micro {
+  gap: 4px;
+}
+
+.mai-board__event--tight .mai-board__event-badge,
+.mai-board__event--tight .mai-board__event-duration,
+.mai-board__event--tight .mai-board__event-time,
+.mai-board__event--tight .mai-board__event-heading--inline {
+  font-size: 10px;
+}
+
+.mai-board__event--micro .mai-board__event-badge,
+.mai-board__event--micro .mai-board__event-time,
+.mai-board__event--micro .mai-board__event-heading--inline {
+  font-size: 9px;
+}
+
+.mai-board__event--tight .mai-board__event-badge,
+.mai-board__event--micro .mai-board__event-badge {
+  padding: 2px 5px;
+}
+
+.mai-board__event--tight .mai-board__event-time-row--inline,
+.mai-board__event--micro .mai-board__event-time-row--inline {
+  gap: 4px;
+}
+
+.mai-board__event--micro .mai-board__event-summary--inline {
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  gap: 4px;
+}
+
 .mai-board__empty {
   position: absolute;
-  top: var(--mai-space-2);
-  left: var(--mai-space-2);
-  right: var(--mai-space-2);
+  top: 12px;
+  left: 12px;
+  right: 12px;
   margin: 0;
-  color: var(--mai-muted);
+  color: var(--color-text-subtle);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
   text-align: center;
-  padding: var(--mai-space-2);
-  border-radius: var(--mai-radius-1);
-  background: rgba(137, 137, 137, 0.08);
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: none;
 }
 
 .mai-action-card {
   display: grid;
   gap: 10px;
-  padding: var(--mai-space-4);
-  border-radius: var(--mai-radius-2);
-  background: var(--mai-card-surface);
-  box-shadow: var(--mai-card-shadow);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
 }
 
 .mai-action-popover {
@@ -480,43 +711,42 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--mai-space-2);
+  gap: var(--space-2);
 }
 
 .mai-action-card__title {
   margin: 0;
-  color: var(--mai-deep);
+  color: var(--color-text-strong);
   font-size: 15px;
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: 0.2px;
 }
 
 .mai-action-card__close {
   border: 0;
-  border-radius: var(--mai-radius-1);
-  background: var(--mai-surface-soft);
-  color: var(--mai-muted);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-subtle);
   width: 28px;
   height: 28px;
   cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(34, 42, 53, 0.1);
+  box-shadow: var(--shadow-ring);
   transition: background-color 120ms ease, color 120ms ease;
 }
 
 .mai-action-card__close:hover {
-  background: #f1f2f4;
-  color: var(--mai-text);
+  background: var(--color-bg-muted);
+  color: var(--color-text);
 }
 
 .mai-action-card__close:focus-visible {
-  outline: 2px solid var(--mai-focus);
+  outline: 2px solid var(--color-focus);
   outline-offset: 1px;
 }
 
 .mai-action-card__meta {
   margin: 0;
-  color: #6f6f6f;
+  color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.35;
@@ -525,7 +755,7 @@
 .mai-action-card__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--mai-space-2);
+  gap: var(--space-2);
 }
 
 .mai-action-field {
@@ -540,74 +770,67 @@
 }
 
 .mai-action-field__label {
-  color: #737373;
+  color: var(--color-text);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.2;
 }
 
 .mai-action-input {
-  border: 0;
-  border-radius: var(--mai-radius-1);
-  background: var(--mai-surface-soft);
-  color: var(--mai-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
   padding: 8px 10px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.2;
-  box-shadow: inset 0 0 0 1px rgba(34, 42, 53, 0.12);
+  box-shadow: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .mai-action-input:focus-visible {
-  outline: 2px solid var(--mai-focus);
-  outline-offset: 1px;
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .mai-action-button {
   border: 0;
-  border-radius: var(--mai-radius-1);
-  background: var(--mai-card-surface);
-  color: var(--mai-text);
-  padding: 7px 11px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0 14px;
+  height: 36px;
+  font-size: 14px;
+  font-weight: 500;
   line-height: 1.2;
   cursor: pointer;
-  box-shadow:
-    0 1px 4px -4px rgba(19, 19, 22, 0.7),
-    inset 0 0 0 1px rgba(34, 42, 53, 0.15);
+  box-shadow: var(--shadow-sm);
   transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 
 .mai-action-button:hover:not(:disabled) {
-  background: #f7f8fa;
-  box-shadow:
-    0 2px 6px -4px rgba(19, 19, 22, 0.7),
-    inset 0 0 0 1px rgba(34, 42, 53, 0.2);
+  background: var(--color-action-muted);
 }
 
 .mai-action-button--primary {
-  color: #fff;
-  background: var(--mai-text);
-  box-shadow:
-    0 1px 4px -4px rgba(19, 19, 22, 0.8),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  color: var(--color-text-inverse);
+  background: var(--color-action);
+  box-shadow: var(--shadow-button-inset);
 }
 
 .mai-action-button--primary:hover:not(:disabled) {
-  background: #1c1c1c;
+  background: var(--color-action-hover);
 }
 
 .mai-action-button--danger {
-  color: var(--mai-action-danger);
-  background: #fff5f4;
-  box-shadow:
-    0 1px 4px -4px rgba(19, 19, 22, 0.7),
-    inset 0 0 0 1px rgba(180, 35, 24, 0.2);
+  color: var(--color-text-inverse);
+  background: var(--color-danger);
+  box-shadow: none;
 }
 
 .mai-action-button--danger:hover:not(:disabled) {
-  background: #ffeceb;
+  background: #991b1b;
 }
 
 .mai-action-button:disabled {
@@ -617,20 +840,27 @@
 
 @media (max-width: 1024px) {
   .mai-board__title {
-    font-size: 36px;
+    font-size: 40px;
+  }
+
+  .mai-board__toolbar {
+    min-width: 0;
   }
 }
 
 @media (max-width: 640px) {
   .mai-board__panel {
     --mai-calendar-height: clamp(1300px, calc(100vh + 300px), 2200px);
-    padding: var(--mai-space-4);
-    min-height: calc(100vh - 32px);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
   }
 
   .mai-board__header {
     flex-direction: column;
     align-items: stretch;
+    padding: 16px 16px 12px;
   }
 
   .mai-board__title {
@@ -639,10 +869,15 @@
 
   .mai-board__toolbar {
     justify-items: start;
+    width: 100%;
   }
 
   .mai-board__metrics {
     justify-content: flex-start;
+  }
+
+  .mai-board__error {
+    padding: 10px 16px 0;
   }
 
   .mai-board__calendar {

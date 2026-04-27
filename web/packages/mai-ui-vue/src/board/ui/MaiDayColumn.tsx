@@ -109,10 +109,27 @@ export const MaiDayColumn = defineComponent({
     }
 
     return () => (
-      <article class="mai-board__day-column">
-        <header class="mai-board__day-header">
+      <article
+        class={[
+          "mai-board__day-column",
+          props.column.isToday ? "mai-board__day-column--today" : "",
+        ]}
+      >
+        <header
+          class={[
+            "mai-board__day-header",
+            props.column.isToday ? "mai-board__day-header--today" : "",
+          ]}
+        >
           <p class="mai-board__day-label">{props.column.label}</p>
-          <p class="mai-board__day-date">{props.column.dateLabel}</p>
+          <p
+            class={[
+              "mai-board__day-date",
+              props.column.isToday ? "mai-board__day-date--today" : "",
+            ]}
+          >
+            {props.column.dateLabel}
+          </p>
         </header>
         <div class="mai-board__day-grid" onClick={handleGridClick}>
           {props.hourTicks.map((tick, index) => {
