@@ -24,7 +24,7 @@ Prefer 4-space indentation, `snake_case` for modules/functions, `PascalCase` for
 Keep the core headless: no DOM, CSS, pixel math, or framework-specific logic in domain or layout modules. Use `rustfmt` and Clippy as the baseline style gates.
 
 ## Testing Guidelines
-Tests should mirror the technical spec: unit tests for invariants, service tests for command flows, and layout tests for week filtering and ordering. Name tests by behavior, for example `rejects_overlapping_slots_for_same_assignee`. Cover booking/unbooking transitions, overlap rejection, cancelled-slot behavior, and deterministic weekly layout output.
+Tests should mirror the technical spec: unit tests for invariants, service tests for command flows, and layout tests for week filtering and ordering. Name tests by behavior, for example `rejects_overlapping_slots_for_same_resource owner`. Cover booking/unbooking transitions, overlap rejection, cancelled-slot behavior, and deterministic weekly layout output.
 
 ## Commit & Pull Request Guidelines
 Git history currently uses short imperative subjects with optional prefixes such as `fix:` and `add:`. Keep commits focused and descriptive, for example `fix: reject booking cancelled slots`. PRs should link the relevant spec section, summarize behavioral changes, list validation/tests run, and include example payloads or screenshots when an adapter/UI is introduced.

@@ -18,7 +18,7 @@ The boundary is envelope-based:
     "slot_id": "slot-1001",
     "start": "2026-05-04T09:00:00Z",
     "end": "2026-05-04T09:30:00Z",
-    "assignee_id": "doctor-42",
+    "resource_owner_id": "owner-42",
     "created_by": "admin-7"
   }
 }
@@ -70,7 +70,7 @@ The boundary is envelope-based:
   "payload": {
     "anchor_date": "2026-05-07",
     "timezone": "Europe/Paris",
-    "assignee_id": "doctor-42",
+    "resource_owner_id": "owner-42",
     "visible_start_minute": 540,
     "visible_end_minute": 1020
   }

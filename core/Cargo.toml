@@ -2,7 +2,7 @@
 name = "mai"
 version = "0.1.0"
 edition = "2024"
-description = "Headless Rust scheduling core for deterministic weekly medical booking workflows."
+description = "Headless Rust scheduling core for deterministic weekly scheduling workflows."
 license = "MIT"
 repository = "https://github.com/klinyx-dev/mai.git"
 

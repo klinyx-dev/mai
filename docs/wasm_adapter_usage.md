@@ -136,13 +136,13 @@ const layoutResponse = JSON.parse(
 ## TM10 Query Contract (Adapter Exposure)
 
 Weekly layout query payload now also accepts optional core filter/window fields:
-- `assignee_id`
+- `resource_owner_id`
 - `visible_start_minute`
 - `visible_end_minute`
 
 Current contract behavior:
 - omitted fields preserve legacy behavior
-- `assignee_id` filters both slot and appointment projections by slot assignee
+- `resource_owner_id` filters both slot and appointment projections by slot resource owner
 - visible window fields apply deterministic clipping/filtering in core projection
 - invalid visible-window bounds map to deterministic structural errors:
   - `category = structural`
@@ -167,7 +167,7 @@ const addSlotResponse = JSON.parse(
         slot_id: "slot-1001",
         start: "2026-05-04T09:00:00Z",
         end: "2026-05-04T09:30:00Z",
-        assignee_id: "doctor-42",
+        resource_owner_id: "owner-42",
         created_by: "admin-7"
       }
     })
@@ -208,7 +208,7 @@ const layoutResponse = JSON.parse(
       query: "weekly_layout",
       payload: {
         anchor_date: "2026-05-07",
-        assignee_id: "doctor-42",
+        resource_owner_id: "owner-42",
         visible_start_minute: 540,
         visible_end_minute: 1020
       }
@@ -251,7 +251,7 @@ if (duplicateBooking.status === "error") {
 ## Error Categories
 
 - `structural`: invalid domain shape (example: `invalid_time_range`, `empty_title`)
-- `referential`: missing referenced entities (example: `slot_not_found`, `assignee_not_found`, `creator_not_found`)
+- `referential`: missing referenced entities (example: `slot_not_found`, `resource_owner_not_found`, `creator_not_found`)
 - `business`: rule violations (example: `slot_already_booked`)
 - `contract`: adapter boundary problems (example: `invalid_json`)
 

@@ -2,7 +2,7 @@
 
 # 1. Objective
 
-Build a cross-platform scheduling core for a weekly medical booking use case, implemented in Rust first, with deterministic business logic and layout computation that can later be consumed by the Web, mobile or backend systems
+Build a cross-platform scheduling core for a weekly scheduling use case, implemented in Rust first, with deterministic business logic and layout computation that can later be consumed by the Web, mobile or backend systems
 
 This core is not a UI library
 
@@ -154,7 +154,7 @@ pub struct ActorRef {
 ```
 
 The system distinguishes these roles logically:
-- slot assignee
+- slot resource owner
 - slot creator
 - appointment creator
 - appointment invitee
@@ -192,7 +192,7 @@ pub enum SlotStatus {
 pub struct Slot {
     pub id: SlotId,
     pub time: TimeRange,
-    pub assignee_id: ActorId,
+    pub resource_owner_id: ActorId,
     pub created_by: ActorId,
     pub status: SlotStatus,
 }
@@ -200,8 +200,8 @@ pub struct Slot {
 
 Constraints from the functional spec:
 - slot is the canonical time source
-- slot is owned by the assignee
-- creator may differ from assignee
+- slot is owned by the resource owner
+- creator may differ from resource owner
 - slot is not partially consumable
 - status is explicit and persistent
 
@@ -219,7 +219,7 @@ pub struct Appointment {
 
 Derived data:
 - host is not stored directly
-- host = slot.assignee_id
+- host = slot.resource_owner_id
 
 Reason:
 - Avoids duplication
@@ -253,7 +253,7 @@ Do not duplicate relationship maps as canonical state unless profiling later pro
 
 Derive when needed:
 - appointment by slot
-- slots by assignee
+- slots by resource owner
 - visible items by week
 
 Reason:
@@ -291,7 +291,7 @@ pub struct AddSlotCommand {
     pub slot_id: SlotId,
     pub start: DateTime<Utc>,
     pub end: DateTime<Utc>,
-    pub assignee_id: ActorId,
+    pub resource_owner_id: ActorId,
     pub created_by: ActorId,
 }
 ```
@@ -367,11 +367,11 @@ Checks referenced entities:
 - slot exists
 - appointment exists
 - creator exists if actor registry is available
-- assignee exists if actor registry is available
+- resource owner exists if actor registry is available
 
 #### Business invariant validation
 Checks scheduling rules:
-- no overlapping active slots for same assignee
+- no overlapping active slots for same resource owner
 - slot must be available before booking
 - booked slot cannot be deleted
 - cancelled slot cannot be booked
@@ -381,7 +381,7 @@ This structure prevents rule sprawl
 
 ### 7.2 Overlap rule
 The functional spec requires:
-- slots cannot overlap for the same assignee
+- slots cannot overlap for the same resource owner
 
 Technical interpretation:
 - apply overlap checks against slots with status Available or Booked
@@ -456,7 +456,7 @@ Also atomic
 When cancelling an appointment:
 1. Verify appointment exists
 2. Verify canceller is one of:
-   - slot assignee
+   - slot resource owner
    - appointment invitee
    - appointment creator
 3. Delete appointment
@@ -519,7 +519,7 @@ This is explicitly required by the functional spec, which says layout output mus
 ```rust
 pub struct WeeklyLayoutQuery {
     pub anchor_date: NaiveDate,
-    pub assignee_id: Option<ActorId>,
+    pub resource_owner_id: Option<ActorId>,
     pub visible_start_minute: Option<u16>,
     pub visible_end_minute: Option<u16>,
 }
@@ -533,7 +533,7 @@ Current shipped boundary behavior (TM8 completed on 2026-04-21):
 - domain/layout modules stay timezone-rule-free
 
 Query rules:
-- when `assignee_id` is present, projection includes only data for that assignee
+- when `resource_owner_id` is present, projection includes only data for that resource owner
 - when visible window bounds are present, projection applies deterministic clipping/filtering to that window
 - invalid window bounds are rejected deterministically at the query boundary:
   - `visible_start_minute` and `visible_end_minute` must be within `0..=1440`
@@ -585,7 +585,7 @@ pub struct OverlapInfo {
 }
 ```
 
-But for current functional scope, overlap grouping is not essential for slots if overlapping slots are already forbidden per assignee. It only becomes relevant if the UI shows multiple assignees together in a single day column
+But for current functional scope, overlap grouping is not essential for slots if overlapping slots are already forbidden per resource owner. It only becomes relevant if the UI shows multiple resource owners together in a single day column
 
 ### 10.4 Why minute offsets
 Use:
@@ -908,8 +908,8 @@ Test command sequences against full state.
 Examples:
 - add slot -> add appointment -> delete appointment
 - add slot -> cancel slot -> add appointment rejected
-- add two overlapping slots same assignee rejected
-- add overlapping slots different assignees allowed
+- add two overlapping slots same resource owner rejected
+- add overlapping slots different resource owners allowed
 
 ### 13.3 Layout tests
 Verify:
@@ -917,7 +917,7 @@ Verify:
 - correct day index computation
 - correct minute offsets
 - correct exclusion of booked/cancelled slots
-- correct assignee-scoped filtering when query filter is present
+- correct resource owner-scoped filtering when query filter is present
 - correct visible-hour window clipping/filter behavior
 - deterministic ordering
 - clipping flags for items spanning outside visible week if that case is later allowed
@@ -938,7 +938,7 @@ Good for weekly layout output DTOs, especially when used by UI consumers.
 Phase 1 does not require aggressive optimization
 
 Expected scale:
-- weekly medical scheduling
+- weekly scheduling
 - moderate number of slots and appointments
 - single-user or small practice view sizes
 
@@ -1061,7 +1061,7 @@ Near-term sequencing:
 ### TM7: Actor boundary and validation collaborator
 Deliver:
 - an application-layer actor lookup collaborator trait
-- optional assignee/creator existence checks behind that collaborator
+- optional resource owner/creator existence checks behind that collaborator
 - deterministic actor-reference validation errors mapped through existing error envelopes
 - no persistence or registry coupling introduced in domain/layout modules
 
@@ -1074,7 +1074,7 @@ Deliver:
 
 ### TM10: Core weekly query filters and visible-hour window
 Deliver:
-- optional `assignee_id` filtering in core weekly projection
+- optional `resource_owner_id` filtering in core weekly projection
 - optional visible window bounds in core weekly query
 - deterministic clipping/filtering behavior for windowed queries
 - deterministic structural validation for invalid window bounds
