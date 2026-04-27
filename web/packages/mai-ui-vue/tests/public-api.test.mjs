@@ -10,6 +10,10 @@ const distEntry = readFileSync(
   new URL("../dist/index.js", import.meta.url),
   "utf8"
 );
+const distStyles = readFileSync(
+  new URL("../dist/styles.css", import.meta.url),
+  "utf8"
+);
 
 test("exports primary package entry points", () => {
   assert.match(distEntry, /export \{ MaiBoard \} from "\.\/MaiBoard";/);
@@ -49,4 +53,12 @@ test("exports interactive constants", () => {
     distTypes,
     /MaiBoardInteractiveViewConfig/,
   );
+});
+
+test("publishes a flattened style entrypoint", () => {
+  assert.match(distStyles, /fonts\.googleapis\.com/);
+  assert.match(distStyles, /@layer mai\.tokens, mai\.base, mai\.components, mai\.responsive;/);
+  assert.match(distStyles, /\.mai-board__/);
+  assert.match(distStyles, /\.mai-action-/);
+  assert.doesNotMatch(distStyles, /@import\s+["']\.\//);
 });

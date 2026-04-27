@@ -1,0 +1,143 @@
+@layer mai.components {
+    .mai-board__calendar {
+        min-width: 980px;
+        display: grid;
+        grid-template-columns: 74px repeat(7, minmax(120px, 1fr));
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .mai-board__time-column {
+        border-right: 1px solid var(--color-border-subtle);
+        background: var(--color-bg-subtle);
+    }
+
+    .mai-board__time-column-header {
+        position: sticky;
+        top: var(--mai-sticky-offset);
+        z-index: 3;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-text-subtle);
+        background: var(--color-bg-subtle);
+        border-bottom: 1px solid var(--color-border-subtle);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mai-board__time-grid {
+        position: relative;
+        height: var(--mai-calendar-height);
+    }
+
+    .mai-board__time-label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 0 6px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        box-sizing: border-box;
+        color: var(--color-text-subtle);
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1;
+        transform: translateY(-50%);
+        pointer-events: none;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mai-board__day-column {
+        border-right: 1px solid var(--color-border-subtle);
+        background: var(--color-surface);
+    }
+
+    .mai-board__day-column:last-child {
+        border-right: 0;
+    }
+
+    .mai-board__day-header {
+        position: sticky;
+        top: var(--mai-sticky-offset);
+        z-index: 3;
+        height: 64px;
+        border-bottom: 1px solid var(--color-border-subtle);
+        display: grid;
+        place-content: center;
+        gap: 4px;
+        background: var(--color-surface);
+    }
+
+    .mai-board__day-header--today {
+        background: #fafafa;
+    }
+
+    .mai-board__day-grid {
+        position: relative;
+        height: var(--mai-calendar-height);
+    }
+
+    .mai-board__day-column--today .mai-board__day-grid {
+        background: #fafafa;
+    }
+
+    .mai-board__day-label {
+        margin: 0;
+        color: var(--color-text);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-align: left;
+    }
+
+    .mai-board__day-date {
+        margin: 0;
+        color: var(--color-text-subtle);
+        font-size: 12px;
+        line-height: 1.1;
+        text-align: left;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mai-board__day-date--today {
+        display: inline-flex;
+        width: fit-content;
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+        background: var(--color-text-strong);
+        color: var(--color-text-inverse);
+    }
+
+    .mai-board__hour-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+        pointer-events: none;
+    }
+
+    .mai-board__empty {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        margin: 0;
+        color: var(--color-text-subtle);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.5;
+        text-align: center;
+        padding: 10px 12px;
+        border-radius: var(--radius-lg);
+        background: var(--color-bg-muted);
+        border: 1px solid var(--color-border-subtle);
+        box-shadow: none;
+    }
+}

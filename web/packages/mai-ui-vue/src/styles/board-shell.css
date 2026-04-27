@@ -1,0 +1,168 @@
+@layer mai.base {
+    .mai-board {
+        color: var(--color-text);
+        background: var(--color-bg);
+        font-family: var(--font-sans);
+        min-height: 100vh;
+        width: 100%;
+    }
+
+    .mai-board__panel {
+        --mai-calendar-height: clamp(1600px, calc(100vh + 500px), 2600px);
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        box-sizing: border-box;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--color-bg);
+        box-shadow: none;
+    }
+}
+
+@layer mai.components {
+    .mai-board__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 32px;
+        padding: 24px 24px 16px;
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .mai-board__heading-block {
+        display: grid;
+        gap: 8px;
+        min-width: 0;
+        max-width: 640px;
+    }
+
+    .mai-board__kicker {
+        margin: 0;
+        color: var(--color-text-subtle);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.3;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mai-board__title {
+        margin: 0;
+        color: var(--color-text);
+        font-family: var(--font-display);
+        font-size: clamp(40px, 4vw, 48px);
+        font-weight: 600;
+        line-height: 1.1;
+    }
+
+    .mai-board__subtitle {
+        margin: 0;
+        color: var(--color-text-muted);
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.55;
+        max-width: 52ch;
+    }
+
+    .mai-board__toolbar {
+        display: grid;
+        justify-items: end;
+        gap: 12px;
+        padding: 16px;
+        min-width: 300px;
+        border-radius: var(--radius-xl);
+        background: var(--color-bg-subtle);
+        box-shadow: var(--shadow-ring);
+    }
+
+    .mai-board__navigation {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .mai-board__nav-button {
+        border: 0;
+        background: var(--color-surface);
+        color: var(--color-text);
+        border-radius: var(--radius-md);
+        padding: 0 14px;
+        height: 36px;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .mai-board__nav-button:hover {
+        background: var(--color-action-muted);
+        transform: translateY(-1px);
+    }
+
+    .mai-board__nav-button:focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    .mai-board__nav-button--today {
+        background: var(--color-action);
+        color: var(--color-text-inverse);
+        box-shadow: var(--shadow-button-inset);
+    }
+
+    .mai-board__range-label {
+        margin: 0;
+        color: var(--color-text-strong);
+        font-family: var(--font-display);
+        font-size: 20px;
+        line-height: 1.2;
+    }
+
+    .mai-board__metrics {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .mai-board__metric {
+        display: inline-flex;
+        align-items: center;
+        border-radius: var(--radius-sm);
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.3;
+        color: var(--color-text-inverse);
+        background: var(--color-action);
+        box-shadow: none;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mai-board__metric--soft {
+        color: var(--color-text);
+        background: var(--color-surface);
+        box-shadow: var(--shadow-ring);
+    }
+
+    .mai-board__error {
+        margin: 0;
+        padding: 12px 24px 0;
+        color: var(--color-danger);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .mai-board__calendar-scroll {
+        flex: none;
+        min-height: auto;
+        overflow: visible;
+        border-radius: 0;
+        background: var(--color-surface);
+        box-shadow: none;
+    }
+}
