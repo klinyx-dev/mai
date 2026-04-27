@@ -11,6 +11,7 @@ import {
   draftTopPercent,
   draftTransform,
   DRAG_ACTIVATION_PX,
+  eventCardDensity,
   swallowNextClickFromDrag,
 } from "./event-card/helpers";
 import type { DragMode, DragState } from "./event-card/types";
@@ -160,10 +161,12 @@ export const MaiEventCard = defineComponent({
       const state = dragState.value;
       const showGhost = Boolean(state && dragMoved.value);
       const isDragging = Boolean(state && dragMoved.value);
+      const density = eventCardDensity(props.event.startMinute, props.event.endMinute);
 
       const originClass = [
         "mai-board__event",
         `mai-board__event--${props.event.kind}`,
+        `mai-board__event--${density}`,
         showGhost ? "mai-board__event--origin" : "",
         isDragging ? "mai-board__event--dragging" : "",
       ]
@@ -201,6 +204,7 @@ export const MaiEventCard = defineComponent({
             startMinute={props.event.startMinute}
             endMinute={props.event.endMinute}
             minuteLabel={props.minuteLabel}
+            density={density}
           />
         </div>
       );
@@ -208,7 +212,15 @@ export const MaiEventCard = defineComponent({
       if (showGhost && state) {
         nodes.push(
           <div
-            class={`mai-board__event mai-board__event--ghost mai-board__event--${props.event.kind}`}
+            class={[
+              "mai-board__event",
+              "mai-board__event--ghost",
+              `mai-board__event--${props.event.kind}`,
+              `mai-board__event--${eventCardDensity(
+                state.draftStartMinute,
+                state.draftEndMinute
+              )}`,
+            ].join(" ")}
             key={`${props.event.kind}-${props.event.id}-ghost`}
             style={{
               top: `${draftTopPercent(
@@ -225,6 +237,7 @@ export const MaiEventCard = defineComponent({
               startMinute={state.draftStartMinute}
               endMinute={state.draftEndMinute}
               minuteLabel={props.minuteLabel}
+              density={eventCardDensity(state.draftStartMinute, state.draftEndMinute)}
             />
           </div>
         );

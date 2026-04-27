@@ -9,9 +9,46 @@ import type { CalendarEvent } from "../../model/view-model";
 import type { DragState } from "./types";
 
 export const DRAG_ACTIVATION_PX = 4;
+export type EventCardDensity = "micro" | "tight" | "compact" | "comfortable";
 
 export function eventTitle(kind: CalendarEvent["kind"]): string {
-  return kind === "slot" ? "Available slot" : "Appointment";
+  return kind === "slot" ? "Available" : "Booked";
+}
+
+export function eventDescription(kind: CalendarEvent["kind"]): string {
+  return kind === "slot" ? "Open slot" : "Appointment";
+}
+
+export function eventDurationLabel(startMinute: number, endMinute: number): string {
+  const totalMinutes = Math.max(endMinute - startMinute, 0);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0 && minutes > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (hours > 0) {
+    return `${hours}h`;
+  }
+  return `${minutes}m`;
+}
+
+export function eventCardDensity(
+  startMinute: number,
+  endMinute: number
+): EventCardDensity {
+  const totalMinutes = Math.max(endMinute - startMinute, 0);
+
+  if (totalMinutes <= 5) {
+    return "micro";
+  }
+  if (totalMinutes <= 20) {
+    return "tight";
+  }
+  if (totalMinutes <= 40) {
+    return "compact";
+  }
+  return "comfortable";
 }
 
 export function centerPointFromTarget(target: EventTarget | null): {
