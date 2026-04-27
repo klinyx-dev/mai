@@ -23,7 +23,7 @@ export const MaiCreateSlotCard = defineComponent({
       type: String,
       required: true,
     },
-    assigneeId: {
+    resourceOwnerId: {
       type: String,
       required: true,
     },
@@ -47,7 +47,7 @@ export const MaiCreateSlotCard = defineComponent({
       typeof payload.slotId === "string" &&
       typeof payload.startIso === "string" &&
       typeof payload.endIso === "string" &&
-      typeof payload.assigneeId === "string" &&
+      typeof payload.resourceOwnerId === "string" &&
       typeof payload.createdBy === "string",
     close: () => true,
   },
@@ -79,7 +79,7 @@ export const MaiCreateSlotCard = defineComponent({
         dayIndex: props.draft.dayIndex,
         startMinute: parsedStartMinute ?? fallbackStart,
         endMinute: parsedEndMinute ?? fallbackEnd,
-        assigneeId: props.assigneeId,
+        resourceOwnerId: props.resourceOwnerId,
         createdBy: props.createdBy,
       });
     };

@@ -107,7 +107,7 @@ export function isCreateSlotPayload(value: unknown): value is CreateSlotActionEv
     typeof payload.slotId === "string" &&
     typeof payload.startIso === "string" &&
     typeof payload.endIso === "string" &&
-    typeof payload.assigneeId === "string" &&
+    typeof payload.resourceOwnerId === "string" &&
     typeof payload.createdBy === "string"
   );
 }

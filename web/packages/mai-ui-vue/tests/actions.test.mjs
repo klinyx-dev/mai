@@ -31,7 +31,7 @@ test("builds deterministic create-slot payload when slotId provided", () => {
     dayIndex: 2,
     minuteOfDay: 600,
     durationMinutes: 30,
-    assigneeId: "doctor-42",
+    resourceOwnerId: "owner-42",
     createdBy: "ui-operator",
     slotId: "slot-fixed",
   });
@@ -40,7 +40,7 @@ test("builds deterministic create-slot payload when slotId provided", () => {
     slotId: "slot-fixed",
     startIso: "2026-05-06T10:00:00.000Z",
     endIso: "2026-05-06T10:30:00.000Z",
-    assigneeId: "doctor-42",
+    resourceOwnerId: "owner-42",
     createdBy: "ui-operator",
   });
 });
@@ -74,7 +74,7 @@ test("builds create-slot payload from edited range and normalizes invalid range"
     dayIndex: 2,
     startMinute: 615,
     endMinute: 690,
-    assigneeId: "doctor-42",
+    resourceOwnerId: "owner-42",
     createdBy: "ui-operator",
     slotId: "slot-range",
   });
@@ -83,7 +83,7 @@ test("builds create-slot payload from edited range and normalizes invalid range"
     slotId: "slot-range",
     startIso: "2026-05-06T10:15:00.000Z",
     endIso: "2026-05-06T11:30:00.000Z",
-    assigneeId: "doctor-42",
+    resourceOwnerId: "owner-42",
     createdBy: "ui-operator",
   });
 
@@ -92,7 +92,7 @@ test("builds create-slot payload from edited range and normalizes invalid range"
     dayIndex: 2,
     startMinute: 620,
     endMinute: 620,
-    assigneeId: "doctor-42",
+    resourceOwnerId: "owner-42",
     createdBy: "ui-operator",
     slotId: "slot-range-invalid",
   });
@@ -101,7 +101,7 @@ test("builds create-slot payload from edited range and normalizes invalid range"
     slotId: "slot-range-invalid",
     startIso: "2026-05-06T10:20:00.000Z",
     endIso: "2026-05-06T10:25:00.000Z",
-    assigneeId: "doctor-42",
+    resourceOwnerId: "owner-42",
     createdBy: "ui-operator",
   });
 });

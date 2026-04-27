@@ -63,8 +63,9 @@ UI package tests now cover:
   - adapter mode (`mutateCommand`) that builds typed commands with `COMMANDS + createCommandEnvelope`.
 - Preferred configuration shape is grouped:
   - `view`: title/subtitle/timeline formatting
-  - `actor`: assignee and command actor defaults
+  - `actor`: resource owner and command actor defaults
   - `actions`: action callbacks or `mutateCommand`
+  - `viewFilter` / `viewFilterOptions`: app-owned active filter state and available choices
 - It emits high-level outcome events:
   - `slot-created`, `slot-rescheduled`, `slot-booked`, `slot-cancelled`, `slot-deleted`
   - `appointment-cancelled`, `appointment-deleted`
@@ -85,17 +86,19 @@ Example consumption:
   :layout="layout"
   :anchor-date="anchorDate"
   :view="{
-    title: 'Doctor Availability Board',
+    title: 'Resource Availability Board',
     subtitle: 'Weekly schedule with appointment and availability timeline'
   }"
   :actor="{
-    assigneeId,
+    resourceOwnerId,
     createdBy: 'ui-operator',
     bookAppointmentInviteeIds: ['patient-demo'],
     bookAppointmentTitle: 'Consultation',
     bookAppointmentCreatedBy: 'ui-operator',
     cancelAppointmentBy: 'ui-operator'
   }"
+  :view-filter="activeViewFilter"
+  :view-filter-options="viewFilterOptions"
   :actions="{ mutateCommand }"
   @slot-created="onSlotCreated"
   @slot-rescheduled="onSlotRescheduled"

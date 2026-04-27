@@ -26,7 +26,7 @@ test("maps create-slot payload to add_slot command envelope", () => {
     slotId: "slot-1",
     startIso: "2026-05-07T09:00:00Z",
     endIso: "2026-05-07T09:30:00Z",
-    assigneeId: "doctor-42",
+    resourceOwnerId: "owner-42",
     createdBy: "ui-operator",
   });
 
@@ -36,7 +36,7 @@ test("maps create-slot payload to add_slot command envelope", () => {
       slot_id: "slot-1",
       start: "2026-05-07T09:00:00Z",
       end: "2026-05-07T09:30:00Z",
-      assignee_id: "doctor-42",
+      resource_owner_id: "owner-42",
       created_by: "ui-operator",
     },
   });

@@ -4,7 +4,11 @@ import type {
   SlotActionEventPayload,
   SlotRescheduleActionEventPayload,
 } from "./actions";
-import type { AnyCommandEnvelope } from "@mai/mai-web-core";
+import type {
+  AnyCommandEnvelope,
+  WeeklyViewFilter,
+  WeeklyViewFilterMode,
+} from "@mai/mai-web-core";
 import type { TimeLabelFormat } from "./board";
 
 export const INTERACTION_ACTIONS = {
@@ -58,8 +62,19 @@ export interface MaiBoardInteractiveViewConfig {
   emptyStateText: string;
 }
 
+export type MaiViewFilterMode = WeeklyViewFilterMode;
+
+export interface MaiViewFilter extends WeeklyViewFilter {
+  ids: string[];
+}
+
+export interface MaiViewFilterOption {
+  label: string;
+  value: MaiViewFilter;
+}
+
 export interface MaiBoardInteractiveActorConfig {
-  assigneeId: string;
+  resourceOwnerId: string;
   createdBy: string;
   defaultSlotDurationMinutes: number;
   appointmentIdFactory: (slotId: string) => string;

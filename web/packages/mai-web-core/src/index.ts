@@ -21,6 +21,8 @@ export type {
   WasmErrorCategory,
   WasmResponse,
   WeeklyLayout,
+  WeeklyViewFilter,
+  WeeklyViewFilterMode,
   WeeklyLayoutQueryPayload,
 } from "./types.js";
 export { COMMANDS, QUERIES } from "./types.js";

@@ -32,6 +32,13 @@ export interface WeeklyLayout {
   appointments: AppointmentLayoutNode[];
 }
 
+export type WeeklyViewFilterMode = "all" | "owners" | "group";
+
+export interface WeeklyViewFilter {
+  mode: WeeklyViewFilterMode;
+  ids?: string[];
+}
+
 export type WasmResponse<T> =
   | { status: "success"; data: T }
   | { status: "error"; error: WasmAdapterError };
@@ -39,7 +46,7 @@ export type WasmResponse<T> =
 export interface WeeklyLayoutQueryPayload {
   anchor_date: string;
   timezone?: string;
-  assignee_id?: string;
+  view_filter?: WeeklyViewFilter;
   visible_start_minute?: number;
   visible_end_minute?: number;
 }
@@ -60,7 +67,7 @@ export interface AddSlotCommandPayload {
   slot_id: string;
   start: string;
   end: string;
-  assignee_id: string;
+  resource_owner_id: string;
   created_by: string;
 }
 

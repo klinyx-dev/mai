@@ -7,12 +7,14 @@ import {
   useMai,
 } from "@mai/mai-ui-vue";
 import type { AnyCommandEnvelope } from "@mai/mai-web-core";
-import { onMounted, ref, shallowRef } from "vue";
+import { computed, onMounted, ref, shallowRef } from "vue";
 import type {
   MaiAppointmentChangedEventPayload,
   MaiInteractionErrorPayload,
   MaiSlotCreatedEventPayload,
   MaiSlotRescheduledEventPayload,
+  MaiViewFilter,
+  MaiViewFilterOption,
   SlotActionEventPayload,
 } from "@mai/mai-ui-vue";
 
@@ -23,8 +25,14 @@ const loading = ref(false);
 const errorMessage = ref<string | null>(null);
 const interactionMessage = ref<string>("No UI interaction yet.");
 const anchorDate = ref("2026-05-07");
-const assigneeId = "doctor-42";
-const operatorId = "ui-operator";
+const resourceOwnerId = "owner-42";
+const operatorId = "operator-1";
+const activeViewFilter = ref<MaiViewFilter>({ mode: "owners", ids: [resourceOwnerId] });
+const viewFilterOptions: MaiViewFilterOption[] = [
+  { label: "All resources", value: { mode: "all", ids: [] } },
+  { label: "Selected owners", value: { mode: "owners", ids: [resourceOwnerId] } },
+  { label: "Team A", value: { mode: "group", ids: [resourceOwnerId] } },
+];
 
 let mai: ReturnType<typeof useMai> | null = null;
 const SUCCESS_EVENT_TO_ACTION = {
@@ -57,7 +65,7 @@ async function refreshWeek(): Promise<void> {
   loading.value = true;
   await mai.refresh({
     anchor_date: anchorDate.value,
-    assignee_id: assigneeId,
+    view_filter: activeViewFilter.value,
   });
   layout.value = mai.layout.value;
   errorMessage.value = mai.error.value;
@@ -152,18 +160,24 @@ const boardView = {
   subtitle: "Weekly schedule with appointment and availability timeline",
 } as const;
 
-const boardActor = {
-  assigneeId,
+const boardActor = computed(() => ({
+  resourceOwnerId,
   createdBy: operatorId,
-  bookAppointmentInviteeIds: ["patient-demo"],
-  bookAppointmentTitle: "Consultation",
+  bookAppointmentInviteeIds: ["participant-7"],
+  bookAppointmentTitle: "Planning session",
   bookAppointmentCreatedBy: operatorId,
   cancelAppointmentBy: operatorId,
-} as const;
+}));
 
 const boardActions = {
   mutateCommand,
 } as const;
+
+async function onViewFilterChange(viewFilter: MaiViewFilter): Promise<void> {
+  activeViewFilter.value = viewFilter;
+  interactionMessage.value = `view-filter-change: ${viewFilter.mode}`;
+  await refreshWeek();
+}
 
 onMounted(async () => {
   const { $mai } = useNuxtApp();
@@ -177,6 +191,25 @@ onMounted(async () => {
     <p style="margin: 0 0 12px; color: #5b6472; font: 500 13px/1.5 Inter, sans-serif">
       {{ interactionMessage }}
     </p>
+    <div style="display: flex; gap: 8px; margin: 0 0 12px">
+      <button
+        v-for="option in viewFilterOptions"
+        :key="option.label"
+        type="button"
+        :style="{
+          border: activeViewFilter.mode === option.value.mode ? '1px solid #111827' : '1px solid #d1d5db',
+          background: activeViewFilter.mode === option.value.mode ? '#111827' : '#ffffff',
+          color: activeViewFilter.mode === option.value.mode ? '#ffffff' : '#111827',
+          borderRadius: '999px',
+          padding: '6px 12px',
+          font: '500 13px/1.2 Inter, sans-serif',
+          cursor: 'pointer'
+        }"
+        @click="onViewFilterChange(option.value)"
+      >
+        {{ option.label }}
+      </button>
+    </div>
     <ClientOnly>
       <MaiBoardInteractive
         :layout="layout"
@@ -185,6 +218,8 @@ onMounted(async () => {
         :error-message="errorMessage"
         :view="boardView"
         :actor="boardActor"
+        :view-filter="activeViewFilter"
+        :view-filter-options="viewFilterOptions"
         :actions="boardActions"
         @navigate-week="navigateWeek"
         @slot-created="onSlotCreated"
@@ -194,6 +229,7 @@ onMounted(async () => {
         @slot-deleted="onSlotDeleted"
         @appointment-cancelled="onAppointmentCancelled"
         @appointment-deleted="onAppointmentDeleted"
+        @view-filter-change="onViewFilterChange"
         @interaction-error="onInteractionError"
       />
     </ClientOnly>

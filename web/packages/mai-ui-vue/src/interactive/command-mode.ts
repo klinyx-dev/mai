@@ -28,7 +28,7 @@ export function buildAddSlotCommand(
     slot_id: payload.slotId,
     start: payload.startIso,
     end: payload.endIso,
-    assignee_id: payload.assigneeId,
+    resource_owner_id: payload.resourceOwnerId,
     created_by: payload.createdBy,
   });
 }

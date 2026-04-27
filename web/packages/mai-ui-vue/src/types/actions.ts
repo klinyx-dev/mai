@@ -17,6 +17,6 @@ export interface CreateSlotActionEventPayload {
   slotId: string;
   startIso: string;
   endIso: string;
-  assigneeId: string;
+  resourceOwnerId: string;
   createdBy: string;
 }

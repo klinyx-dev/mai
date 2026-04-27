@@ -32,7 +32,7 @@ const view = {
 };
 
 const actor = {
-  assigneeId: "doctor-42",
+  resourceOwnerId: "owner-42",
   createdBy: "ui-operator",
   bookAppointmentInviteeIds: ["patient-1"],
   bookAppointmentTitle: "Consultation",

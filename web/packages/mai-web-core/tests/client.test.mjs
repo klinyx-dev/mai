@@ -25,7 +25,10 @@ test("executeWeeklyLayoutQuery returns parsed success payload", () => {
 
   const response = executeWeeklyLayoutQuery(adapter, {
     anchor_date: "2026-05-07",
-    assignee_id: "doctor-42",
+    view_filter: {
+      mode: "owners",
+      ids: ["owner-42"],
+    },
     visible_start_minute: 540,
     visible_end_minute: 1020,
   });

@@ -45,7 +45,7 @@ export const MaiActionOverlay = defineComponent({
       default: null,
     },
     weekStartIso: { type: String, required: true },
-    actionAssigneeId: { type: String, required: true },
+    actionResourceOwnerId: { type: String, required: true },
     actionCreatedBy: { type: String, required: true },
     defaultSlotDurationMinutes: { type: Number, required: true },
     actionBusy: { type: Boolean, required: true },
@@ -92,7 +92,7 @@ export const MaiActionOverlay = defineComponent({
 
       if (
         props.pendingSlotDraft &&
-        props.actionAssigneeId &&
+        props.actionResourceOwnerId &&
         props.actionCreatedBy
       ) {
         return (
@@ -100,7 +100,7 @@ export const MaiActionOverlay = defineComponent({
             <MaiCreateSlotCard
               draft={props.pendingSlotDraft}
               weekStartIso={props.weekStartIso}
-              assigneeId={props.actionAssigneeId}
+              resourceOwnerId={props.actionResourceOwnerId}
               createdBy={props.actionCreatedBy}
               defaultDurationMinutes={props.defaultSlotDurationMinutes}
               busy={props.actionBusy}

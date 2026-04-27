@@ -17,7 +17,7 @@ export const maiBoardProps = {
   subtitle: {
     type: String,
     required: false,
-    default: "Weekly clinical planning",
+    default: "Weekly planning",
   },
   anchorDate: {
     type: String,
@@ -56,7 +56,7 @@ export const maiBoardProps = {
     required: false,
     default: "No events",
   },
-  actionAssigneeId: {
+  actionResourceOwnerId: {
     type: String,
     required: false,
     default: "",

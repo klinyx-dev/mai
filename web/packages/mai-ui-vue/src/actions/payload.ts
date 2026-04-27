@@ -90,7 +90,7 @@ interface CreateSlotPayloadInput {
   dayIndex: number;
   minuteOfDay: number;
   durationMinutes: number;
-  assigneeId: string;
+  resourceOwnerId: string;
   createdBy: string;
   slotId?: string;
 }
@@ -100,7 +100,7 @@ interface CreateSlotPayloadRangeInput {
   dayIndex: number;
   startMinute: number;
   endMinute: number;
-  assigneeId: string;
+  resourceOwnerId: string;
   createdBy: string;
   slotId?: string;
 }
@@ -119,7 +119,7 @@ export function buildCreateSlotPayloadFromRange(
     slotId: input.slotId ?? `slot-${Date.now()}`,
     startIso: isoFromDate(start),
     endIso: isoFromDate(end),
-    assigneeId: input.assigneeId,
+    resourceOwnerId: input.resourceOwnerId,
     createdBy: input.createdBy,
   };
 }
@@ -133,7 +133,7 @@ export function buildCreateSlotPayload(
     dayIndex: input.dayIndex,
     startMinute: input.minuteOfDay,
     endMinute: input.minuteOfDay + safeDuration,
-    assigneeId: input.assigneeId,
+    resourceOwnerId: input.resourceOwnerId,
     createdBy: input.createdBy,
     slotId: input.slotId,
   });

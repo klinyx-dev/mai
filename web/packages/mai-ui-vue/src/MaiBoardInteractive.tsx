@@ -30,6 +30,8 @@ import type {
   MaiActionRunner,
   MaiBoardInteractiveActionConfig,
   MaiBoardInteractiveActorConfig,
+  MaiViewFilter,
+  MaiViewFilterOption,
   MaiBoardInteractiveViewConfig,
   MaiInteractionAction,
   MaiInteractionErrorPayload,
@@ -165,7 +167,7 @@ export const MaiBoardInteractive = defineComponent({
     subtitle: {
       type: String,
       required: false,
-      default: "Weekly clinical planning",
+      default: "Weekly planning",
     },
     visibleStartMinute: {
       type: Number,
@@ -187,10 +189,20 @@ export const MaiBoardInteractive = defineComponent({
       required: false,
       default: "No events",
     },
-    assigneeId: {
+    resourceOwnerId: {
       type: String,
       required: false,
       default: "",
+    },
+    viewFilter: {
+      type: Object as PropType<MaiViewFilter | null>,
+      required: false,
+      default: null,
+    },
+    viewFilterOptions: {
+      type: Array as PropType<MaiViewFilterOption[]>,
+      required: false,
+      default: () => [],
     },
     createdBy: {
       type: String,
@@ -289,6 +301,8 @@ export const MaiBoardInteractive = defineComponent({
       typeof payload.appointmentId === "string",
     "appointment-deleted": (payload: AppointmentActionEventPayload) =>
       typeof payload.appointmentId === "string",
+    "view-filter-change": (payload: MaiViewFilter) =>
+      typeof payload.mode === "string" && Array.isArray(payload.ids),
     "interaction-error": (payload: MaiInteractionErrorPayload) =>
       typeof payload.action === "string" && typeof payload.message === "string",
   },
@@ -307,7 +321,7 @@ export const MaiBoardInteractive = defineComponent({
     }));
 
     const resolvedActor = computed(() => ({
-      assigneeId: props.actor?.assigneeId ?? props.assigneeId,
+      resourceOwnerId: props.actor?.resourceOwnerId ?? props.resourceOwnerId,
       createdBy: props.actor?.createdBy ?? props.createdBy,
       defaultSlotDurationMinutes:
         props.actor?.defaultSlotDurationMinutes ?? props.defaultSlotDurationMinutes,
@@ -492,7 +506,10 @@ export const MaiBoardInteractive = defineComponent({
     }
 
     return () => (
-      <section class="mai-board-interactive">
+      <section
+        class="mai-board-interactive"
+        data-view-filter-mode={props.viewFilter?.mode ?? "all"}
+      >
         {interactionError.value ? <p class="mai-board__error">{interactionError.value}</p> : null}
         <MaiBoard
           layout={props.layout}
@@ -540,7 +557,7 @@ export const MaiBoardInteractive = defineComponent({
             <MaiCreateSlotCard
               draft={selection.value.pendingSlotDraft}
               weekStartIso={props.layout?.week_start ?? props.anchorDate}
-              assigneeId={resolvedActor.value.assigneeId}
+              resourceOwnerId={resolvedActor.value.resourceOwnerId}
               createdBy={resolvedActor.value.createdBy}
               defaultDurationMinutes={resolvedActor.value.defaultSlotDurationMinutes}
               busy={actionBusy.value}
