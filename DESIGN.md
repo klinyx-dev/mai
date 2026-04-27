@@ -1,259 +1,1003 @@
-# Design System Inspired by Cal.com
+# DESIGN.md
 
-## 1. Visual Theme & Atmosphere
+# Product Design System
 
-Cal.com's website is a masterclass in monochromatic restraint — a grayscale world where boldness comes not from color but from the sheer confidence of black text on white space. Inspired by Uber's minimal aesthetic, the palette is deliberately stripped of hue: near-black headings (`#242424`), mid-gray secondary text (`#898989`), and pure white surfaces. Color is treated as a foreign substance — when it appears (a rare blue link, a green trust badge), it feels like a controlled accent in an otherwise black-and-white photograph.
+This file defines the visual style for the scheduler UI. It is inspired by Cal.com’s current public website, but it is not a clone. The goal is a calm, monochrome, medical-grade scheduling interface: precise, quiet, trustworthy, and easy to scan.
 
-Cal Sans, the brand's custom geometric display typeface designed by Mark Davis, is the visual centerpiece. Letters are intentionally spaced extremely close at large sizes, creating dense, architectural headlines that feel like they're carved into the page. At 64px and 48px, Cal Sans headings sit at weight 600 with a tight 1.10 line-height — confident, compressed, and immediately recognizable. For body text, the system switches to Inter, providing "rock-solid" readability that complements Cal Sans's display personality. The typography pairing creates a clear division: Cal Sans speaks, Inter explains.
+The product is a weekly appointment scheduler. The interface must make three things visually obvious:
 
-The elevation system is notably sophisticated for a minimal site — 11 shadow definitions create a nuanced depth hierarchy using multi-layered shadows that combine ring borders (`0px 0px 0px 1px`), soft diffused shadows, and inset highlights. This shadow-first approach to depth (rather than border-first) gives surfaces a subtle three-dimensionality that feels modern and polished. Built on Framer with a border-radius scale from 2px to 9999px (pill), Cal.com balances geometric precision with soft, rounded interactive elements.
+1. Available slots
+2. Booked appointments
+3. Time structure across a week
 
-**Key Characteristics:**
-- Purely grayscale brand palette — no brand colors, boldness through monochrome
-- Cal Sans custom geometric display font with extremely tight default letter-spacing
-- Multi-layered shadow system (11 definitions) with ring borders + diffused shadows + inset highlights
-- Cal Sans for headings, Inter for body — clean typographic division
-- Wide border-radius scale from 2px to 9999px (pill) — versatile rounding
-- White canvas with near-black (#242424) text — maximum contrast, zero decoration
-- Product screenshots as primary visual content — the scheduling UI sells itself
-- Built on Framer platform
+Do not design this like a colorful SaaS dashboard. Do not add decorative illustrations, gradients, noisy icons, or saturated brand colors. The UI should feel restrained, clinical, premium, and operational.
 
-## 2. Color Palette & Roles
+---
 
-### Primary
-- **Charcoal** (`#242424`): Primary heading and button text — Cal.com's signature near-black, warmer than pure black
-- **Midnight** (`#111111`): Deepest text/overlay color — used at 50% opacity for subtle overlays
-- **White** (`#ffffff`): Primary background and surface — the dominant canvas
+## 1. Design Principles
 
-### Secondary & Accent
-- **Link Blue** (`#0099ff`): In-text links with underline decoration — the only blue in the system, reserved strictly for hyperlinks
-- **Focus Ring** (`#3b82f6` at 50% opacity): Keyboard focus indicator — accessibility-only, invisible in normal interaction
-- **Default Link** (`#0000ee`): Browser-default link color on some elements — unmodified, signaling openness
+### 1.1 Monochrome First
 
-### Surface & Background
-- **Pure White** (`#ffffff`): Primary page background and card surfaces
-- **Light Gray** (approx `#f5f5f5`): Subtle section differentiation — barely visible tint
-- **Mid Gray** (`#898989`): Secondary text, descriptions, and muted labels
+Use grayscale as the main visual language.
 
-### Neutrals & Text
-- **Charcoal** (`#242424`): Headlines, buttons, primary UI text
-- **Midnight** (`#111111`): Deep black for high-contrast links and nav text
-- **Mid Gray** (`#898989`): Descriptions, secondary labels, muted content
-- **Pure Black** (`#000000`): Certain link text elements
-- **Border Gray** (approx `rgba(34, 42, 53, 0.08–0.10)`): Shadow-based borders using ring shadows instead of CSS borders
+Color is not the brand. Contrast, spacing, typography, and hierarchy are the brand.
 
-### Semantic & Accent
-- Cal.com is deliberately colorless for brand elements — "a grayscale brand to emphasise on boldness and professionalism"
-- Product UI screenshots show color (blues, greens in the scheduling interface), but the marketing site itself stays monochrome
-- The philosophy mirrors Uber's approach: let the content carry color, the frame stays neutral
+Allowed color usage:
+- Black and near-black for primary text and actions
+- White and off-white for backgrounds
+- Gray for borders, secondary text, dividers, disabled states
+- One restrained blue only for focus, active selection, or links
+- One restrained green only for confirmed/available success states
+- One restrained red only for destructive or error states
 
-### Gradient System
-- No gradients on the marketing site — the design is fully flat and monochrome
-- Depth is achieved entirely through shadows, not color transitions
+Forbidden:
+- Decorative gradients
+- Purple/pink/blue marketing accents
+- Multi-color feature cards
+- Colored shadows
+- Glassmorphism
+- Neon effects
+- Illustration-heavy layouts
 
-## 3. Typography Rules
+### 1.2 Product UI Is the Visual Content
 
-### Font Family
-- **Display**: `Cal Sans` — custom geometric sans-serif by Mark Davis. Open-source, available on Google Fonts and GitHub. Extremely tight default letter-spacing designed for large headlines. Has 6 character variants (Cc, j, t, u, 0, 1)
-- **Body**: `Inter` — "rock-solid" standard body font. Fallback: `Inter Placeholder`
-- **UI Light**: `Cal Sans UI Variable Light` — light-weight variant (300) for softer UI text with -0.2px letter-spacing
-- **UI Medium**: `Cal Sans UI Medium` — medium-weight variant (500) for emphasized captions
-- **Mono**: `Roboto Mono` — for code blocks and technical content
-- **Tertiary**: `Matter Regular` / `Matter SemiBold` / `Matter Medium` — additional body fonts for specific contexts
+The calendar, booking cards, availability slots, appointment cards, and scheduling controls are the main visual elements.
 
-### Hierarchy
+Do not fill empty space with abstract graphics. Use real product structure:
+- Week grid
+- Time axis
+- Day columns
+- Availability slot cards
+- Appointment cards
+- Doctor/assignee labels
+- Booking status
+- Empty states
+- Small operational controls
 
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-|------|------|------|--------|-------------|----------------|-------|
-| Display Hero | Cal Sans | 64px | 600 | 1.10 | 0px | Maximum impact, tight default spacing |
-| Section Heading | Cal Sans | 48px | 600 | 1.10 | 0px | Large section titles |
-| Feature Heading | Cal Sans | 24px | 600 | 1.30 | 0px | Feature block headlines |
-| Sub-heading | Cal Sans | 20px | 600 | 1.20 | +0.2px | Positive spacing for readability at smaller size |
-| Sub-heading Alt | Cal Sans | 20px | 600 | 1.50 | 0px | Relaxed line-height variant |
-| Card Title | Cal Sans | 16px | 600 | 1.10 | 0px | Smallest Cal Sans usage |
-| Caption Label | Cal Sans | 12px | 600 | 1.50 | 0px | Small labels in Cal Sans |
-| Body Light | Cal Sans UI Light | 18px | 300 | 1.30 | -0.2px | Light-weight body intro text |
-| Body Light Standard | Cal Sans UI Light | 16px | 300 | 1.50 | -0.2px | Light-weight body text |
-| Caption Light | Cal Sans UI Light | 14px | 300 | 1.40–1.50 | -0.2 to -0.28px | Light captions and descriptions |
-| UI Label | Inter | 16px | 600 | 1.00 | 0px | UI buttons and nav labels |
-| Caption Inter | Inter | 14px | 500 | 1.14 | 0px | Small UI text |
-| Micro | Inter | 12px | 500 | 1.00 | 0px | Smallest Inter text |
-| Code | Roboto Mono | 14px | 600 | 1.00 | 0px | Code snippets, technical text |
-| Body Matter | Matter Regular | 14px | 400 | 1.14 | 0px | Alternate body text (product UI) |
+### 1.3 Calm Medical Utility
 
-### Principles
-- **Cal Sans at large, Inter at small**: Cal Sans is exclusively for headings and display — never for body text. The system enforces this division strictly
-- **Tight by default, space when small**: Cal Sans letters are "intentionally spaced to be extremely close" at large sizes. At 20px and below, positive letter-spacing (+0.2px) must be applied to prevent cramming
-- **Weight 300 body variant**: Cal Sans UI Variable Light at 300 weight creates an elegant, airy body text that contrasts with the dense 600-weight headlines
-- **Weight 600 dominance**: Nearly all Cal Sans usage is at weight 600 (semi-bold) — the font was designed to perform at this weight
-- **Negative tracking on light text**: Cal Sans UI Light uses -0.2px to -0.28px letter-spacing, subtly tightening the already-compact letterforms
+The scheduler may be used in medical contexts. The UI must feel:
+- Trustworthy
+- Low-noise
+- Easy to scan
+- Precise
+- Accessible
+- Non-playful
 
-## 4. Component Stylings
+Avoid:
+- Cute language
+- Over-rounded toy-like components
+- Large emoji-like icons
+- Celebration animations
+- Decorative motion
 
-### Buttons
-- **Dark Primary**: `#242424` (or `#1e1f23`) background, white text, 6–8px radius. Hover: opacity reduction to 0.7. The signature CTA — maximally dark on white
-- **White/Ghost**: White background with shadow-ring border, dark text. Uses the multi-layered shadow system for subtle elevation
-- **Pill**: 9999px radius for rounded pill-shaped actions and badges
-- **Compact**: 4px padding, small text — utility actions within product UI
-- **Inset highlight**: Some buttons feature `rgba(255, 255, 255, 0.15) 0px 2px 0px inset` — a subtle inner-top highlight creating a 3D pressed effect
+### 1.4 Dense Information, Spacious Frame
 
-### Cards & Containers
-- **Shadow Card**: White background, multi-layered shadow — `rgba(19, 19, 22, 0.7) 0px 1px 5px -4px, rgba(34, 42, 53, 0.08) 0px 0px 0px 1px, rgba(34, 42, 53, 0.05) 0px 4px 8px 0px`. The ring shadow (0px 0px 0px 1px) acts as a shadow-border
-- **Product UI Cards**: Screenshots of the scheduling interface displayed in card containers with shadow elevation
-- **Radius**: 8px for standard cards, 12px for larger containers, 16px for prominent sections
-- **Hover**: Likely subtle shadow deepening or scale transform
+The page frame should breathe. The scheduling grid itself can be dense.
 
-### Inputs & Forms
-- **Select dropdown**: White background, `#000000` text, 1px solid `rgb(118, 118, 118)` border
-- **Focus**: Uses Framer's focus outline system (`--framer-focus-outline`)
-- **Text input**: 8px radius, standard border treatment
-- **Minimal form presence**: The marketing site prioritizes CTA buttons over complex forms
+Use generous spacing for:
+- Page sections
+- Header
+- Main layout gutters
+- Cards
+- Empty states
 
-### Navigation
-- **Top nav**: White/transparent background, Cal Sans links at near-black
-- **Nav text**: `#111111` (Midnight) for primary links, `#000000` for emphasis
-- **CTA button**: Dark Primary in the nav — high contrast call-to-action
-- **Mobile**: Collapses to hamburger with simplified navigation
-- **Sticky**: Fixed on scroll
+Use tighter spacing for:
+- Time labels
+- Slot rows
+- Appointment metadata
+- Calendar controls
 
-### Image Treatment
-- **Product screenshots**: Large scheduling UI screenshots — the product is the primary visual
-- **Trust logos**: Grayscale company logos in a horizontal trust bar
-- **Aspect ratios**: Wide landscape for product UI screenshots
-- **No decorative imagery**: No illustrations, photos, or abstract graphics — pure product + typography
+---
 
-## 5. Layout Principles
+## 2. Color Tokens
 
-### Spacing System
-- **Base unit**: 8px
-- **Scale**: 1px, 2px, 3px, 4px, 6px, 8px, 12px, 16px, 20px, 24px, 28px, 80px, 96px
-- **Section padding**: 80px–96px vertical between major sections (generous)
-- **Card padding**: 12px–24px internal
-- **Component gaps**: 4px–8px between related elements
-- **Notable jump**: From 28px to 80px — a deliberate gap emphasizing the section-level spacing tier
+Use these tokens. Do not invent new colors unless required by accessibility.
 
-### Grid & Container
-- **Max width**: ~1200px content container, centered
-- **Column patterns**: Full-width hero, centered text blocks, 2-3 column feature grids
-- **Feature showcase**: Product screenshots flanked by description text
-- **Breakpoints**: 98px, 640px, 768px, 810px, 1024px, 1199px — Framer-generated
+```css
+:root {
+  --color-bg: #ffffff;
+  --color-bg-subtle: #f8f8f8;
+  --color-bg-muted: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
 
-### Whitespace Philosophy
-- **Lavish section spacing**: 80px–96px between sections creates a breathable, premium feel
-- **Product-first content**: Screenshots dominate the visual space — minimal surrounding decoration
-- **Centered headlines**: Cal Sans headings centered with generous margins above and below
+  --color-text: #242424;
+  --color-text-strong: #111111;
+  --color-text-muted: #6f6f6f;
+  --color-text-subtle: #898989;
+  --color-text-disabled: #b5b5b5;
+  --color-text-inverse: #ffffff;
 
-### Border Radius Scale
-- **2px**: Subtle rounding on inline elements
-- **4px**: Small UI components
-- **6px–7px**: Buttons, small cards, images
-- **8px**: Standard interactive elements — buttons, inputs, images
-- **12px**: Medium containers — links, larger cards, images
-- **16px**: Large section containers
-- **29px**: Special rounded elements
-- **100px**: Large rounding — nearly circular on small elements
-- **1000px**: Very large rounding
-- **9999px**: Full pill shape — badges, links
+  --color-border: rgba(34, 42, 53, 0.10);
+  --color-border-subtle: rgba(34, 42, 53, 0.06);
+  --color-border-strong: rgba(17, 17, 17, 0.18);
 
-## 6. Depth & Elevation
+  --color-action: #242424;
+  --color-action-hover: #111111;
+  --color-action-muted: #f5f5f5;
 
-| Level | Treatment | Use |
-|-------|-----------|-----|
-| Level 0 (Flat) | No shadow | Page canvas, basic text containers |
-| Level 1 (Inset) | `rgba(0,0,0,0.16) 0px 1px 1.9px 0px inset` | Pressed/recessed elements, input wells |
-| Level 2 (Ring + Soft) | `rgba(19,19,22,0.7) 0px 1px 5px -4px, rgba(34,42,53,0.08) 0px 0px 0px 1px, rgba(34,42,53,0.05) 0px 4px 8px` | Cards, containers — the workhorse shadow |
-| Level 3 (Ring + Soft Alt) | `rgba(36,36,36,0.7) 0px 1px 5px -4px, rgba(36,36,36,0.05) 0px 4px 8px` | Alt card elevation without ring border |
-| Level 4 (Inset Highlight) | `rgba(255,255,255,0.15) 0px 2px 0px inset` or `rgb(255,255,255) 0px 2px 0px inset` | Button inner highlight — 3D pressed effect |
-| Level 5 (Soft Only) | `rgba(34,42,53,0.05) 0px 4px 8px` | Subtle ambient shadow |
+  --color-link: #006adc;
+  --color-focus: rgba(59, 130, 246, 0.50);
 
-### Shadow Philosophy
-Cal.com's shadow system is the most sophisticated element of the design — 11 shadow definitions using a multi-layered compositing technique:
-- **Ring borders**: `0px 0px 0px 1px` shadows act as borders, avoiding CSS `border` entirely. This creates hairline containment without affecting layout
-- **Diffused soft shadows**: `0px 4px 8px` at 5% opacity add gentle ambient depth
-- **Sharp contact shadows**: `0px 1px 5px -4px` at 70% opacity create tight bottom-edge shadows for grounding
-- **Inset highlights**: White inset shadows at the top of buttons create a subtle 3D bevel
-- Shadows are composed in comma-separated stacks — each surface gets 2-3 layered shadow definitions working together
+  --color-success: #0f766e;
+  --color-success-bg: #f0fdfa;
+  --color-success-border: #99f6e4;
 
-### Decorative Depth
-- No gradients or glow effects
-- All depth comes from the sophisticated shadow compositing system
-- The overall effect is subtle but precise — surfaces feel like physical cards sitting on a table
+  --color-warning: #92400e;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
 
-## 7. Do's and Don'ts
+  --color-danger: #b91c1c;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+}
+```
 
-### Do
-- Use Cal Sans exclusively for headings (24px+) and never for body text — it's a display font with tight default spacing
-- Apply positive letter-spacing (+0.2px) when using Cal Sans below 24px — the font cramps at small sizes without it
-- Maintain the grayscale palette — boldness comes from contrast, not color
-- Use the multi-layered shadow system for card elevation — ring shadow + diffused shadow + contact shadow
-- Keep backgrounds pure white — the monochrome philosophy requires a clean canvas
-- Use Inter for all body text at weight 300–600 — it's the reliable counterpart to Cal Sans's display personality
-- Let product screenshots be the visual content — no illustrations, no decorative graphics
-- Apply generous section spacing (80px–96px) — the breathing room is essential to the premium feel
+### Color Rules
 
-### Don't
-- Use Cal Sans for body text or text below 16px — it wasn't designed for extended reading
-- Add brand colors — Cal.com is intentionally grayscale, color is reserved for links and UI states only
-- Use CSS borders when shadows can achieve the same containment — the ring-shadow technique is the system's approach
-- Apply negative letter-spacing to Cal Sans at small sizes — it needs positive spacing (+0.2px) below 24px
-- Create heavy, dark shadows — Cal.com's shadows are subtle (5% opacity diffused) with sharp contact edges
-- Use illustrations, abstract graphics, or decorative elements — the visual language is typography + product UI only
-- Mix Cal Sans weights — the font is designed for weight 600, other weights break the intended character
-- Reduce section spacing below 48px — the generous whitespace is core to the premium monochrome aesthetic
+Primary text:
+- Use `--color-text` for most text.
+- Use `--color-text-strong` for high-emphasis headings and active states.
+- Use `--color-text-muted` or `--color-text-subtle` for metadata.
 
-## 8. Responsive Behavior
+Backgrounds:
+- Page background: `--color-bg`
+- Secondary panels: `--color-bg-subtle`
+- Calendar grid background: `--color-surface`
+- Empty sections: `--color-bg-muted`
 
-### Breakpoints
-| Name | Width | Key Changes |
-|------|-------|-------------|
-| Mobile | <640px | Single column, hero text ~36px, stacked features, hamburger nav |
-| Tablet Small | 640px–768px | 2-column begins for some elements |
-| Tablet | 768px–810px | Layout adjustments, fuller grid |
-| Tablet Large | 810px–1024px | Multi-column feature grids |
-| Desktop | 1024px–1199px | Full layout, expanded navigation |
-| Large Desktop | >1199px | Max-width container, centered content |
+Borders:
+- Prefer shadow-ring borders for raised cards.
+- Use real borders for calendar grid lines and input controls.
 
-### Touch Targets
-- Buttons: 8px radius with comfortable padding (10px+ vertical)
-- Nav links: Dark text with adequate spacing
-- Mobile CTAs: Full-width dark buttons for easy thumb access
-- Pill badges: 9999px radius creates large, tappable targets
+Status:
+- Available slots should be quiet, not bright.
+- Booked appointments should be stronger than available slots.
+- Destructive actions must use danger tokens.
 
-### Collapsing Strategy
-- **Navigation**: Full horizontal nav → hamburger on mobile
-- **Hero**: 64px Cal Sans display → ~36px on mobile
-- **Feature grids**: Multi-column → 2-column → single stacked column
-- **Product screenshots**: Scale within containers, maintaining aspect ratios
-- **Section spacing**: Reduces from 80px–96px to ~48px on mobile
+---
 
-### Image Behavior
-- Product screenshots scale responsively
-- Trust logos reflow to multi-row grid on mobile
-- No art direction changes — same compositions at all sizes
-- Images use 7px–12px border-radius for consistent rounded corners
+## 3. Typography
 
-## 9. Agent Prompt Guide
+### 3.1 Font Stack
 
-### Quick Color Reference
-- Primary Text: Charcoal (`#242424`)
-- Deep Text: Midnight (`#111111`)
-- Secondary Text: Mid Gray (`#898989`)
-- Background: Pure White (`#ffffff`)
-- Link: Link Blue (`#0099ff`)
-- CTA Button: Charcoal (`#242424`) bg, white text
-- Shadow Border: `rgba(34, 42, 53, 0.08)` ring
+Use this stack:
 
-### Example Component Prompts
-- "Create a hero section with white background, 64px Cal Sans heading at weight 600, line-height 1.10, #242424 text, centered layout with a dark CTA button (#242424, 8px radius, white text)"
-- "Design a scheduling card with white background, multi-layered shadow (0px 1px 5px -4px rgba(19,19,22,0.7), 0px 0px 0px 1px rgba(34,42,53,0.08), 0px 4px 8px rgba(34,42,53,0.05)), 12px radius"
-- "Build a navigation bar with white background, Inter links at 14px weight 500 in #111111, a dark CTA button (#242424), sticky positioning"
-- "Create a trust bar with grayscale company logos, horizontally centered, 16px gap between logos, on white background"
-- "Design a feature section with 48px Cal Sans heading (weight 600, #242424), 16px Inter body text (weight 300, #898989, line-height 1.50), and a product screenshot with 12px radius and the card shadow"
+```css
+--font-display: "Cal Sans", "Inter", system-ui, sans-serif;
+--font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+--font-mono: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+```
 
-### Iteration Guide
-When refining existing screens generated with this design system:
-1. Verify headings use Cal Sans at weight 600, body uses Inter — never mix them
-2. Check that the palette is purely grayscale — if you see brand colors, remove them
-3. Ensure card elevation uses the multi-layered shadow stack, not CSS borders
-4. Confirm section spacing is generous (80px+) — if sections feel cramped, add more space
-5. The overall tone should feel like a clean, professional scheduling tool — monochrome confidence without any decorative flourishes
+If Cal Sans is unavailable, use Inter. Do not block implementation on Cal Sans.
+
+### 3.2 Font Usage
+
+Display/headings:
+- Use `Cal Sans` only for large headings and major section titles.
+- Use weight 600.
+- Use tight line height.
+- Do not use it for long body text.
+
+Body/UI:
+- Use `Inter` for all product UI, controls, forms, calendar labels, metadata, and body copy.
+- Use weight 400–600.
+- Use clear size hierarchy.
+
+Code/technical:
+- Use mono font only for IDs, debug panels, or developer-facing output.
+
+### 3.3 Type Scale
+
+```css
+--text-xs: 12px;
+--text-sm: 14px;
+--text-md: 16px;
+--text-lg: 18px;
+--text-xl: 20px;
+--text-2xl: 24px;
+--text-3xl: 32px;
+--text-4xl: 40px;
+--text-5xl: 48px;
+--text-6xl: 64px;
+```
+
+### 3.4 Typography Roles
+
+| Role | Font | Size | Weight | Line Height | Usage |
+|---|---:|---:|---:|---:|---|
+| Hero Title | Cal Sans | 56–64px | 600 | 1.05–1.10 | Landing page / major intro |
+| Page Title | Cal Sans | 40–48px | 600 | 1.10 | Main page heading |
+| Section Title | Cal Sans | 32–40px | 600 | 1.15 | Section headings |
+| Panel Title | Inter | 18–20px | 600 | 1.25 | Calendar panels/cards |
+| Card Title | Inter | 14–16px | 600 | 1.25 | Slot/appointment titles |
+| Body | Inter | 14–16px | 400 | 1.5 | Explanatory text |
+| Metadata | Inter | 12–14px | 400–500 | 1.3 | Time, duration, assignee |
+| Button | Inter | 14px | 500–600 | 1 | Controls |
+| Calendar Time | Inter | 12px | 500 | 1 | Time axis |
+| Calendar Day | Inter | 13–14px | 600 | 1.2 | Day headers |
+
+### 3.5 Typography Rules
+
+Do:
+- Keep UI text compact and legible.
+- Use sentence case.
+- Use tabular numbers for time values.
+
+```css
+font-variant-numeric: tabular-nums;
+```
+
+Do not:
+- Use uppercase everywhere.
+- Use thin font weights below 400 in product UI.
+- Use Cal Sans inside dense calendar cells.
+- Center-align dense product data.
+
+---
+
+## 4. Spacing Tokens
+
+Use an 8px base scale with smaller precision steps.
+
+```css
+--space-0: 0;
+--space-0-5: 2px;
+--space-1: 4px;
+--space-1-5: 6px;
+--space-2: 8px;
+--space-3: 12px;
+--space-4: 16px;
+--space-5: 20px;
+--space-6: 24px;
+--space-8: 32px;
+--space-10: 40px;
+--space-12: 48px;
+--space-16: 64px;
+--space-20: 80px;
+--space-24: 96px;
+```
+
+### Spacing Rules
+
+Page:
+- Desktop page horizontal padding: 32–48px
+- Mobile page horizontal padding: 16px
+- Section vertical padding: 64–96px
+
+Panels:
+- Large panel padding: 24px
+- Standard card padding: 16px
+- Compact card padding: 8–12px
+
+Calendar:
+- Day header height: 48–64px
+- Time axis width: 56–72px
+- Grid cell minimum height: 48px
+- Slot/appointment internal padding: 8–12px
+- Gap between overlapping cards: 4px
+
+---
+
+## 5. Radius Tokens
+
+```css
+--radius-xs: 2px;
+--radius-sm: 4px;
+--radius-md: 6px;
+--radius-lg: 8px;
+--radius-xl: 12px;
+--radius-2xl: 16px;
+--radius-full: 9999px;
+```
+
+### Radius Usage
+
+| Token | Usage |
+|---|---|
+| `xs` | Hairline UI, tiny badges |
+| `sm` | Calendar grid chips, compact controls |
+| `md` | Buttons, inputs |
+| `lg` | Standard cards |
+| `xl` | Panels, popovers |
+| `2xl` | Large page containers |
+| `full` | Pills, avatars, status badges |
+
+Do not over-round the calendar grid. Medical scheduling should feel precise, not bubbly.
+
+---
+
+## 6. Shadow and Elevation
+
+Use subtle shadows only. Avoid dramatic elevation.
+
+```css
+--shadow-ring: 0 0 0 1px rgba(34, 42, 53, 0.08);
+
+--shadow-sm:
+  0 1px 2px rgba(17, 17, 17, 0.04),
+  0 0 0 1px rgba(34, 42, 53, 0.08);
+
+--shadow-md:
+  0 1px 5px -4px rgba(19, 19, 22, 0.70),
+  0 0 0 1px rgba(34, 42, 53, 0.08),
+  0 4px 8px rgba(34, 42, 53, 0.05);
+
+--shadow-lg:
+  0 1px 5px -4px rgba(19, 19, 22, 0.70),
+  0 0 0 1px rgba(34, 42, 53, 0.10),
+  0 12px 24px rgba(34, 42, 53, 0.08);
+
+--shadow-inset:
+  inset 0 1px 1.5px rgba(0, 0, 0, 0.12);
+
+--shadow-button-inset:
+  inset 0 1px 0 rgba(255, 255, 255, 0.15);
+```
+
+### Elevation Rules
+
+| Level | Token | Usage |
+|---|---|---|
+| 0 | none | Page background, calendar grid |
+| 1 | `--shadow-ring` | Static cards, toolbar groups |
+| 2 | `--shadow-sm` | Buttons, inputs, slot cards |
+| 3 | `--shadow-md` | Floating panels, popovers, appointment cards |
+| 4 | `--shadow-lg` | Dialogs, command menus |
+
+Do:
+- Use ring shadows for raised surfaces.
+- Use real borders for grid lines.
+- Keep shadows neutral and low-opacity.
+
+Do not:
+- Use colorful shadows.
+- Use heavy blur shadows.
+- Use elevation to compensate for poor spacing.
+
+---
+
+## 7. Layout System
+
+### 7.1 Containers
+
+```css
+--container-sm: 720px;
+--container-md: 960px;
+--container-lg: 1200px;
+--container-xl: 1440px;
+```
+
+Default page container:
+- `max-width: 1200px`
+- centered
+- horizontal padding 16–48px depending on viewport
+
+Scheduler workspace:
+- May use `max-width: 1440px`
+- Should prioritize usable grid width over marketing-style narrow columns
+
+### 7.2 Breakpoints
+
+```css
+--bp-sm: 640px;
+--bp-md: 768px;
+--bp-lg: 1024px;
+--bp-xl: 1200px;
+--bp-2xl: 1440px;
+```
+
+Responsive behavior:
+- `<640px`: single column, simplified scheduler, horizontal day scrolling allowed
+- `640–1024px`: compressed week view, optional split between agenda/list and grid
+- `>1024px`: full weekly grid
+- `>1200px`: full toolbar + side panels allowed
+
+---
+
+## 8. Core Components
+
+## 8.1 App Shell
+
+The app shell should be minimal.
+
+Structure:
+- Top navigation
+- Main content area
+- Optional side panel
+- Optional footer only on marketing/static pages
+
+Top nav:
+- Height: 56–64px
+- Background: white or slightly translucent white
+- Border bottom: `1px solid var(--color-border-subtle)`
+- Left: product mark/name
+- Center: navigation links if needed
+- Right: account/actions
+
+Nav text:
+- Inter 14px
+- Weight 500
+- Color `--color-text`
+
+Primary nav CTA:
+- Dark background
+- White text
+- 8px radius
+- Compact padding
+
+Do not use oversized nav elements.
+
+---
+
+## 8.2 Buttons
+
+### Primary Button
+
+```css
+.button-primary {
+  background: var(--color-action);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  height: 36px;
+  font: 500 14px/1 var(--font-sans);
+  box-shadow: var(--shadow-button-inset);
+}
+```
+
+Hover:
+- Background `--color-action-hover`
+
+Disabled:
+- Background `#e5e5e5`
+- Text `--color-text-disabled`
+- Cursor default
+
+### Secondary Button
+
+White background, dark text, ring shadow.
+
+```css
+.button-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  height: 36px;
+  padding: 0 14px;
+  box-shadow: var(--shadow-sm);
+}
+```
+
+### Ghost Button
+
+No background by default.
+
+Use for:
+- Calendar navigation arrows
+- Toolbar utility actions
+- Secondary row controls
+
+Hover:
+- `background: var(--color-bg-muted)`
+
+### Destructive Button
+
+Use only for delete/cancel actions.
+
+```css
+background: var(--color-danger);
+color: white;
+```
+
+---
+
+## 8.3 Inputs and Selects
+
+Inputs must be quiet and precise.
+
+```css
+.input {
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0 12px;
+  font: 400 14px/1 var(--font-sans);
+}
+```
+
+Focus:
+```css
+outline: 2px solid var(--color-focus);
+outline-offset: 2px;
+```
+
+Do not remove focus outlines.
+
+Labels:
+- Inter 13px
+- Weight 500
+- Color `--color-text`
+
+Help text:
+- Inter 12px
+- Color `--color-text-subtle`
+
+Errors:
+- Red text
+- Red border
+- Optional subtle red background
+
+---
+
+## 8.4 Cards
+
+### Standard Card
+
+```css
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4);
+}
+```
+
+Use for:
+- Appointment details
+- Booking preview
+- Settings groups
+- Empty-state panels
+
+### Flat Card
+
+```css
+.card-flat {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+```
+
+Use inside dense layouts where shadow would create visual clutter.
+
+---
+
+## 9. Scheduler-Specific UI
+
+## 9.1 Weekly Calendar Grid
+
+The weekly grid is the core product surface.
+
+Structure:
+- Left time axis
+- Seven day columns
+- Sticky day header
+- Horizontal grid lines
+- Vertical day dividers
+- Slot and appointment overlays
+
+Calendar background:
+- White
+
+Grid lines:
+```css
+border-color: rgba(17, 17, 17, 0.06);
+```
+
+Time labels:
+- Inter 12px
+- Weight 500
+- Color `--color-text-subtle`
+- Tabular numbers
+- Right aligned
+
+Day headers:
+- Inter 13–14px
+- Weight 600
+- Color `--color-text`
+- Today may use stronger text or subtle ring
+- Do not use bright colored day headers
+
+Current day:
+- Subtle background tint `#fafafa`
+- Optional dark pill for date number
+
+Current time indicator:
+- 1px line
+- `--color-text-strong`
+- Small dot at start
+- Do not use bright red by default
+
+---
+
+## 9.2 Available Slot Card
+
+Available slots represent bookable supply. They should be visible but quieter than appointments.
+
+Visual style:
+```css
+.slot-available {
+  background: #ffffff;
+  border: 1px solid rgba(15, 118, 110, 0.24);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+```
+
+Content:
+- Time range
+- Assignee/doctor name if relevant
+- Optional duration
+- Optional “Available” label
+
+Typography:
+- Time: 13px, weight 600
+- Metadata: 12px, muted
+
+Hover:
+- Slightly stronger border
+- Background `#fdfdfd`
+- Cursor pointer
+
+Do not make available slots green blocks. Use restrained green only as a border or tiny badge.
+
+---
+
+## 9.3 Booked Appointment Card
+
+Booked appointments should be more visually dominant than available slots.
+
+Visual style:
+```css
+.appointment-card {
+  background: #242424;
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+```
+
+Alternative light style for dense mode:
+```css
+.appointment-card-light {
+  background: #f5f5f5;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+```
+
+Content:
+- Appointment title
+- Time range
+- Invitee/patient name if available
+- Host/doctor
+- Status if needed
+
+Typography:
+- Title: 13–14px, weight 600
+- Time: 12px, weight 500, tabular numbers
+- Metadata: 12px
+
+Rules:
+- Booked appointment must never look like an available slot.
+- Appointment host should be visually secondary to appointment title.
+- Avoid excessive icons inside appointment cards.
+
+---
+
+## 9.4 Cancelled Slot
+
+Cancelled slots should usually be hidden from the main availability view.
+
+If shown in admin/debug views:
+```css
+.cancelled-slot {
+  background: var(--color-bg-muted);
+  color: var(--color-text-disabled);
+  border: 1px dashed var(--color-border);
+}
+```
+
+Use strikethrough only if it improves scan clarity. Do not use aggressive red for cancelled historical data.
+
+---
+
+## 9.5 Empty State
+
+Empty states should be calm and useful.
+
+Structure:
+- Small icon or no icon
+- Clear title
+- One-line explanation
+- Optional action button
+
+Example:
+- “No available slots”
+- “Create a slot for this week to start accepting appointments.”
+
+Visual:
+- White or subtle gray panel
+- 12–16px radius
+- Ring border
+- No illustration
+
+---
+
+## 9.6 Toolbar
+
+The scheduler toolbar should support:
+- Previous week
+- Next week
+- Jump to date
+- Today
+- Optional assignee filter
+- Optional view switch
+
+Layout:
+- Left: date range title
+- Center/right: controls
+- Mobile: stacked or horizontally scrollable
+
+Date range title:
+- Inter or Cal Sans depending on page density
+- Prefer Inter 18–20px weight 600 inside the app
+- Use Cal Sans only for marketing-style headers
+
+Controls:
+- 36px height
+- 6–8px radius
+- compact spacing
+- no colorful icons
+
+---
+
+## 9.7 Assignee / Doctor Identity
+
+Assignee identity is important but should not dominate the calendar.
+
+Use:
+- Small avatar or initials
+- Doctor name
+- Specialty only where useful
+- Muted metadata
+
+Avatar:
+```css
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+  color: var(--color-text);
+  font: 600 12px/1 var(--font-sans);
+}
+```
+
+Do not assign random bright colors to doctors by default. If color-coding is necessary later, use a muted palette and document it separately.
+
+---
+
+## 10. Marketing / Landing Page Style
+
+If building a landing page around the scheduler, follow the Cal.com-inspired structure:
+
+1. Minimal top nav
+2. Strong centered hero
+3. Primary and secondary CTA
+4. Product screenshot or live scheduler preview
+5. Trust row
+6. “How it works” section
+7. Feature sections using real UI fragments
+8. Testimonials only if real
+9. Integrations/app section if relevant
+10. Footer
+
+Hero:
+- White background
+- Large Cal Sans heading
+- Short body text
+- Dark primary CTA
+- White secondary CTA
+- Product UI preview below
+
+Hero title:
+```css
+font-family: var(--font-display);
+font-size: clamp(40px, 6vw, 64px);
+line-height: 1.05;
+font-weight: 600;
+letter-spacing: -0.02em;
+color: var(--color-text);
+```
+
+Hero body:
+```css
+font-family: var(--font-sans);
+font-size: 16–18px;
+line-height: 1.5;
+color: var(--color-text-muted);
+max-width: 640px;
+```
+
+Do not over-explain. Use the product preview to carry the page.
+
+---
+
+## 11. Motion
+
+Motion must be subtle and functional.
+
+Allowed:
+- 120–180ms hover transitions
+- 150–220ms popover/dialog entry
+- Small opacity and translate transitions
+- Calendar navigation fade/slide if restrained
+
+CSS:
+```css
+--duration-fast: 120ms;
+--duration-base: 180ms;
+--duration-slow: 220ms;
+--ease-standard: cubic-bezier(0.2, 0, 0, 1);
+```
+
+Do not:
+- Bounce
+- Overshoot
+- Use springy playful motion
+- Animate large calendar layout changes aggressively
+
+---
+
+## 12. Accessibility
+
+Minimum requirements:
+- Visible keyboard focus
+- 44px minimum touch target on mobile
+- Sufficient contrast for all text
+- Do not encode state by color alone
+- Use labels for inputs
+- Use semantic buttons
+- Preserve tab order
+- Provide accessible names for icon buttons
+- Calendar cells must be keyboard reachable if interactive
+
+Focus style:
+```css
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+```
+
+Text contrast:
+- Primary text on white must be near-black.
+- Muted text must not fall below readable contrast for important information.
+- Disabled text can be lower contrast only when non-essential.
+
+---
+
+## 13. Implementation Rules for Codex
+
+When generating UI code:
+
+1. Use the tokens in this file before inventing values.
+2. Prefer CSS variables or Tailwind theme tokens.
+3. Keep components small and composable.
+4. Use Inter for product UI.
+5. Use Cal Sans only for major headings.
+6. Calendar grid lines should be real borders.
+7. Raised cards should use shadow-ring elevation.
+8. Keep the interface monochrome unless state requires color.
+9. Available slots and booked appointments must be visually distinct.
+10. Do not add decorative graphics unless explicitly requested.
+11. Do not use gradients.
+12. Do not use random accent colors.
+13. Do not remove focus outlines.
+14. Do not hardcode pixel positions from layout data if the domain core provides semantic layout.
+15. Keep scheduler UI deterministic and data-driven.
+
+---
+
+## 14. Tailwind Mapping
+
+If using Tailwind, map the design system like this:
+
+```ts
+theme: {
+  extend: {
+    fontFamily: {
+      display: ["Cal Sans", "Inter", "system-ui", "sans-serif"],
+      sans: ["Inter", "system-ui", "sans-serif"],
+      mono: ["Roboto Mono", "monospace"],
+    },
+    colors: {
+      bg: "var(--color-bg)",
+      surface: "var(--color-surface)",
+      text: "var(--color-text)",
+      muted: "var(--color-text-muted)",
+      border: "var(--color-border)",
+      action: "var(--color-action)",
+      danger: "var(--color-danger)",
+      success: "var(--color-success)",
+    },
+    borderRadius: {
+      xs: "var(--radius-xs)",
+      sm: "var(--radius-sm)",
+      md: "var(--radius-md)",
+      lg: "var(--radius-lg)",
+      xl: "var(--radius-xl)",
+      "2xl": "var(--radius-2xl)",
+      full: "var(--radius-full)",
+    },
+    boxShadow: {
+      ring: "var(--shadow-ring)",
+      sm: "var(--shadow-sm)",
+      md: "var(--shadow-md)",
+      lg: "var(--shadow-lg)",
+    },
+  },
+}
+```
+
+---
+
+## 15. Component Acceptance Checklist
+
+A generated screen is acceptable only if:
+
+- The page is mostly monochrome.
+- The hierarchy is clear without color decoration.
+- Available slots are visually quieter than booked appointments.
+- Booked appointments are immediately distinguishable.
+- Time labels use tabular numbers.
+- Calendar grid lines are subtle.
+- Controls have visible hover and focus states.
+- Buttons are compact and not oversized.
+- The main scheduler is usable on desktop and mobile.
+- The UI does not look like a generic colorful admin dashboard.
+- The UI does not look like a toy calendar.
+- The design feels precise, calm, and professional.
+
+---
+
+## 16. Anti-Patterns
+
+Reject generated UI if it contains:
+
+- Gradient backgrounds
+- Purple/blue SaaS hero blobs
+- Random colorful cards
+- Heavy drop shadows
+- Glassmorphism
+- Excessive icons
+- Emoji
+- Rounded “bubble” calendar events
+- Full-color doctor labels without reason
+- Weak contrast text
+- Hidden focus styles
+- Decorative illustrations
+- Body text set in Cal Sans
+- Calendar cells without clear time structure
+- Available and booked states that look similar
+
+---
+
+## 17. Reference Mood
+
+The intended feeling:
+
+- Cal.com restraint
+- Linear-like precision
+- Apple-like spacing discipline
+- Medical SaaS trustworthiness
+- Scheduling-product clarity
+
+The interface should feel like infrastructure, not marketing decoration.
