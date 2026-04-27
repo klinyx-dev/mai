@@ -6,7 +6,7 @@ use mai::{
 
 fn add_slot_command(
     slot_id: &str,
-    assignee_id: &str,
+    resource_owner_id: &str,
     start_hour: u32,
     end_hour: u32,
 ) -> AddSlotCommand {
@@ -14,7 +14,7 @@ fn add_slot_command(
         slot_id: SlotId::new(slot_id),
         start: Utc.with_ymd_and_hms(2026, 1, 5, start_hour, 0, 0).unwrap(),
         end: Utc.with_ymd_and_hms(2026, 1, 5, end_hour, 0, 0).unwrap(),
-        assignee_id: ActorId::new(assignee_id),
+        resource_owner_id: ActorId::new(resource_owner_id),
         created_by: ActorId::new("creator-1"),
     }
 }
@@ -33,7 +33,7 @@ fn add_appointment_command(appointment_id: &str, slot_id: &str) -> AddAppointmen
 fn add_slot_book_unbook_and_layout_flow() {
     let mut service = SchedulerService::new();
     service
-        .add_slot(add_slot_command("slot-1", "assignee-1", 9, 10))
+        .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
     service
         .add_appointment(add_appointment_command("appt-1", "slot-1"))
@@ -57,7 +57,7 @@ fn add_slot_book_unbook_and_layout_flow() {
 fn participant_can_cancel_appointment_and_unbook_slot() {
     let mut service = SchedulerService::new();
     service
-        .add_slot(add_slot_command("slot-1", "assignee-1", 9, 10))
+        .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
     service
         .add_appointment(add_appointment_command("appt-1", "slot-1"))
@@ -82,7 +82,7 @@ fn participant_can_cancel_appointment_and_unbook_slot() {
 fn cancel_then_booking_is_rejected() {
     let mut service = SchedulerService::new();
     service
-        .add_slot(add_slot_command("slot-1", "assignee-1", 9, 10))
+        .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
     service
         .cancel_slot(CancelSlotCommand {
@@ -101,10 +101,10 @@ fn cancel_then_booking_is_rejected() {
 }
 
 #[test]
-fn overlapping_slots_same_assignee_are_rejected() {
+fn overlapping_slots_same_resource_owner_are_rejected() {
     let mut service = SchedulerService::new();
     service
-        .add_slot(add_slot_command("slot-1", "assignee-1", 9, 10))
+        .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
 
     let error = service
@@ -112,10 +112,10 @@ fn overlapping_slots_same_assignee_are_rejected() {
             slot_id: SlotId::new("slot-2"),
             start: Utc.with_ymd_and_hms(2026, 1, 5, 9, 30, 0).unwrap(),
             end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
-            assignee_id: ActorId::new("assignee-1"),
+            resource_owner_id: ActorId::new("owner-1"),
             created_by: ActorId::new("creator-1"),
         })
-        .expect_err("same-assignee overlap must fail");
+        .expect_err("same-resource-owner overlap must fail");
 
     assert_eq!(
         error,
@@ -124,13 +124,13 @@ fn overlapping_slots_same_assignee_are_rejected() {
 }
 
 #[test]
-fn overlapping_slots_different_assignees_are_allowed() {
+fn overlapping_slots_different_resource_owners_are_allowed() {
     let mut service = SchedulerService::new();
     service
-        .add_slot(add_slot_command("slot-1", "assignee-1", 9, 10))
+        .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
     service
-        .add_slot(add_slot_command("slot-2", "assignee-2", 9, 10))
+        .add_slot(add_slot_command("slot-2", "owner-2", 9, 10))
         .unwrap();
 
     let layout = service.get_weekly_layout(WeeklyLayoutQuery::new(

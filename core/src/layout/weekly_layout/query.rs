@@ -8,7 +8,7 @@ use crate::{ActorId, domain::week::WeekRange};
 pub struct WeeklyLayoutQuery {
     pub anchor_date: NaiveDate,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub assignee_id: Option<ActorId>,
+    pub resource_owner_ids: Option<Vec<ActorId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub visible_start_minute: Option<u16>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -28,7 +28,7 @@ impl WeeklyLayoutQuery {
     pub fn new(anchor_date: NaiveDate) -> Self {
         Self {
             anchor_date,
-            assignee_id: None,
+            resource_owner_ids: None,
             visible_start_minute: None,
             visible_end_minute: None,
         }

@@ -5,8 +5,9 @@ use mai::{
     adapters::wasm::{
         WasmAdapterError, WasmBindgenAdapter, WasmCommandRequest, WasmCommandResponse,
         WasmErrorCategory, WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse,
-        WasmSchedulerAdapter, WasmWeeklyLayoutQuery, parse_command_request, parse_query_request,
-        render_command_response, render_query_response,
+        WasmSchedulerAdapter, WasmViewFilter, WasmViewFilterMode, WasmWeeklyLayoutQuery,
+        parse_command_request, parse_query_request, render_command_response,
+        render_query_response,
     },
 };
 
@@ -16,7 +17,7 @@ fn add_slot_command_serializes_as_adapter_friendly_json() {
         slot_id: "slot-1001".into(),
         start: Utc.with_ymd_and_hms(2026, 5, 4, 9, 0, 0).unwrap(),
         end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
-        assignee_id: "doctor-42".into(),
+        resource_owner_id: "owner-42".into(),
         created_by: "admin-7".into(),
     };
 
@@ -25,7 +26,7 @@ fn add_slot_command_serializes_as_adapter_friendly_json() {
     assert_eq!(json["slot_id"], "slot-1001");
     assert_eq!(json["start"], "2026-05-04T09:00:00Z");
     assert_eq!(json["end"], "2026-05-04T09:30:00Z");
-    assert_eq!(json["assignee_id"], "doctor-42");
+    assert_eq!(json["resource_owner_id"], "owner-42");
     assert_eq!(json["created_by"], "admin-7");
 }
 
@@ -88,7 +89,7 @@ fn wasm_command_request_uses_tagged_envelope() {
         slot_id: "slot-1001".into(),
         start: Utc.with_ymd_and_hms(2026, 5, 4, 9, 0, 0).unwrap(),
         end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
-        assignee_id: "doctor-42".into(),
+        resource_owner_id: "owner-42".into(),
         created_by: "admin-7".into(),
     });
 
@@ -123,7 +124,7 @@ fn wasm_cancel_appointment_request_uses_tagged_envelope() {
 fn wasm_query_request_uses_tagged_envelope() {
     let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
         anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
-        assignee_id: None,
+        view_filter: None,
         visible_start_minute: None,
         visible_end_minute: None,
         timezone: None,
@@ -142,7 +143,7 @@ fn wasm_query_request_uses_tagged_envelope() {
 fn wasm_query_request_accepts_optional_timezone() {
     let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
         anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
-        assignee_id: None,
+        view_filter: None,
         visible_start_minute: None,
         visible_end_minute: None,
         timezone: Some("Europe/Paris".to_string()),
@@ -173,17 +174,21 @@ fn wasm_command_response_uses_shared_success_envelope() {
 }
 
 #[test]
-fn wasm_query_request_accepts_tm10_optional_fields() {
+fn wasm_query_request_accepts_view_filter_optional_fields() {
     let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
         anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
-        assignee_id: Some("doctor-42".to_string()),
+        view_filter: Some(WasmViewFilter {
+            mode: WasmViewFilterMode::Owners,
+            ids: vec!["owner-42".to_string()],
+        }),
         visible_start_minute: Some(540),
         visible_end_minute: Some(1020),
         timezone: None,
     });
 
     let json = serde_json::to_value(&request).unwrap();
-    assert_eq!(json["payload"]["assignee_id"], "doctor-42");
+    assert_eq!(json["payload"]["view_filter"]["mode"], "owners");
+    assert_eq!(json["payload"]["view_filter"]["ids"][0], "owner-42");
     assert_eq!(json["payload"]["visible_start_minute"], 540);
     assert_eq!(json["payload"]["visible_end_minute"], 1020);
 
@@ -234,7 +239,7 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
         query,
         WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
-            assignee_id: None,
+            view_filter: None,
             visible_start_minute: None,
             visible_end_minute: None,
             timezone: None,
@@ -263,6 +268,19 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
 }
 
 #[test]
+fn wasm_query_request_rejects_legacy_assignee_filter_field() {
+    let legacy_query_json = r#"{
+        "query":"weekly_layout",
+        "payload":{
+            "anchor_date":"2026-05-07",
+            "assignee_id":"owner-42"
+        }
+    }"#;
+
+    assert!(parse_query_request(legacy_query_json).is_err());
+}
+
+#[test]
 fn wasm_adapter_wrapper_applies_mutations_via_json_entrypoint() {
     let mut adapter = WasmSchedulerAdapter::new();
     let add_slot_json = r#"{
@@ -271,7 +289,7 @@ fn wasm_adapter_wrapper_applies_mutations_via_json_entrypoint() {
             "slot_id":"slot-1001",
             "start":"2026-05-04T09:00:00Z",
             "end":"2026-05-04T09:30:00Z",
-            "assignee_id":"doctor-42",
+            "resource_owner_id":"owner-42",
             "created_by":"admin-7"
         }
     }"#;
@@ -292,7 +310,7 @@ fn wasm_adapter_wrapper_maps_business_error_for_duplicate_booking() {
             "slot_id":"slot-1001",
             "start":"2026-05-04T09:00:00Z",
             "end":"2026-05-04T09:30:00Z",
-            "assignee_id":"doctor-42",
+            "resource_owner_id":"owner-42",
             "created_by":"admin-7"
         }
     }"#;
@@ -338,7 +356,7 @@ fn wasm_adapter_wrapper_maps_business_error_for_unauthorized_appointment_cancell
             "slot_id":"slot-1001",
             "start":"2026-05-04T09:00:00Z",
             "end":"2026-05-04T09:30:00Z",
-            "assignee_id":"doctor-42",
+            "resource_owner_id":"owner-42",
             "created_by":"admin-7"
         }
     }"#;
@@ -380,7 +398,7 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
             "slot_id":"slot-1001",
             "start":"2026-05-04T09:00:00Z",
             "end":"2026-05-04T09:30:00Z",
-            "assignee_id":"doctor-42",
+            "resource_owner_id":"owner-42",
             "created_by":"admin-7"
         }
     }"#;
@@ -398,7 +416,7 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
         "query":"weekly_layout",
         "payload":{
             "anchor_date":"2026-05-07",
-            "assignee_id":"doctor-42",
+            "view_filter":{"mode":"owners","ids":["owner-42"]},
             "visible_start_minute":540,
             "visible_end_minute":570
         }
@@ -427,7 +445,7 @@ fn wasm_adapter_wrapper_normalizes_timezone_aware_weekly_query_anchor() {
     let legacy_response =
         adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
-            assignee_id: None,
+            view_filter: None,
             visible_start_minute: None,
             visible_end_minute: None,
             timezone: None,
@@ -435,7 +453,7 @@ fn wasm_adapter_wrapper_normalizes_timezone_aware_weekly_query_anchor() {
     let timezone_response =
         adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
             anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
-            assignee_id: None,
+            view_filter: None,
             visible_start_minute: None,
             visible_end_minute: None,
             timezone: Some("Europe/Paris".to_string()),
@@ -466,7 +484,7 @@ fn wasm_adapter_wrapper_returns_deterministic_error_for_invalid_timezone() {
 
     let response = adapter.execute_query(WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
         anchor_date: NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
-        assignee_id: None,
+        view_filter: None,
         visible_start_minute: None,
         visible_end_minute: None,
         timezone: Some("Not/A_Real_TZ".to_string()),
@@ -577,7 +595,7 @@ fn wasm_bindgen_wrapper_delegates_json_entrypoints() {
             "slot_id":"slot-1001",
             "start":"2026-05-04T09:00:00Z",
             "end":"2026-05-04T09:30:00Z",
-            "assignee_id":"doctor-42",
+            "resource_owner_id":"owner-42",
             "created_by":"admin-7"
         }
     }"#;

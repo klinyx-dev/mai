@@ -8,17 +8,22 @@ use crate::domain::time_range::TimeRange;
 pub struct Slot {
     pub id: SlotId,
     pub time: TimeRange,
-    pub assignee_id: ActorId,
+    pub resource_owner_id: ActorId,
     pub created_by: ActorId,
     pub status: SlotStatus,
 }
 
 impl Slot {
-    pub fn new(id: SlotId, time: TimeRange, assignee_id: ActorId, created_by: ActorId) -> Self {
+    pub fn new(
+        id: SlotId,
+        time: TimeRange,
+        resource_owner_id: ActorId,
+        created_by: ActorId,
+    ) -> Self {
         Self {
             id,
             time,
-            assignee_id,
+            resource_owner_id,
             created_by,
             status: SlotStatus::Available,
         }
@@ -27,14 +32,14 @@ impl Slot {
     pub fn with_status(
         id: SlotId,
         time: TimeRange,
-        assignee_id: ActorId,
+        resource_owner_id: ActorId,
         created_by: ActorId,
         status: SlotStatus,
     ) -> Self {
         Self {
             id,
             time,
-            assignee_id,
+            resource_owner_id,
             created_by,
             status,
         }

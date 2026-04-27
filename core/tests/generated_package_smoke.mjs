@@ -20,7 +20,7 @@ const addSlotResponse = JSON.parse(
         slot_id: "slot-1001",
         start: "2026-05-04T09:00:00Z",
         end: "2026-05-04T09:30:00Z",
-        assignee_id: "doctor-42",
+        resource_owner_id: "owner-42",
         created_by: "admin-7",
       },
     })
@@ -51,7 +51,7 @@ const weeklyLayoutResponse = JSON.parse(
       query: "weekly_layout",
       payload: {
         anchor_date: "2026-05-07",
-        assignee_id: "doctor-42",
+        view_filter: { mode: "owners", ids: ["owner-42"] },
         visible_start_minute: 540,
         visible_end_minute: 570,
       },

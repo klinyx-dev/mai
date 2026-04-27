@@ -16,9 +16,11 @@ pub fn project_slot_layout_nodes(
         .values()
         .filter(|slot| {
             query
-                .assignee_id
+                .resource_owner_ids
                 .as_ref()
-                .is_none_or(|assignee| &slot.assignee_id == assignee)
+                .is_none_or(|resource_owner_ids| {
+                    resource_owner_ids.contains(&slot.resource_owner_id)
+                })
         })
         .filter_map(|slot| slot_to_layout_node(slot, query, &week))
         .collect::<Vec<_>>();
@@ -52,11 +54,13 @@ pub fn project_appointment_layout_nodes(
         .filter_map(|appointment| {
             let slot = state.slots.get(&appointment.slot_id)?;
 
-            // Filter appointments by slot's assignee
+            // Filter appointments by the slot's resource owner.
             if query
-                .assignee_id
+                .resource_owner_ids
                 .as_ref()
-                .is_some_and(|assignee| &slot.assignee_id != assignee)
+                .is_some_and(|resource_owner_ids| {
+                    !resource_owner_ids.contains(&slot.resource_owner_id)
+                })
             {
                 return None;
             }

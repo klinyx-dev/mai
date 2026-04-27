@@ -7,10 +7,27 @@ use crate::{
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WasmViewFilterMode {
+    All,
+    Owners,
+    Group,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WasmViewFilter {
+    pub mode: WasmViewFilterMode,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ids: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct WasmWeeklyLayoutQuery {
     pub anchor_date: NaiveDate,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub assignee_id: Option<String>,
+    pub view_filter: Option<WasmViewFilter>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub visible_start_minute: Option<u16>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

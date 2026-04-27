@@ -40,14 +40,14 @@ pub fn ensure_actor_can_cancel_appointment(
     slot: &Slot,
     actor_id: &ActorId,
 ) -> Result<(), BusinessRuleError> {
-    let is_slot_assignee = &slot.assignee_id == actor_id;
+    let is_slot_resource_owner = &slot.resource_owner_id == actor_id;
     let is_appointment_creator = &appointment.created_by == actor_id;
     let is_invitee = appointment
         .invitee_ids
         .iter()
         .any(|invitee| invitee == actor_id);
 
-    if is_slot_assignee || is_appointment_creator || is_invitee {
+    if is_slot_resource_owner || is_appointment_creator || is_invitee {
         return Ok(());
     }
 
@@ -94,7 +94,7 @@ mod tests {
     }
 
     #[test]
-    fn allows_cancellation_for_assignee_invitee_or_creator() {
+    fn allows_cancellation_for_resource_owner_invitee_or_creator() {
         let appointment = Appointment::new(
             AppointmentId::new("appt-1"),
             SlotId::new("slot-1"),
@@ -109,12 +109,12 @@ mod tests {
                 Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-1"),
+            ActorId::new("owner-1"),
             ActorId::new("creator-2"),
         );
 
         assert!(
-            ensure_actor_can_cancel_appointment(&appointment, &slot, &ActorId::new("assignee-1"))
+            ensure_actor_can_cancel_appointment(&appointment, &slot, &ActorId::new("owner-1"))
                 .is_ok()
         );
         assert!(
@@ -143,7 +143,7 @@ mod tests {
                 Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-1"),
+            ActorId::new("owner-1"),
             ActorId::new("creator-2"),
         );
 

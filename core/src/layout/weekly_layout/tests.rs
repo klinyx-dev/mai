@@ -159,7 +159,7 @@ fn projects_only_available_slots_in_visible_week() {
 }
 
 #[test]
-fn assignee_filter_limits_slot_projection() {
+fn resource_owner_filter_limits_slot_projection() {
     let mut state = ScheduleState::new();
     state.slots.insert(
         SlotId::new("slot-a1"),
@@ -179,14 +179,14 @@ fn assignee_filter_limits_slot_projection() {
                 Utc.with_ymd_and_hms(2026, 1, 7, 12, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-2"),
+            ActorId::new("owner-2"),
             ActorId::new("creator-1"),
             SlotStatus::Available,
         ),
     );
 
     let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
-    query.assignee_id = Some(ActorId::new("assignee-1"));
+    query.resource_owner_ids = Some(vec![ActorId::new("owner-1")]);
 
     let nodes = project_slot_layout_nodes(&state, &query);
     assert_eq!(nodes.len(), 1);
@@ -357,7 +357,7 @@ fn includes_only_appointments_with_visible_referenced_slots() {
 }
 
 #[test]
-fn assignee_filter_limits_appointment_projection_by_slot_assignee() {
+fn resource_owner_filter_limits_appointment_projection_by_slot_resource_owner() {
     let mut state = ScheduleState::new();
 
     state.slots.insert(
@@ -369,7 +369,7 @@ fn assignee_filter_limits_appointment_projection_by_slot_assignee() {
                 Utc.with_ymd_and_hms(2026, 1, 8, 10, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-1"),
+            ActorId::new("owner-1"),
             ActorId::new("creator-1"),
             SlotStatus::Booked,
         ),
@@ -383,7 +383,7 @@ fn assignee_filter_limits_appointment_projection_by_slot_assignee() {
                 Utc.with_ymd_and_hms(2026, 1, 8, 12, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-2"),
+            ActorId::new("owner-2"),
             ActorId::new("creator-1"),
             SlotStatus::Booked,
         ),
@@ -399,7 +399,7 @@ fn assignee_filter_limits_appointment_projection_by_slot_assignee() {
     );
 
     let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
-    query.assignee_id = Some(ActorId::new("assignee-1"));
+    query.resource_owner_ids = Some(vec![ActorId::new("owner-1")]);
 
     let nodes = project_appointment_layout_nodes(&state, &query);
     assert_eq!(nodes.len(), 1);
@@ -544,7 +544,7 @@ fn projections_are_identical_across_insertion_orders() {
 #[test]
 fn filtered_projections_are_identical_across_insertion_orders() {
     let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
-    query.assignee_id = Some(ActorId::new("assignee-1"));
+    query.resource_owner_ids = Some(vec![ActorId::new("owner-1")]);
     query.visible_start_minute = Some(9 * 60 + 30);
     query.visible_end_minute = Some(10 * 60 + 30);
 
@@ -558,7 +558,7 @@ fn filtered_projections_are_identical_across_insertion_orders() {
                 Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-1"),
+            ActorId::new("owner-1"),
             ActorId::new("creator-1"),
             SlotStatus::Booked,
         ),
@@ -572,21 +572,21 @@ fn filtered_projections_are_identical_across_insertion_orders() {
                 Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-1"),
+            ActorId::new("owner-1"),
             ActorId::new("creator-1"),
             SlotStatus::Booked,
         ),
     );
     state_a.slots.insert(
-        SlotId::new("slot-other-assignee"),
+        SlotId::new("slot-other-owner"),
         Slot::with_status(
-            SlotId::new("slot-other-assignee"),
+            SlotId::new("slot-other-owner"),
             TimeRange::new(
                 Utc.with_ymd_and_hms(2026, 1, 7, 9, 45, 0).unwrap(),
                 Utc.with_ymd_and_hms(2026, 1, 7, 10, 15, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-2"),
+            ActorId::new("owner-2"),
             ActorId::new("creator-1"),
             SlotStatus::Booked,
         ),
@@ -600,14 +600,14 @@ fn filtered_projections_are_identical_across_insertion_orders() {
         appointment("appt-target-a", "slot-target-a"),
     );
     state_a.appointments.insert(
-        AppointmentId::new("appt-other-assignee"),
-        appointment("appt-other-assignee", "slot-other-assignee"),
+        AppointmentId::new("appt-other-owner"),
+        appointment("appt-other-owner", "slot-other-owner"),
     );
 
     let mut state_b = ScheduleState::new();
     state_b.appointments.insert(
-        AppointmentId::new("appt-other-assignee"),
-        appointment("appt-other-assignee", "slot-other-assignee"),
+        AppointmentId::new("appt-other-owner"),
+        appointment("appt-other-owner", "slot-other-owner"),
     );
     state_b.appointments.insert(
         AppointmentId::new("appt-target-a"),
@@ -618,15 +618,15 @@ fn filtered_projections_are_identical_across_insertion_orders() {
         appointment("appt-target-b", "slot-target-b"),
     );
     state_b.slots.insert(
-        SlotId::new("slot-other-assignee"),
+        SlotId::new("slot-other-owner"),
         Slot::with_status(
-            SlotId::new("slot-other-assignee"),
+            SlotId::new("slot-other-owner"),
             TimeRange::new(
                 Utc.with_ymd_and_hms(2026, 1, 7, 9, 45, 0).unwrap(),
                 Utc.with_ymd_and_hms(2026, 1, 7, 10, 15, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-2"),
+            ActorId::new("owner-2"),
             ActorId::new("creator-1"),
             SlotStatus::Booked,
         ),
@@ -640,7 +640,7 @@ fn filtered_projections_are_identical_across_insertion_orders() {
                 Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-1"),
+            ActorId::new("owner-1"),
             ActorId::new("creator-1"),
             SlotStatus::Booked,
         ),
@@ -654,7 +654,7 @@ fn filtered_projections_are_identical_across_insertion_orders() {
                 Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-1"),
+            ActorId::new("owner-1"),
             ActorId::new("creator-1"),
             SlotStatus::Booked,
         ),
@@ -858,7 +858,7 @@ fn slot(
     Slot::with_status(
         SlotId::new(id),
         TimeRange::new(start, end).unwrap(),
-        ActorId::new("assignee-1"),
+        ActorId::new("owner-1"),
         ActorId::new("creator-1"),
         status,
     )

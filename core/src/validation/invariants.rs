@@ -46,7 +46,7 @@ mod tests {
                 Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
             )
             .unwrap(),
-            ActorId::new("assignee-1"),
+            ActorId::new("owner-1"),
             ActorId::new("creator-1"),
         )
     }

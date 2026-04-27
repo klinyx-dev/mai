@@ -17,15 +17,15 @@ pub enum ReferentialError {
     SlotNotFound,
     #[error("appointment not found")]
     AppointmentNotFound,
-    #[error("assignee not found")]
-    AssigneeNotFound,
+    #[error("resource owner not found")]
+    ResourceOwnerNotFound,
     #[error("creator not found")]
     CreatorNotFound,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
 pub enum BusinessRuleError {
-    #[error("slot overlaps with an existing active slot for the same assignee")]
+    #[error("slot overlaps with an existing active slot for the same resource owner")]
     SlotOverlap,
     #[error("slot is already booked")]
     SlotAlreadyBooked,

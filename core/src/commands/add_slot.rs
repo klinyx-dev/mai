@@ -8,6 +8,6 @@ pub struct AddSlotCommand {
     pub slot_id: SlotId,
     pub start: DateTime<Utc>,
     pub end: DateTime<Utc>,
-    pub assignee_id: ActorId,
+    pub resource_owner_id: ActorId,
     pub created_by: ActorId,
 }

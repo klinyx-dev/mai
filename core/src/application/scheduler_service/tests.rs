@@ -38,7 +38,7 @@ fn add_slot_cmd(slot_id: &str) -> AddSlotCommand {
         slot_id: SlotId::new(slot_id),
         start: Utc.with_ymd_and_hms(2026, 1, 5, 9, 0, 0).unwrap(),
         end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
-        assignee_id: ActorId::new("assignee-1"),
+        resource_owner_id: ActorId::new("owner-1"),
         created_by: ActorId::new("creator-1"),
     }
 }
@@ -101,8 +101,8 @@ fn deleting_appointment_restores_slot_availability() {
 }
 
 #[test]
-fn cancellation_by_assignee_invitee_or_creator_restores_slot_availability() {
-    for canceller in ["assignee-1", "invitee-1", "creator-2"] {
+fn cancellation_by_resource_owner_invitee_or_creator_restores_slot_availability() {
+    for canceller in ["owner-1", "invitee-1", "creator-2"] {
         let mut service = SchedulerService::new();
         service.add_slot(add_slot_cmd("slot-1")).unwrap();
         service
@@ -185,7 +185,7 @@ fn deleting_available_slot_removes_it_by_id() {
             slot_id: SlotId::new("slot-2"),
             start: Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
             end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
-            assignee_id: ActorId::new("assignee-1"),
+            resource_owner_id: ActorId::new("owner-1"),
             created_by: ActorId::new("creator-1"),
         })
         .unwrap();
@@ -224,7 +224,7 @@ fn rescheduling_available_slot_updates_time_range() {
 }
 
 #[test]
-fn rescheduling_slot_rejects_overlap_for_same_assignee() {
+fn rescheduling_slot_rejects_overlap_for_same_resource_owner() {
     let mut service = SchedulerService::new();
     service.add_slot(add_slot_cmd("slot-1")).unwrap();
     service
@@ -232,7 +232,7 @@ fn rescheduling_slot_rejects_overlap_for_same_assignee() {
             slot_id: SlotId::new("slot-2"),
             start: Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
             end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
-            assignee_id: ActorId::new("assignee-1"),
+            resource_owner_id: ActorId::new("owner-1"),
             created_by: ActorId::new("creator-1"),
         })
         .unwrap();
@@ -291,7 +291,7 @@ fn cannot_book_cancelled_slot() {
 }
 
 #[test]
-fn appointment_host_is_derived_from_slot_assignee() {
+fn appointment_host_is_derived_from_slot_resource_owner() {
     let mut service = SchedulerService::new();
     service.add_slot(add_slot_cmd("slot-1")).unwrap();
 
@@ -310,8 +310,8 @@ fn appointment_host_is_derived_from_slot_assignee() {
         .get(&appointment.slot_id)
         .expect("referenced slot exists");
 
-    let derived_host = slot.assignee_id.clone();
-    assert_eq!(derived_host, ActorId::new("assignee-1"));
+    let derived_host = slot.resource_owner_id.clone();
+    assert_eq!(derived_host, ActorId::new("owner-1"));
     assert_ne!(appointment.created_by, derived_host);
 }
 
@@ -347,7 +347,7 @@ fn delete_appointment_fails_when_not_found() {
 }
 
 #[test]
-fn rejects_overlapping_slots_for_same_assignee() {
+fn rejects_overlapping_slots_for_same_resource_owner() {
     let mut service = SchedulerService::new();
 
     service.add_slot(add_slot_cmd("slot-1")).unwrap();
@@ -355,7 +355,7 @@ fn rejects_overlapping_slots_for_same_assignee() {
         slot_id: SlotId::new("slot-2"),
         start: Utc.with_ymd_and_hms(2026, 1, 5, 9, 30, 0).unwrap(),
         end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
-        assignee_id: ActorId::new("assignee-1"),
+        resource_owner_id: ActorId::new("owner-1"),
         created_by: ActorId::new("creator-2"),
     });
 
@@ -413,20 +413,20 @@ fn get_weekly_layout_returns_projected_nodes() {
 }
 
 #[test]
-fn add_slot_rejects_missing_assignee_when_lookup_is_enabled() {
+fn add_slot_rejects_missing_resource_owner_when_lookup_is_enabled() {
     let mut service = SchedulerService::with_actor_lookup(actor_lookup(&["creator-1"]));
 
     let result = service.add_slot(add_slot_cmd("slot-1"));
 
     assert_eq!(
-        result.expect_err("missing assignee should fail"),
-        SchedulerError::Referential(ReferentialError::AssigneeNotFound)
+        result.expect_err("missing resource owner should fail"),
+        SchedulerError::Referential(ReferentialError::ResourceOwnerNotFound)
     );
 }
 
 #[test]
 fn add_slot_rejects_missing_creator_when_lookup_is_enabled() {
-    let mut service = SchedulerService::with_actor_lookup(actor_lookup(&["assignee-1"]));
+    let mut service = SchedulerService::with_actor_lookup(actor_lookup(&["owner-1"]));
 
     let result = service.add_slot(add_slot_cmd("slot-1"));
 
@@ -439,7 +439,7 @@ fn add_slot_rejects_missing_creator_when_lookup_is_enabled() {
 #[test]
 fn add_appointment_rejects_missing_creator_when_lookup_is_enabled() {
     let mut service =
-        SchedulerService::with_actor_lookup(actor_lookup(&["assignee-1", "creator-1"]));
+        SchedulerService::with_actor_lookup(actor_lookup(&["owner-1", "creator-1"]));
     service.add_slot(add_slot_cmd("slot-1")).unwrap();
 
     let result = service.add_appointment(add_appointment_cmd("appt-1", "slot-1"));
@@ -453,7 +453,7 @@ fn add_appointment_rejects_missing_creator_when_lookup_is_enabled() {
 #[test]
 fn reschedule_slot_rejects_missing_updater_when_lookup_is_enabled() {
     let mut service =
-        SchedulerService::with_actor_lookup(actor_lookup(&["assignee-1", "creator-1"]));
+        SchedulerService::with_actor_lookup(actor_lookup(&["owner-1", "creator-1"]));
     service.add_slot(add_slot_cmd("slot-1")).unwrap();
 
     let result = service.reschedule_slot(RescheduleSlotCommand {
@@ -477,7 +477,7 @@ fn actor_validation_is_skipped_when_lookup_is_not_configured() {
         slot_id: SlotId::new("slot-unknown-actors"),
         start: Utc.with_ymd_and_hms(2026, 1, 5, 13, 0, 0).unwrap(),
         end: Utc.with_ymd_and_hms(2026, 1, 5, 14, 0, 0).unwrap(),
-        assignee_id: ActorId::new("missing-assignee"),
+        resource_owner_id: ActorId::new("missing-owner"),
         created_by: ActorId::new("missing-creator"),
     });
 

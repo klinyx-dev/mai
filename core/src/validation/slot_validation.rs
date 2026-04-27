@@ -39,13 +39,13 @@ pub fn ensure_slot_is_cancellable(slot: &Slot) -> Result<(), BusinessRuleError> 
     Ok(())
 }
 
-pub fn ensure_no_overlap_for_assignee(
+pub fn ensure_no_overlap_for_resource_owner(
     state: &ScheduleState,
     candidate: &Slot,
 ) -> Result<(), BusinessRuleError> {
     let overlap = state.slots.values().any(|existing| {
         existing.id != candidate.id
-            && existing.assignee_id == candidate.assignee_id
+            && existing.resource_owner_id == candidate.resource_owner_id
             && is_active(existing.status)
             && is_active(candidate.status)
             && overlaps(&existing.time, &candidate.time)
@@ -68,7 +68,7 @@ fn overlaps(left: &TimeRange, right: &TimeRange) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{ensure_no_overlap_for_assignee, overlaps};
+    use super::{ensure_no_overlap_for_resource_owner, overlaps};
     use crate::domain::enums::SlotStatus;
     use crate::domain::ids::{ActorId, SlotId};
     use crate::domain::slot::Slot;
@@ -101,9 +101,9 @@ mod tests {
     }
 
     #[test]
-    fn rejects_overlapping_active_slots_for_same_assignee() {
+    fn rejects_overlapping_active_slots_for_same_resource_owner() {
         let mut state = ScheduleState::new();
-        let assignee = ActorId::new("assignee-1");
+        let resource_owner = ActorId::new("owner-1");
 
         let existing = Slot::new(
             SlotId::new("slot-1"),
@@ -112,7 +112,7 @@ mod tests {
                 Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
             )
             .unwrap(),
-            assignee.clone(),
+            resource_owner.clone(),
             ActorId::new("creator-1"),
         );
         state.slots.insert(existing.id.clone(), existing);
@@ -124,19 +124,19 @@ mod tests {
                 Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
             )
             .unwrap(),
-            assignee,
+            resource_owner,
             ActorId::new("creator-2"),
             SlotStatus::Available,
         );
 
-        let result = ensure_no_overlap_for_assignee(&state, &candidate);
+        let result = ensure_no_overlap_for_resource_owner(&state, &candidate);
         assert!(result.is_err());
     }
 
     #[test]
     fn ignores_cancelled_slots_for_overlap_blocking() {
         let mut state = ScheduleState::new();
-        let assignee = ActorId::new("assignee-1");
+        let resource_owner = ActorId::new("owner-1");
 
         let cancelled = Slot::with_status(
             SlotId::new("slot-1"),
@@ -145,7 +145,7 @@ mod tests {
                 Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
             )
             .unwrap(),
-            assignee.clone(),
+            resource_owner.clone(),
             ActorId::new("creator-1"),
             SlotStatus::Cancelled,
         );
@@ -158,11 +158,11 @@ mod tests {
                 Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
             )
             .unwrap(),
-            assignee,
+            resource_owner,
             ActorId::new("creator-2"),
         );
 
-        let result = ensure_no_overlap_for_assignee(&state, &candidate);
+        let result = ensure_no_overlap_for_resource_owner(&state, &candidate);
         assert!(result.is_ok());
     }
 }
