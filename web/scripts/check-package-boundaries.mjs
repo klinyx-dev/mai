@@ -14,8 +14,13 @@ const allowedExtensions = new Set([
 ]);
 const importLikePatterns = [
   /from\s*["'][^"']*core\/pkg/i,
+  /from\s*["'][^"']*core\\pkg/i,
   /import\s*\(\s*["'][^"']*core\/pkg/i,
+  /import\s*\(\s*["'][^"']*core\\pkg/i,
   /require\s*\(\s*["'][^"']*core\/pkg/i,
+  /require\s*\(\s*["'][^"']*core\\pkg/i,
+  /from\s*["'][^"']*mai_bg\.wasm/i,
+  /import\s*\(\s*["'][^"']*mai_bg\.wasm/i,
 ];
 
 function collectFiles(rootDir) {
