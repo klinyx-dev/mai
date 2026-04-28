@@ -29,3 +29,12 @@ export type {
   MaiSlotCreatedEventPayload,
   MaiSlotRescheduledEventPayload,
 } from "./types/interactive";
+export type {
+  MaiBookingAuthIdentity,
+  MaiBookingDoctor,
+  MaiBookingError,
+  MaiBookingFlowState,
+  MaiBookingSlotSelection,
+  MaiBookingSpecialty,
+  MaiBookingStep,
+} from "./types/booking";
