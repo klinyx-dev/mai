@@ -5,9 +5,10 @@ import {
   useMai,
   type MaiBookSlotPayload,
   type MaiBookingActorConfig,
-  type MaiBookingDoctor,
+  type MaiBookingCategory,
+  type MaiBookingContext,
+  type MaiBookingResource,
   type MaiBookingSlotOwner,
-  type MaiBookingSpecialty,
 } from "@mai/mai-ui-vue";
 import {
   COMMANDS,
@@ -19,68 +20,72 @@ import {
 import { computed, onMounted, ref, shallowRef } from "vue";
 
 const route = useRoute();
-const clinicId = computed(() => String(route.params.clinicId ?? "clinic-demo"));
+const contextId = computed(() => String(route.params.contextId ?? "workspace-demo"));
 const anchorDate = ref("2026-05-07");
 const layout = shallowRef<WeeklyLayout | null>(null);
-const statusMessage = ref("Choose a specialty to begin.");
+const statusMessage = ref("Choose a category to begin.");
 const bookingError = ref<string | null>(null);
 const signedInUser = ref<{ inviteeId: string; userDisplayName: string } | null>(
   null
 );
+const context = computed<MaiBookingContext>(() => ({
+  contextId: contextId.value,
+  label: "Resource workspace",
+}));
 
 let mai: ReturnType<typeof useMai> | null = null;
 let appointmentCounter = 1;
 const seeded = ref(false);
 
-const specialties: MaiBookingSpecialty[] = [
+const categories: MaiBookingCategory[] = [
   {
-    specialtyId: "dermatology",
-    label: "Dermatology",
-    reasonLabel: "Skin consultation",
+    categoryId: "category-a",
+    label: "Category A",
+    description: "Standard 30 minute session",
   },
   {
-    specialtyId: "cardiology",
-    label: "Cardiology",
-    reasonLabel: "Heart consultation",
+    categoryId: "category-b",
+    label: "Category B",
+    description: "Focused consultation",
   },
 ];
 
-const doctors: MaiBookingDoctor[] = [
+const resources: MaiBookingResource[] = [
   {
-    doctorId: "doctor-derm-1",
-    displayName: "Dr Martin",
-    specialtyIds: ["dermatology"],
-    resourceOwnerId: "owner-derm-1",
+    resourceId: "resource-1",
+    label: "Resource One",
+    categoryIds: ["category-a"],
+    resourceOwnerId: "owner-1",
   },
   {
-    doctorId: "doctor-derm-2",
-    displayName: "Dr Simon",
-    specialtyIds: ["dermatology"],
-    resourceOwnerId: "owner-derm-2",
+    resourceId: "resource-2",
+    label: "Resource Two",
+    categoryIds: ["category-a"],
+    resourceOwnerId: "owner-2",
   },
   {
-    doctorId: "doctor-cardio-1",
-    displayName: "Dr Laurent",
-    specialtyIds: ["cardiology"],
-    resourceOwnerId: "owner-cardio-1",
+    resourceId: "resource-3",
+    label: "Resource Three",
+    categoryIds: ["category-b"],
+    resourceOwnerId: "owner-3",
   },
 ];
 
 const slotOwners: Record<string, MaiBookingSlotOwner> = {
-  "slot-derm-1": {
-    resourceOwnerId: "owner-derm-1",
-    doctorId: "doctor-derm-1",
-    doctorDisplayName: "Dr Martin",
+  "slot-resource-1": {
+    resourceOwnerId: "owner-1",
+    resourceId: "resource-1",
+    resourceLabel: "Resource One",
   },
-  "slot-derm-2": {
-    resourceOwnerId: "owner-derm-2",
-    doctorId: "doctor-derm-2",
-    doctorDisplayName: "Dr Simon",
+  "slot-resource-2": {
+    resourceOwnerId: "owner-2",
+    resourceId: "resource-2",
+    resourceLabel: "Resource Two",
   },
-  "slot-cardio-1": {
-    resourceOwnerId: "owner-cardio-1",
-    doctorId: "doctor-cardio-1",
-    doctorDisplayName: "Dr Laurent",
+  "slot-resource-3": {
+    resourceOwnerId: "owner-3",
+    resourceId: "resource-3",
+    resourceLabel: "Resource Three",
   },
 };
 
@@ -91,37 +96,37 @@ const bookingActor = computed<MaiBookingActorConfig>(() => ({
 }));
 
 function nextAppointmentId(): string {
-  const id = `clinic-demo-appointment-${appointmentCounter}`;
+  const id = `workspace-demo-appointment-${appointmentCounter}`;
   appointmentCounter += 1;
   return id;
 }
 
-async function seedClinicSlots(): Promise<void> {
+async function seedResourceSlots(): Promise<void> {
   if (!mai || seeded.value) {
     return;
   }
 
   const seedCommands = [
     createCommandEnvelope(COMMANDS.ADD_SLOT, {
-      slot_id: "slot-derm-1",
+      slot_id: "slot-resource-1",
       start: "2026-05-05T09:00:00Z",
       end: "2026-05-05T09:30:00Z",
-      resource_owner_id: "owner-derm-1",
-      created_by: "clinic-admin",
+      resource_owner_id: "owner-1",
+      created_by: "operator-1",
     }),
     createCommandEnvelope(COMMANDS.ADD_SLOT, {
-      slot_id: "slot-derm-2",
+      slot_id: "slot-resource-2",
       start: "2026-05-06T10:00:00Z",
       end: "2026-05-06T10:30:00Z",
-      resource_owner_id: "owner-derm-2",
-      created_by: "clinic-admin",
+      resource_owner_id: "owner-2",
+      created_by: "operator-1",
     }),
     createCommandEnvelope(COMMANDS.ADD_SLOT, {
-      slot_id: "slot-cardio-1",
+      slot_id: "slot-resource-3",
       start: "2026-05-07T11:00:00Z",
       end: "2026-05-07T11:30:00Z",
-      resource_owner_id: "owner-cardio-1",
-      created_by: "clinic-admin",
+      resource_owner_id: "owner-3",
+      created_by: "operator-1",
     }),
   ];
 
@@ -164,10 +169,10 @@ async function requestAuth(): Promise<{
   userDisplayName: string;
 }> {
   signedInUser.value = {
-    inviteeId: "patient-demo",
-    userDisplayName: "Camille Martin",
+    inviteeId: "participant-demo",
+    userDisplayName: "Alex Martin",
   };
-  statusMessage.value = "Signed in as Camille Martin.";
+  statusMessage.value = "Signed in as Alex Martin.";
   return signedInUser.value;
 }
 
@@ -183,27 +188,27 @@ function onBookingError(payload: { action: string; message: string }): void {
 onMounted(async () => {
   const { $mai } = useNuxtApp();
   mai = useMai({ adapter: $mai.adapter });
-  await seedClinicSlots();
+  await seedResourceSlots();
   await queryLayout({ anchor_date: anchorDate.value });
 });
 </script>
 
 <template>
-  <main class="clinic-booking-page">
-    <section class="clinic-booking-header">
-      <p class="clinic-booking-kicker">Clinic booking</p>
-      <h1 class="clinic-booking-title">Book an appointment</h1>
-      <p class="clinic-booking-subtitle">
-        Choose a specialty, optionally choose a doctor, then confirm with your account.
+  <main class="resource-booking-page">
+    <section class="resource-booking-header">
+      <p class="resource-booking-kicker">Resource booking</p>
+      <h1 class="resource-booking-title">Book a time</h1>
+      <p class="resource-booking-subtitle">
+        Choose a category, optionally choose a resource, then confirm with your account.
       </p>
-      <p class="clinic-booking-status">{{ statusMessage }}</p>
-      <p v-if="bookingError" class="clinic-booking-error">{{ bookingError }}</p>
+      <p class="resource-booking-status">{{ statusMessage }}</p>
+      <p v-if="bookingError" class="resource-booking-error">{{ bookingError }}</p>
     </section>
     <ClientOnly>
       <MaiBookingFlow
-        :clinic="{ clinicId, name: 'Mai Clinic' }"
-        :specialties="specialties"
-        :doctors="doctors"
+        :context="context"
+        :categories="categories"
+        :resources="resources"
         :layout="layout"
         :slot-owners="slotOwners"
         :view="{ anchorDate, visibleStartMinute: 480, visibleEndMinute: 1080 }"
@@ -218,7 +223,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.clinic-booking-page {
+.resource-booking-page {
   box-sizing: border-box;
   min-height: 100vh;
   padding: 32px;
@@ -227,16 +232,16 @@ onMounted(async () => {
   font-family: var(--font-sans);
 }
 
-.clinic-booking-header {
+.resource-booking-header {
   display: grid;
   gap: 8px;
   max-width: 760px;
   margin: 0 0 24px;
 }
 
-.clinic-booking-kicker,
-.clinic-booking-status,
-.clinic-booking-error {
+.resource-booking-kicker,
+.resource-booking-status,
+.resource-booking-error {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 13px;
@@ -244,11 +249,11 @@ onMounted(async () => {
   line-height: 1.4;
 }
 
-.clinic-booking-kicker {
+.resource-booking-kicker {
   text-transform: uppercase;
 }
 
-.clinic-booking-title {
+.resource-booking-title {
   margin: 0;
   color: var(--color-text-strong);
   font-family: var(--font-display);
@@ -257,19 +262,19 @@ onMounted(async () => {
   line-height: 1.1;
 }
 
-.clinic-booking-subtitle {
+.resource-booking-subtitle {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 15px;
   line-height: 1.5;
 }
 
-.clinic-booking-error {
+.resource-booking-error {
   color: var(--color-danger);
 }
 
 @media (max-width: 720px) {
-  .clinic-booking-page {
+  .resource-booking-page {
     padding: 20px;
   }
 }

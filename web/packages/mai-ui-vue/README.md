@@ -20,7 +20,7 @@ Use `MaiBoard` when you want a pure presentational week board and manage all act
 
 Use `MaiBoardInteractive` when you want built-in action cards and command orchestration.
 
-Use `MaiBookingFlow` when you want a client-facing clinic booking flow.
+Use `MaiBookingFlow` when you want a client-facing booking flow.
 
 ## `MaiBoardInteractive` (recommended)
 
@@ -36,7 +36,7 @@ const view = {
 const actor = {
   resourceOwnerId: "owner-42",
   createdBy: "ui-operator",
-  bookAppointmentInviteeIds: ["patient-1"],
+  bookAppointmentInviteeIds: ["participant-1"],
   bookAppointmentTitle: "Consultation",
   bookAppointmentCreatedBy: "ui-operator",
   cancelAppointmentBy: "ui-operator",
@@ -72,16 +72,16 @@ const actions = { mutateCommand };
 
 ## `MaiBookingFlow`
 
-`MaiBookingFlow` is the client-facing appointment booking component for clinic pages.
+`MaiBookingFlow` is the client-facing appointment booking component for apps that expose bookable resources.
 
 Flow:
-1. choose specialty/reason,
-2. optionally choose a doctor,
+1. choose a category,
+2. optionally choose a resource,
 3. choose one slot from a week view,
 4. sign in or sign up if needed,
 5. confirm booking.
 
-The component does not create clinic, specialty, doctor, or user identity records. The consuming app supplies that context and returns an already-known `inviteeId` after auth.
+The component does not create domain records or user identity records. The consuming app supplies context, categories, resources, availability metadata, and returns an already-known `inviteeId` after auth.
 
 Appointment titles are generated as:
 
@@ -96,23 +96,23 @@ Minimal shape:
 import { MaiBookingFlow } from "@mai/mai-ui-vue";
 import { createBookSlotCommand } from "@mai/mai-web-core";
 
-const clinic = { clinicId: "clinic-1", name: "Mai Clinic" };
-const specialties = [
-  { specialtyId: "dermatology", label: "Dermatology", reasonLabel: "Skin consultation" },
+const context = { contextId: "workspace-1", label: "Workspace One" };
+const categories = [
+  { categoryId: "category-a", label: "Category A", description: "Standard session" },
 ];
-const doctors = [
+const resources = [
   {
-    doctorId: "doctor-1",
-    displayName: "Dr Martin",
-    specialtyIds: ["dermatology"],
+    resourceId: "resource-1",
+    label: "Resource One",
+    categoryIds: ["category-a"],
     resourceOwnerId: "owner-1",
   },
 ];
 const slotOwners = {
   "slot-1": {
     resourceOwnerId: "owner-1",
-    doctorId: "doctor-1",
-    doctorDisplayName: "Dr Martin",
+    resourceId: "resource-1",
+    resourceLabel: "Resource One",
   },
 };
 
@@ -127,17 +127,17 @@ async function bookSlot(payload) {
 
 async function requestAuth() {
   return {
-    inviteeId: "patient-1",
-    userDisplayName: "Camille Martin",
+    inviteeId: "participant-1",
+    userDisplayName: "Alex Martin",
   };
 }
 </script>
 
 <template>
   <MaiBookingFlow
-    :clinic="clinic"
-    :specialties="specialties"
-    :doctors="doctors"
+    :context="context"
+    :categories="categories"
+    :resources="resources"
     :slot-owners="slotOwners"
     :view="{ anchorDate: '2026-05-07', visibleStartMinute: 480, visibleEndMinute: 1080 }"
     :booking="{ createAppointmentId: () => crypto.randomUUID() }"
@@ -148,12 +148,12 @@ async function requestAuth() {
 
 After successful booking, the component immediately requeries availability before emitting the final confirmed state.
 
-UI implementation must comply with the repository `DESIGN.md`: monochrome-first, calm medical utility, token-based styling, compact controls, visible focus states, and no gradients or decorative graphics.
+UI implementation must comply with the repository `DESIGN.md`: monochrome-first, calm operational utility, token-based styling, compact controls, visible focus states, and no gradients or decorative graphics.
 
 ## Public API
 
 - Components: `MaiBoard`, `MaiBoardInteractive`, `MaiBookingFlow`
-- Booking components: `MaiSpecialtyPicker`, `MaiDoctorPicker`, `MaiAvailabilityPicker`, `MaiBookingAuthGate`, `MaiBookingConfirmCard`
+- Booking components: `MaiLocationPicker`, `MaiCategoryPicker`, `MaiResourcePicker`, `MaiAvailabilityPicker`, `MaiBookingAuthGate`, `MaiBookingConfirmCard`
 - Action cards: `MaiCreateSlotCard`, `MaiSlotActionsCard`, `MaiAppointmentActionsCard`
 - Integration: `useMai`, `createNuxtMaiState`
 - Interaction constants: `INTERACTION_ACTIONS`, `INTERACTION_SUCCESS_EVENTS`

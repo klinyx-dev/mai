@@ -92,7 +92,7 @@ Example consumption:
   :actor="{
     resourceOwnerId,
     createdBy: 'ui-operator',
-    bookAppointmentInviteeIds: ['patient-demo'],
+    bookAppointmentInviteeIds: ['participant-demo'],
     bookAppointmentTitle: 'Consultation',
     bookAppointmentCreatedBy: 'ui-operator',
     cancelAppointmentBy: 'ui-operator'
@@ -111,28 +111,28 @@ Example consumption:
 />
 ```
 
-## Client-facing clinic booking
-`MaiBookingFlow` is the recommended component for patient/client booking flows.
+## Client-facing booking
+`MaiBookingFlow` is the recommended component for client-facing booking flows.
 
 It supports:
-- clinic page context supplied by the app,
-- required specialty/reason selection,
-- optional doctor selection, defaulting to no doctor filter,
+- context supplied by the app,
+- required category selection,
+- optional resource selection, defaulting to no resource filter,
 - one-week slot selection with week navigation,
 - sign-in/sign-up handoff before confirmation,
-- appointment title generation from user display name plus selected reason,
+- appointment title generation from user display name plus selected category,
 - immediate availability refresh after successful booking.
 
-The scheduling core still only sees fixed-slot appointment commands. Clinic, specialty, doctor, and auth identity stay in the app/UI boundary.
+The scheduling core still only sees fixed-slot appointment commands. Domain records, resource catalog data, and auth identity stay in the app/UI boundary.
 
 Example route:
-- `examples/nuxt-app/pages/clinic/[clinicId]/book.vue`
+- `examples/nuxt-app/pages/resources/[contextId]/book.vue`
 
 Try it in dev at:
-- `http://localhost:3000/clinic/demo/book`
+- `http://localhost:3000/resources/demo/book`
 
 Design rule:
-- Client-facing booking UI must follow root `DESIGN.md`: monochrome-first, calm medical utility, compact controls, visible focus states, token-based CSS, no gradients, and no decorative marketing treatment.
+- Client-facing booking UI must follow root `DESIGN.md`: monochrome-first, calm operational utility, compact controls, visible focus states, token-based CSS, no gradients, and no decorative marketing treatment.
 
 ## Prerequisites
 - Node.js 22.x recommended (Node 23 may show experimental warnings from transitive deps).

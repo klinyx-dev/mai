@@ -2,7 +2,7 @@
 
 # Product Design System
 
-This file defines the visual style for the scheduler UI. It is inspired by Cal.com’s current public website, but it is not a clone. The goal is a calm, monochrome, medical-grade scheduling interface: precise, quiet, trustworthy, and easy to scan.
+This file defines the visual style for the scheduler UI. It is inspired by Cal.com’s current public website, but it is not a clone. The goal is a calm, monochrome, operations-grade scheduling interface: precise, quiet, trustworthy, and easy to scan.
 
 The product is a weekly appointment scheduler. The interface must make three things visually obvious:
 
@@ -10,7 +10,7 @@ The product is a weekly appointment scheduler. The interface must make three thi
 2. Booked appointments
 3. Time structure across a week
 
-Do not design this like a colorful SaaS dashboard. Do not add decorative illustrations, gradients, noisy icons, or saturated brand colors. The UI should feel restrained, clinical, premium, and operational.
+Do not design this like a colorful SaaS dashboard. Do not add decorative illustrations, gradients, noisy icons, or saturated brand colors. The UI should feel restrained, premium, and operational.
 
 ---
 
@@ -49,14 +49,14 @@ Do not fill empty space with abstract graphics. Use real product structure:
 - Day columns
 - Availability slot cards
 - Appointment cards
-- Doctor/assignee labels
+- Resource or owner labels
 - Booking status
 - Empty states
 - Small operational controls
 
-### 1.3 Calm Medical Utility
+### 1.3 Calm Operational Utility
 
-The scheduler may be used in medical contexts. The UI must feel:
+The scheduler may be used in high-trust contexts such as healthcare, services, operations, or internal tooling. The UI must feel:
 - Trustworthy
 - Low-noise
 - Easy to scan
@@ -632,7 +632,7 @@ Visual style:
 
 Content:
 - Time range
-- Assignee/doctor name if relevant
+- Resource or owner name if relevant
 - Optional duration
 - Optional “Available” label
 
@@ -675,8 +675,8 @@ Alternative light style for dense mode:
 Content:
 - Appointment title
 - Time range
-- Invitee/patient name if available
-- Host/doctor
+- Invitee or participant name if available
+- Resource owner or host
 - Status if needed
 
 Typography:
@@ -737,7 +737,7 @@ The scheduler toolbar should support:
 - Next week
 - Jump to date
 - Today
-- Optional assignee filter
+- Optional resource owner filter
 - Optional view switch
 
 Layout:
@@ -758,14 +758,14 @@ Controls:
 
 ---
 
-## 9.7 Assignee / Doctor Identity
+## 9.7 Resource Owner Identity
 
-Assignee identity is important but should not dominate the calendar.
+Resource owner identity is important but should not dominate the calendar.
 
 Use:
 - Small avatar or initials
-- Doctor name
-- Specialty only where useful
+- Resource owner name
+- Category only where useful
 - Muted metadata
 
 Avatar:
@@ -780,7 +780,7 @@ Avatar:
 }
 ```
 
-Do not assign random bright colors to doctors by default. If color-coding is necessary later, use a muted palette and document it separately.
+Do not assign random bright colors to resources by default. If color-coding is necessary later, use a muted palette and document it separately.
 
 ---
 
@@ -980,7 +980,7 @@ Reject generated UI if it contains:
 - Excessive icons
 - Emoji
 - Rounded “bubble” calendar events
-- Full-color doctor labels without reason
+- Full-color resource labels without reason
 - Weak contrast text
 - Hidden focus styles
 - Decorative illustrations
