@@ -3,6 +3,8 @@ export type {
   AnyCommandEnvelope,
   AddAppointmentCommandPayload,
   AddSlotCommandPayload,
+  BookSlotCommandInput,
+  BuildAppointmentTitleInput,
   CancelAppointmentCommandPayload,
   CancelSlotCommandPayload,
   CommandPayloadMap,
@@ -28,6 +30,8 @@ export type {
 export { COMMANDS, QUERIES } from "./types.js";
 
 export {
+  buildAppointmentTitle,
+  createBookSlotCommand,
   createCommandEnvelope,
   createQueryEnvelope,
   executeCommand,

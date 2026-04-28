@@ -1,4 +1,6 @@
 import type {
+  BookSlotCommandInput,
+  BuildAppointmentTitleInput,
   CommandPayloadMap,
   CommandName,
   CommandEnvelope,
@@ -11,7 +13,7 @@ import type {
   WeeklyLayout,
   WeeklyLayoutQueryPayload,
 } from "./types.js";
-import { QUERIES } from "./types.js";
+import { COMMANDS, QUERIES } from "./types.js";
 
 export interface JsonAdapter {
   execute_command_json(input: string): string;
@@ -30,6 +32,24 @@ export function createQueryEnvelope<TQuery extends QueryName>(
   payload: QueryPayloadMap[TQuery]
 ): TypedQueryEnvelope<TQuery> {
   return { query, payload };
+}
+
+export function buildAppointmentTitle(
+  input: BuildAppointmentTitleInput
+): string {
+  return `${input.userDisplayName.trim()} - ${input.reason.trim()}`;
+}
+
+export function createBookSlotCommand(
+  input: BookSlotCommandInput
+): TypedCommandEnvelope<typeof COMMANDS.ADD_APPOINTMENT> {
+  return createCommandEnvelope(COMMANDS.ADD_APPOINTMENT, {
+    appointment_id: input.appointmentId,
+    slot_id: input.slotId,
+    invitee_ids: [input.inviteeId],
+    title: buildAppointmentTitle(input),
+    created_by: input.createdBy,
+  });
 }
 
 export function executeCommand<TCommand extends CommandName>(

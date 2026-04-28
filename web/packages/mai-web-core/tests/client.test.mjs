@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  buildAppointmentTitle,
+  createBookSlotCommand,
   createCommandEnvelope,
   createQueryEnvelope,
   executeCommand,
@@ -68,6 +70,38 @@ test("createCommandEnvelope supports new cancel appointment command", () => {
     payload: {
       appointment_id: "appt-1",
       cancelled_by: "ui-operator",
+    },
+  });
+});
+
+test("buildAppointmentTitle combines user display name and reason", () => {
+  assert.equal(
+    buildAppointmentTitle({
+      userDisplayName: "  Camille Martin ",
+      reason: " Dermatology consultation ",
+    }),
+    "Camille Martin - Dermatology consultation"
+  );
+});
+
+test("createBookSlotCommand maps one invitee into add appointment payload", () => {
+  const command = createBookSlotCommand({
+    appointmentId: "appt-1",
+    slotId: "slot-1",
+    inviteeId: "patient-1",
+    createdBy: "patient-1",
+    userDisplayName: "Camille Martin",
+    reason: "Dermatology consultation",
+  });
+
+  assert.deepEqual(command, {
+    command: "add_appointment",
+    payload: {
+      appointment_id: "appt-1",
+      slot_id: "slot-1",
+      invitee_ids: ["patient-1"],
+      title: "Camille Martin - Dermatology consultation",
+      created_by: "patient-1",
     },
   });
 });

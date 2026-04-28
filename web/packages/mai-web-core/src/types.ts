@@ -94,6 +94,18 @@ export interface AddAppointmentCommandPayload {
   created_by: string;
 }
 
+export interface BuildAppointmentTitleInput {
+  userDisplayName: string;
+  reason: string;
+}
+
+export interface BookSlotCommandInput extends BuildAppointmentTitleInput {
+  appointmentId: string;
+  slotId: string;
+  inviteeId: string;
+  createdBy: string;
+}
+
 export interface CancelAppointmentCommandPayload {
   appointment_id: string;
   cancelled_by: string;
