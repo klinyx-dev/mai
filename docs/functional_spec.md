@@ -223,6 +223,32 @@ System must:
   - reject reschedule when slot state is not reschedulable for this phase.
 - Keep adapter error envelope shape unchanged for rejected operations.
 
+### FR-15: Client-Facing Clinic Booking Flow
+System must support a client-facing booking flow for a clinic page:
+- User starts from a clinic context supplied by the consuming app.
+- User selects a consultation specialty/reason before selecting a slot.
+- User may optionally select a doctor; doctor selection is off by default.
+- When no doctor is selected, availability represents all eligible doctors for the selected specialty as supplied by the consuming app.
+- User selects one available slot from a one-week view with previous/next week navigation.
+- User may browse availability before authentication.
+- User must sign in or sign up before final booking confirmation.
+- After authentication, the consuming app supplies an already-known `inviteeId` and user display name.
+- Appointment title is computed from the authenticated user display name plus the selected reason.
+- Successful booking immediately triggers an availability requery so the booked slot no longer appears as available.
+
+The client-facing flow must not allow clients to:
+- create slots
+- delete slots
+- cancel slots
+- reschedule slots
+- cancel or delete existing appointments
+
+The flow must preserve the fixed-slot booking model:
+- booking uses the existing add appointment behavior
+- booking creates exactly one appointment for exactly one slot
+- the slot remains the canonical time and host source
+- the slot status changes from `available` to `booked`
+
 ---
 
 ## 5. Business Rules
@@ -253,6 +279,9 @@ System must:
 17. Booked slots cannot be deleted
 18. Appointments cannot exist without a valid slot
 19. Appointment cancellation is allowed only for slot resource owner, appointment invitee, or appointment creator
+20. Client-facing booking must not bypass slot availability validation
+21. Client-facing booking confirmation requires an authenticated invitee identity supplied by the consuming app
+22. Client-facing appointment title is derived from user display name plus selected consultation reason
 
 ---
 
@@ -269,6 +298,8 @@ The system is complete when:
 - Behavior is deterministic across platforms
 - No UI-specific logic exists in the core
 - Optional query filters/windows preserve backward compatibility for existing callers
+- Client-facing booking allows specialty/reason selection, optional doctor selection, weekly slot selection, authentication before confirmation, and booking through the fixed-slot appointment flow
+- Client-facing booking immediately refreshes availability after a successful booking
 
 ---
 
