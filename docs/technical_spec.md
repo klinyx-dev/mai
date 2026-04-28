@@ -886,6 +886,114 @@ TM17 implementation status (completed on 2026-04-23):
   - drag/resize gesture math,
   - command envelope mapping for `reschedule_slot`.
 
+### 12.6 Client-facing clinic booking component contract
+
+The client-facing booking surface is an app/UI package concern. It must reuse the existing scheduling core, WASM adapter boundary, and web-core typed command/query helpers. It must not add clinic, specialty, doctor, or authentication concepts to Rust domain/layout modules in Phase 1.
+
+Recommended public component:
+- `MaiBookingFlow` in `@mai/mai-ui-vue`.
+
+Flow:
+1. User starts from a clinic page/context supplied by the consuming app.
+2. User selects a consultation specialty/reason.
+3. User optionally selects a doctor; no doctor filter is the default.
+4. User chooses one available slot from a one-week availability view.
+5. User signs in or signs up if no invitee identity is available.
+6. User confirms the booking.
+7. The component immediately requeries availability after successful booking.
+
+Boundary responsibilities:
+- consuming app owns clinic metadata, specialty/reason metadata, doctor metadata, and authentication.
+- consuming app supplies or resolves the authenticated `inviteeId`, user display name, and appointment ID.
+- UI package owns booking flow state, component composition, event emission, and deterministic command/query envelope creation.
+- Rust core owns slot availability validation and appointment creation invariants only.
+
+Availability behavior:
+- when a doctor is selected, query/filter availability for that doctor's resource owner ID through the current weekly query host filter boundary (`assignee_id` in the implemented adapter/web-core contract, corresponding to resource owner semantics in the product language).
+- when no doctor is selected, the consuming app must provide specialty-scoped availability across eligible doctors. Phase 1 may do this by querying a specialty-scoped state, merging per-doctor weekly layouts, or passing already-filtered layout data to the component.
+- the component shows one week at a time and supports previous/next week navigation.
+
+Booking behavior:
+- booking uses `COMMANDS.ADD_APPOINTMENT` with `createCommandEnvelope` from `@mai/mai-web-core`.
+- a single authenticated `inviteeId` maps into the existing `invitee_ids` command payload.
+- appointment title is computed deterministically from user display name plus selected reason.
+- booking confirmation must not run until specialty/reason, slot, appointment ID, invitee ID, and creator identity are available.
+- after successful booking, the component must requery availability before presenting the final confirmed state.
+
+Suggested grouped prop shape:
+
+```ts
+export interface MaiBookingFlowProps {
+  clinic: {
+    clinicId: string;
+    name?: string;
+  };
+  specialties: Array<{
+    specialtyId: string;
+    label: string;
+    reasonLabel?: string;
+  }>;
+  doctors?: Array<{
+    doctorId: string;
+    displayName: string;
+    specialtyIds: string[];
+    resourceOwnerId: string;
+  }>;
+  view: {
+    anchorDate: string;
+    timezone?: string;
+    visibleStartMinute?: number;
+    visibleEndMinute?: number;
+    timeLabelFormat?: "24h" | "12h";
+  };
+  actor: {
+    inviteeId?: string;
+    userDisplayName?: string;
+    createdBy?: string;
+  };
+  booking?: {
+    selectedSpecialtyId?: string;
+    selectedDoctorId?: string;
+    createAppointmentId?: () => string;
+  };
+  actions?: {
+    queryLayout?: (query: BookingAvailabilityQuery) => Promise<WeeklyLayout>;
+    bookSlot?: (payload: BookSlotPayload) => Promise<void>;
+    requestAuth?: () => Promise<{
+      inviteeId: string;
+      userDisplayName: string;
+    }>;
+    mutateCommand?: (envelope: CommandEnvelope) => Promise<CommandResponse>;
+  };
+}
+```
+
+Expected events:
+- `navigate-week` (`-1 | 0 | 1`)
+- `specialty-selected`
+- `doctor-selected`
+- `slot-selected`
+- `auth-required`
+- `auth-completed`
+- `booking-submitted`
+- `booking-confirmed`
+- `availability-refreshed`
+- `booking-error` (`{ action, message }`)
+
+Design requirements:
+- all client-facing booking UI must follow `DESIGN.md`.
+- use design tokens/CSS variables before inventing values.
+- keep the UI monochrome-first, precise, calm, and medical-utility oriented.
+- use compact controls, visible hover/focus states, subtle borders, and tabular time labels.
+- do not use gradients, decorative graphics, random accent colors, glassmorphism, emoji, or heavy shadows.
+- validate implementation against the `DESIGN.md` component acceptance checklist before shipping.
+
+Testing expectations:
+- state tests for specialty selection, optional doctor selection, auth required/completed, submit, refresh, success, and error flows.
+- component tests for required specialty, default no-doctor mode, doctor-scoped mode, week navigation, slot selection, auth gate, deterministic title generation, and post-booking availability refresh.
+- public API tests ensuring the component and types are exported through package entrypoints.
+- Nuxt example build and workspace boundary check must remain green.
+
 ## 13. Testing Strategy
 
 ### 13.1 Unit tests
