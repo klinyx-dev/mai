@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@mai/mai-wasm-adapter": "workspace:*",
+    "@mai/mai-web-core": "workspace:*",
     "@mai/mai-ui-vue": "workspace:*",
     "nuxt": "3.21.2",
     "vue": "^3.5.0"

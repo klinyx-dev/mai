@@ -173,6 +173,9 @@ export const MaiBookingFlow = defineComponent({
         state.value.selectedSpecialtyId
       )
     );
+    const eligibleResourceOwnerIds = computed(
+      () => new Set(eligibleDoctors.value.map((doctor) => doctor.resourceOwnerId))
+    );
     const selectedDoctor = computed(
       () =>
         props.doctors.find(
@@ -180,13 +183,31 @@ export const MaiBookingFlow = defineComponent({
         ) ?? null
     );
     const availableSlots = computed(() => {
-      if (props.availabilitySlots.length > 0) {
-        return sortAvailabilitySlots(props.availabilitySlots);
+      const baseSlots =
+        props.availabilitySlots.length > 0
+          ? sortAvailabilitySlots(props.availabilitySlots)
+          : availabilitySlotsFromWeeklyLayout(
+              queriedLayout.value ?? props.layout,
+              props.slotOwners
+            );
+
+      if (selectedDoctor.value) {
+        return baseSlots.filter(
+          (slot) =>
+            !slot.resourceOwnerId ||
+            slot.resourceOwnerId === selectedDoctor.value?.resourceOwnerId
+        );
       }
-      return availabilitySlotsFromWeeklyLayout(
-        queriedLayout.value ?? props.layout,
-        props.slotOwners
-      );
+
+      if (state.value.selectedSpecialtyId) {
+        return baseSlots.filter(
+          (slot) =>
+            !slot.resourceOwnerId ||
+            eligibleResourceOwnerIds.value.has(slot.resourceOwnerId)
+        );
+      }
+
+      return baseSlots;
     });
     const selectedSlot = computed(
       () =>
