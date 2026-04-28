@@ -111,6 +111,29 @@ Example consumption:
 />
 ```
 
+## Client-facing clinic booking
+`MaiBookingFlow` is the recommended component for patient/client booking flows.
+
+It supports:
+- clinic page context supplied by the app,
+- required specialty/reason selection,
+- optional doctor selection, defaulting to no doctor filter,
+- one-week slot selection with week navigation,
+- sign-in/sign-up handoff before confirmation,
+- appointment title generation from user display name plus selected reason,
+- immediate availability refresh after successful booking.
+
+The scheduling core still only sees fixed-slot appointment commands. Clinic, specialty, doctor, and auth identity stay in the app/UI boundary.
+
+Example route:
+- `examples/nuxt-app/pages/clinic/[clinicId]/book.vue`
+
+Try it in dev at:
+- `http://localhost:3000/clinic/demo/book`
+
+Design rule:
+- Client-facing booking UI must follow root `DESIGN.md`: monochrome-first, calm medical utility, compact controls, visible focus states, token-based CSS, no gradients, and no decorative marketing treatment.
+
 ## Prerequisites
 - Node.js 22.x recommended (Node 23 may show experimental warnings from transitive deps).
 - pnpm 10.x.
