@@ -39,6 +39,41 @@ export interface MaiBookingSlotOwner {
   doctorDisplayName?: string;
 }
 
+export interface MaiBookingClinic {
+  clinicId: string;
+  name?: string;
+}
+
+export interface MaiBookingViewConfig {
+  anchorDate: string;
+  timezone?: string;
+  visibleStartMinute?: number;
+  visibleEndMinute?: number;
+  timeLabelFormat?: "24h" | "12h";
+}
+
+export interface MaiBookingActorConfig {
+  inviteeId?: string;
+  userDisplayName?: string;
+  createdBy?: string;
+}
+
+export interface MaiBookingConfig {
+  selectedSpecialtyId?: string;
+  selectedDoctorId?: string;
+  createAppointmentId?: () => string;
+}
+
+export interface MaiBookSlotPayload {
+  appointmentId: string;
+  slotId: string;
+  inviteeId: string;
+  createdBy: string;
+  userDisplayName: string;
+  reason: string;
+  title: string;
+}
+
 export interface MaiBookingAuthIdentity {
   inviteeId: string;
   userDisplayName: string;

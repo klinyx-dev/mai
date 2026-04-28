@@ -1,4 +1,12 @@
 @layer mai.components {
+    .mai-booking-flow {
+        display: grid;
+        gap: var(--space-6);
+        width: 100%;
+        color: var(--color-text);
+        font-family: var(--font-sans);
+    }
+
     .mai-booking-section {
         display: grid;
         gap: var(--space-3);

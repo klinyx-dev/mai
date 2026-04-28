@@ -30,8 +30,12 @@ export type {
   MaiSlotRescheduledEventPayload,
 } from "./types/interactive";
 export type {
+  MaiBookSlotPayload,
+  MaiBookingActorConfig,
   MaiBookingAvailabilitySlot,
   MaiBookingAuthIdentity,
+  MaiBookingClinic,
+  MaiBookingConfig,
   MaiBookingDoctor,
   MaiBookingError,
   MaiBookingFlowState,
@@ -39,4 +43,5 @@ export type {
   MaiBookingSlotSelection,
   MaiBookingSpecialty,
   MaiBookingStep,
+  MaiBookingViewConfig,
 } from "./types/booking";
