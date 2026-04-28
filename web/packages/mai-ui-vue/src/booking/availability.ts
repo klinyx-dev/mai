@@ -2,7 +2,13 @@ import type { WeeklyLayout } from "@mai/mai-web-core";
 import type {
   MaiBookingAvailabilitySlot,
   MaiBookingSlotOwner,
+  MaiBookingSlotStatus,
+  MaiBookingSlotVisibility,
 } from "../types/booking";
+
+export function isBookableSlotStatus(status: MaiBookingSlotStatus | undefined): boolean {
+  return !status || status === "available";
+}
 
 export function sortAvailabilitySlots(
   slots: readonly MaiBookingAvailabilitySlot[]
@@ -14,6 +20,32 @@ export function sortAvailabilitySlots(
       left.endMinute - right.endMinute ||
       left.slotId.localeCompare(right.slotId)
   );
+}
+
+export function filterAvailabilitySlotsByVisibility(
+  slots: readonly MaiBookingAvailabilitySlot[],
+  visibility: MaiBookingSlotVisibility = "available-only"
+): MaiBookingAvailabilitySlot[] {
+  if (visibility === "all" || visibility === "show-disabled") {
+    return sortAvailabilitySlots(slots);
+  }
+  return sortAvailabilitySlots(slots).filter((slot) => isBookableSlotStatus(slot.status));
+}
+
+export function dedupeAvailabilitySlotsByStartMinute(
+  slots: readonly MaiBookingAvailabilitySlot[]
+): MaiBookingAvailabilitySlot[] {
+  const byStartMinute = new Map<string, MaiBookingAvailabilitySlot>();
+
+  for (const slot of sortAvailabilitySlots(slots)) {
+    const key = `${slot.dayIndex}:${slot.startMinute}`;
+    const current = byStartMinute.get(key);
+    if (!current || (!isBookableSlotStatus(current.status) && isBookableSlotStatus(slot.status))) {
+      byStartMinute.set(key, slot);
+    }
+  }
+
+  return sortAvailabilitySlots([...byStartMinute.values()]);
 }
 
 export function availabilitySlotsForDay(
@@ -39,9 +71,11 @@ export function availabilitySlotsFromWeeklyLayout(
         dayIndex: slot.day_index,
         startMinute: slot.start_minute,
         endMinute: slot.end_minute,
+        status: "available",
         resourceOwnerId: owner?.resourceOwnerId,
-        doctorId: owner?.doctorId,
-        doctorDisplayName: owner?.doctorDisplayName,
+        resourceId: owner?.resourceId,
+        resourceLabel: owner?.resourceLabel,
+        metadata: owner?.metadata,
       };
     })
   );

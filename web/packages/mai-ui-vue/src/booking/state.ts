@@ -1,8 +1,8 @@
 import type {
   MaiBookingAuthIdentity,
-  MaiBookingDoctor,
   MaiBookingError,
   MaiBookingFlowState,
+  MaiBookingResource,
   MaiBookingSlotSelection,
 } from "../types/booking";
 
@@ -10,72 +10,87 @@ export function initialBookingFlowState(
   auth: MaiBookingAuthIdentity | null = null
 ): MaiBookingFlowState {
   return {
-    step: "select-specialty",
-    selectedSpecialtyId: null,
-    selectedDoctorId: null,
+    step: "select-category",
+    selectedLocationId: null,
+    selectedCategoryId: null,
+    selectedResourceId: null,
     selectedSlot: null,
+    notes: "",
     auth,
     error: null,
   };
 }
 
-export function selectBookingSpecialty(
+export function selectBookingLocation(
   state: MaiBookingFlowState,
-  specialtyId: string
+  locationId: string | null
+): MaiBookingFlowState {
+  return {
+    ...state,
+    step: "select-category",
+    selectedLocationId: locationId,
+    selectedSlot: null,
+    error: null,
+  };
+}
+
+export function selectBookingCategory(
+  state: MaiBookingFlowState,
+  categoryId: string
 ): MaiBookingFlowState {
   return {
     ...state,
     step: "select-slot",
-    selectedSpecialtyId: specialtyId,
-    selectedDoctorId: null,
+    selectedCategoryId: categoryId,
+    selectedResourceId: null,
     selectedSlot: null,
     error: null,
   };
 }
 
-export function selectBookingDoctor(
+export function selectBookingResource(
   state: MaiBookingFlowState,
-  doctorId: string | null
+  resourceId: string | null
 ): MaiBookingFlowState {
   return {
     ...state,
-    step: state.selectedSpecialtyId ? "select-slot" : "select-specialty",
-    selectedDoctorId: doctorId,
+    step: state.selectedCategoryId ? "select-slot" : "select-category",
+    selectedResourceId: resourceId,
     selectedSlot: null,
     error: null,
   };
 }
 
-export function doctorSupportsSpecialty(
-  doctor: MaiBookingDoctor,
-  specialtyId: string
+export function resourceSupportsCategory(
+  resource: MaiBookingResource,
+  categoryId: string
 ): boolean {
-  return doctor.specialtyIds.includes(specialtyId);
+  return resource.categoryIds.includes(categoryId);
 }
 
-export function selectCompatibleBookingDoctor(
+export function selectCompatibleBookingResource(
   state: MaiBookingFlowState,
-  doctor: MaiBookingDoctor | null
+  resource: MaiBookingResource | null
 ): MaiBookingFlowState {
-  if (!doctor || !state.selectedSpecialtyId) {
-    return selectBookingDoctor(state, null);
+  if (!resource || !state.selectedCategoryId) {
+    return selectBookingResource(state, null);
   }
 
-  if (!doctorSupportsSpecialty(doctor, state.selectedSpecialtyId)) {
-    return selectBookingDoctor(state, null);
+  if (!resourceSupportsCategory(resource, state.selectedCategoryId)) {
+    return selectBookingResource(state, null);
   }
 
-  return selectBookingDoctor(state, doctor.doctorId);
+  return selectBookingResource(state, resource.resourceId);
 }
 
 export function selectBookingSlot(
   state: MaiBookingFlowState,
   slot: MaiBookingSlotSelection
 ): MaiBookingFlowState {
-  if (!state.selectedSpecialtyId) {
+  if (!state.selectedCategoryId) {
     return bookingFlowError(state, {
       action: "select-slot",
-      message: "select a specialty before choosing a slot",
+      message: "select a category before choosing a slot",
     });
   }
 
@@ -83,6 +98,17 @@ export function selectBookingSlot(
     ...state,
     step: "select-slot",
     selectedSlot: slot,
+    error: null,
+  };
+}
+
+export function setBookingNotes(
+  state: MaiBookingFlowState,
+  notes: string
+): MaiBookingFlowState {
+  return {
+    ...state,
+    notes,
     error: null,
   };
 }
@@ -101,7 +127,7 @@ export function completeBookingAuth(
 
 export function canSubmitBooking(state: MaiBookingFlowState): boolean {
   return Boolean(
-    state.selectedSpecialtyId &&
+    state.selectedCategoryId &&
       state.selectedSlot &&
       state.auth?.inviteeId &&
       state.auth.userDisplayName
@@ -111,10 +137,10 @@ export function canSubmitBooking(state: MaiBookingFlowState): boolean {
 export function beginBookingConfirmation(
   state: MaiBookingFlowState
 ): MaiBookingFlowState {
-  if (!state.selectedSpecialtyId) {
+  if (!state.selectedCategoryId) {
     return bookingFlowError(state, {
       action: "confirm-booking",
-      message: "select a specialty before confirming",
+      message: "select a category before confirming",
     });
   }
 

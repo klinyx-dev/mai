@@ -2,7 +2,11 @@ import { buildAppointmentTitle } from "@mai/mai-web-core";
 import { computed, defineComponent, h, type PropType } from "vue";
 import { formatMinuteLabel } from "../board/model/view-model.js";
 import type { TimeLabelFormat } from "../types";
-import type { MaiBookingSlotSelection } from "../types/booking";
+import type {
+  MaiBookingCopy,
+  MaiBookingLocation,
+  MaiBookingSlotSelection,
+} from "../types/booking";
 
 export const MaiBookingConfirmCard = defineComponent({
   name: "MaiBookingConfirmCard",
@@ -19,7 +23,15 @@ export const MaiBookingConfirmCard = defineComponent({
       type: Object as PropType<MaiBookingSlotSelection>,
       required: true,
     },
-    doctorDisplayName: {
+    location: {
+      type: Object as PropType<MaiBookingLocation | null>,
+      default: null,
+    },
+    resourceLabel: {
+      type: String,
+      default: "",
+    },
+    notes: {
       type: String,
       default: "",
     },
@@ -30,6 +42,10 @@ export const MaiBookingConfirmCard = defineComponent({
     isBusy: {
       type: Boolean,
       default: false,
+    },
+    copy: {
+      type: Object as PropType<MaiBookingCopy>,
+      default: () => ({}),
     },
   },
   emits: {
@@ -54,23 +70,37 @@ export const MaiBookingConfirmCard = defineComponent({
     return () => (
       <section class="mai-booking-card" aria-labelledby="mai-booking-confirm-title">
         <div class="mai-booking-card__body">
-          <p class="mai-booking-section__eyebrow">Confirm</p>
+          <p class="mai-booking-section__eyebrow">
+            {props.copy.confirmEyebrow ?? "Confirm"}
+          </p>
           <h3 class="mai-booking-card__title" id="mai-booking-confirm-title">
-            Confirm appointment
+            {props.copy.confirmTitle ?? "Confirm booking"}
           </h3>
           <dl class="mai-booking-summary">
             <div class="mai-booking-summary__row">
-              <dt>Title</dt>
+              <dt>{props.copy.confirmTitleLabel ?? "Title"}</dt>
               <dd>{appointmentTitle.value}</dd>
             </div>
             <div class="mai-booking-summary__row">
-              <dt>Time</dt>
+              <dt>{props.copy.confirmTimeLabel ?? "Time"}</dt>
               <dd class="mai-booking-summary__time">{slotTimeLabel.value}</dd>
             </div>
-            {props.doctorDisplayName ? (
+            {props.location ? (
               <div class="mai-booking-summary__row">
-                <dt>Doctor</dt>
-                <dd>{props.doctorDisplayName}</dd>
+                <dt>{props.copy.locationEyebrow ?? "Location"}</dt>
+                <dd>{props.location.label}</dd>
+              </div>
+            ) : null}
+            {props.resourceLabel ? (
+              <div class="mai-booking-summary__row">
+                <dt>{props.copy.confirmResourceLabel ?? "Resource"}</dt>
+                <dd>{props.resourceLabel}</dd>
+              </div>
+            ) : null}
+            {props.notes ? (
+              <div class="mai-booking-summary__row">
+                <dt>{props.copy.confirmNotesLabel ?? "Notes"}</dt>
+                <dd>{props.notes}</dd>
               </div>
             ) : null}
           </dl>
@@ -82,7 +112,7 @@ export const MaiBookingConfirmCard = defineComponent({
             disabled={props.isBusy}
             onClick={() => emit("back")}
           >
-            Back
+            {props.copy.backAction ?? "Back"}
           </button>
           <button
             type="button"
@@ -90,7 +120,7 @@ export const MaiBookingConfirmCard = defineComponent({
             disabled={props.isBusy}
             onClick={() => emit("confirm")}
           >
-            Confirm booking
+            {props.copy.confirmAction ?? "Confirm booking"}
           </button>
         </div>
       </section>

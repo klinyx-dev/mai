@@ -1,5 +1,6 @@
 export type MaiBookingStep =
-  | "select-specialty"
+  | "select-location"
+  | "select-category"
   | "select-slot"
   | "auth-required"
   | "submitting"
@@ -7,17 +8,37 @@ export type MaiBookingStep =
   | "confirmed"
   | "error";
 
-export interface MaiBookingSpecialty {
-  specialtyId: string;
-  label: string;
-  reasonLabel?: string;
+export type MaiBookingSlotStatus = "available" | "booked" | "cancelled";
+export type MaiBookingSlotVisibility = "available-only" | "show-disabled" | "all";
+
+export type MaiBookingMetadata = Record<string, unknown>;
+
+export interface MaiBookingContext {
+  contextId: string;
+  label?: string;
+  metadata?: MaiBookingMetadata;
 }
 
-export interface MaiBookingDoctor {
-  doctorId: string;
-  displayName: string;
-  specialtyIds: string[];
+export interface MaiBookingLocation {
+  locationId: string;
+  label: string;
+  description?: string;
+  metadata?: MaiBookingMetadata;
+}
+
+export interface MaiBookingCategory {
+  categoryId: string;
+  label: string;
+  description?: string;
+  metadata?: MaiBookingMetadata;
+}
+
+export interface MaiBookingResource {
+  resourceId: string;
+  label: string;
+  categoryIds: string[];
   resourceOwnerId: string;
+  metadata?: MaiBookingMetadata;
 }
 
 export interface MaiBookingSlotSelection {
@@ -26,26 +47,24 @@ export interface MaiBookingSlotSelection {
   startMinute: number;
   endMinute: number;
   resourceOwnerId?: string;
+  resourceId?: string;
+  resourceLabel?: string;
+  status?: MaiBookingSlotStatus;
+  metadata?: MaiBookingMetadata;
 }
 
-export interface MaiBookingAvailabilitySlot extends MaiBookingSlotSelection {
-  doctorId?: string;
-  doctorDisplayName?: string;
-}
+export interface MaiBookingAvailabilitySlot extends MaiBookingSlotSelection {}
 
 export interface MaiBookingSlotOwner {
   resourceOwnerId: string;
-  doctorId?: string;
-  doctorDisplayName?: string;
-}
-
-export interface MaiBookingClinic {
-  clinicId: string;
-  name?: string;
+  resourceId?: string;
+  resourceLabel?: string;
+  metadata?: MaiBookingMetadata;
 }
 
 export interface MaiBookingViewConfig {
   anchorDate: string;
+  weekLabel?: string;
   timezone?: string;
   visibleStartMinute?: number;
   visibleEndMinute?: number;
@@ -59,9 +78,49 @@ export interface MaiBookingActorConfig {
 }
 
 export interface MaiBookingConfig {
-  selectedSpecialtyId?: string;
-  selectedDoctorId?: string;
+  selectedLocationId?: string;
+  selectedCategoryId?: string;
+  selectedResourceId?: string;
+  notes?: string;
+  autoSelectSingleLocation?: boolean;
+  isAvailabilityLoading?: boolean;
+  slotVisibility?: MaiBookingSlotVisibility;
+  dedupeAvailabilityByStartMinute?: boolean;
   createAppointmentId?: () => string;
+}
+
+export interface MaiBookingCopy {
+  locationEyebrow?: string;
+  locationTitle?: string;
+  categoryEyebrow?: string;
+  categoryTitle?: string;
+  resourceEyebrow?: string;
+  resourceTitle?: string;
+  resourceDescription?: string;
+  anyResourceLabel?: string;
+  anyResourceMeta?: string;
+  availabilityEyebrow?: string;
+  availabilityTitle?: string;
+  availabilityAriaLabel?: string;
+  previousWeek?: string;
+  nextWeek?: string;
+  loadingAvailability?: string;
+  emptyAvailability?: string;
+  emptyDay?: string;
+  authEyebrow?: string;
+  authTitle?: string;
+  authDescription?: string;
+  authAction?: string;
+  confirmEyebrow?: string;
+  confirmTitle?: string;
+  confirmTitleLabel?: string;
+  confirmTimeLabel?: string;
+  confirmResourceLabel?: string;
+  confirmNotesLabel?: string;
+  notesTitle?: string;
+  notesPlaceholder?: string;
+  backAction?: string;
+  confirmAction?: string;
 }
 
 export interface MaiBookSlotPayload {
@@ -72,6 +131,11 @@ export interface MaiBookSlotPayload {
   userDisplayName: string;
   reason: string;
   title: string;
+  notes?: string;
+  locationId?: string;
+  categoryId: string;
+  resourceId?: string;
+  metadata?: MaiBookingMetadata;
 }
 
 export interface MaiBookingAuthIdentity {
@@ -87,9 +151,11 @@ export interface MaiBookingError {
 
 export interface MaiBookingFlowState {
   step: MaiBookingStep;
-  selectedSpecialtyId: string | null;
-  selectedDoctorId: string | null;
+  selectedLocationId: string | null;
+  selectedCategoryId: string | null;
+  selectedResourceId: string | null;
   selectedSlot: MaiBookingSlotSelection | null;
+  notes: string;
   auth: MaiBookingAuthIdentity | null;
   error: MaiBookingError | null;
 }

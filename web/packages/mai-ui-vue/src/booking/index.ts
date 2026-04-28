@@ -1,26 +1,32 @@
 export { MaiAvailabilityPicker } from "./MaiAvailabilityPicker";
 export { MaiBookingAuthGate } from "./MaiBookingAuthGate";
 export { MaiBookingConfirmCard } from "./MaiBookingConfirmCard";
-export { MaiDoctorPicker } from "./MaiDoctorPicker";
-export { MaiSpecialtyPicker } from "./MaiSpecialtyPicker";
+export { MaiCategoryPicker } from "./MaiCategoryPicker";
+export { MaiLocationPicker } from "./MaiLocationPicker";
+export { MaiResourcePicker } from "./MaiResourcePicker";
 export {
   availabilitySlotsForDay,
   availabilitySlotsFromWeeklyLayout,
+  dedupeAvailabilitySlotsByStartMinute,
+  filterAvailabilitySlotsByVisibility,
+  isBookableSlotStatus,
   sortAvailabilitySlots,
 } from "./availability";
-export { eligibleDoctorsForSpecialty } from "./options";
+export { eligibleResourcesForCategory } from "./options";
 export {
   beginBookingConfirmation,
   bookingFlowError,
   canSubmitBooking,
   completeBookingAuth,
-  doctorSupportsSpecialty,
   initialBookingFlowState,
   markAvailabilityRefreshing,
   markBookingConfirmed,
   markBookingSubmitting,
-  selectBookingDoctor,
+  resourceSupportsCategory,
+  selectBookingCategory,
+  selectBookingLocation,
+  selectBookingResource,
   selectBookingSlot,
-  selectBookingSpecialty,
-  selectCompatibleBookingDoctor,
+  selectCompatibleBookingResource,
+  setBookingNotes,
 } from "./state";

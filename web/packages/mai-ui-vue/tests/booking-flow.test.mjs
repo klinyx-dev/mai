@@ -20,8 +20,15 @@ const distStyles = readFileSync(
 test("booking flow exposes deterministic event contracts", () => {
   assert.equal(MaiBookingFlow.name, "MaiBookingFlow");
   assert.equal(MaiBookingFlow.emits.navigateWeek(-1), true);
-  assert.equal(MaiBookingFlow.emits.specialtySelected("dermatology"), true);
-  assert.equal(MaiBookingFlow.emits.doctorSelected(null), true);
+  assert.equal(MaiBookingFlow.emits.locationSelected("location-1"), true);
+  assert.equal(MaiBookingFlow.emits.categorySelected("category-a"), true);
+  assert.equal(MaiBookingFlow.emits.resourceSelected(null), true);
+  assert.equal(
+    MaiBookingFlow.emits["update:modelValue"]({
+      step: "select-category",
+    }),
+    true
+  );
   assert.equal(
     MaiBookingFlow.emits.slotSelected({
       slotId: "slot-1",
@@ -33,8 +40,8 @@ test("booking flow exposes deterministic event contracts", () => {
   );
   assert.equal(
     MaiBookingFlow.emits.authCompleted({
-      inviteeId: "patient-1",
-      userDisplayName: "Camille Martin",
+      inviteeId: "participant-1",
+      userDisplayName: "Alex Martin",
     }),
     true
   );
@@ -50,8 +57,11 @@ test("booking flow exposes deterministic event contracts", () => {
 test("booking flow is exported from the public package entrypoint", () => {
   assert.match(distEntry, /export \{ MaiBookingFlow/);
   assert.match(distEntry, /MaiAvailabilityPicker/);
+  assert.match(distEntry, /MaiCategoryPicker/);
+  assert.match(distEntry, /MaiResourcePicker/);
   assert.match(distTypes, /MaiBookingActionConfig/);
   assert.match(distTypes, /MaiBookSlotPayload/);
+  assert.match(distTypes, /MaiBookingResource/);
 });
 
 test("booking flow styles follow design-system constraints", () => {

@@ -1,12 +1,12 @@
-import type { MaiBookingDoctor } from "../types/booking";
+import type { MaiBookingResource } from "../types/booking";
 
-export function eligibleDoctorsForSpecialty(
-  doctors: readonly MaiBookingDoctor[],
-  specialtyId: string | null
-): MaiBookingDoctor[] {
-  if (!specialtyId) {
+export function eligibleResourcesForCategory(
+  resources: readonly MaiBookingResource[],
+  categoryId: string | null
+): MaiBookingResource[] {
+  if (!categoryId) {
     return [];
   }
 
-  return doctors.filter((doctor) => doctor.specialtyIds.includes(specialtyId));
+  return resources.filter((resource) => resource.categoryIds.includes(categoryId));
 }

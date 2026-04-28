@@ -8,18 +8,20 @@ import {
   buildAppointmentTitle,
   createBookSlotCommand,
 } from "@mai/mai-web-core";
-import { computed, defineComponent, h, ref, type PropType } from "vue";
+import { computed, defineComponent, h, ref, watch, type PropType } from "vue";
 import { weekRangeLabel } from "./board/model/view-model.js";
 import { MaiAvailabilityPicker } from "./booking/MaiAvailabilityPicker.js";
 import { MaiBookingAuthGate } from "./booking/MaiBookingAuthGate.js";
 import { MaiBookingConfirmCard } from "./booking/MaiBookingConfirmCard.js";
-import { MaiDoctorPicker } from "./booking/MaiDoctorPicker.js";
-import { MaiSpecialtyPicker } from "./booking/MaiSpecialtyPicker.js";
+import { MaiCategoryPicker } from "./booking/MaiCategoryPicker.js";
+import { MaiLocationPicker } from "./booking/MaiLocationPicker.js";
+import { MaiResourcePicker } from "./booking/MaiResourcePicker.js";
 import {
   availabilitySlotsFromWeeklyLayout,
+  dedupeAvailabilitySlotsByStartMinute,
   sortAvailabilitySlots,
 } from "./booking/availability.js";
-import { eligibleDoctorsForSpecialty } from "./booking/options.js";
+import { eligibleResourcesForCategory } from "./booking/options.js";
 import {
   beginBookingConfirmation,
   bookingFlowError,
@@ -27,21 +29,26 @@ import {
   initialBookingFlowState,
   markAvailabilityRefreshing,
   markBookingConfirmed,
-  selectBookingDoctor,
+  selectBookingCategory,
+  selectBookingLocation,
+  selectBookingResource,
   selectBookingSlot,
-  selectBookingSpecialty,
+  setBookingNotes,
 } from "./booking/state.js";
 import type {
   MaiBookSlotPayload,
   MaiBookingActorConfig,
   MaiBookingAuthIdentity,
   MaiBookingAvailabilitySlot,
-  MaiBookingClinic,
+  MaiBookingCategory,
   MaiBookingConfig,
-  MaiBookingDoctor,
+  MaiBookingContext,
+  MaiBookingCopy,
   MaiBookingError,
+  MaiBookingFlowState,
+  MaiBookingLocation,
+  MaiBookingResource,
   MaiBookingSlotOwner,
-  MaiBookingSpecialty,
   MaiBookingViewConfig,
 } from "./types/booking";
 
@@ -50,7 +57,7 @@ type BookingCommand = TypedCommandEnvelope<"add_appointment">;
 export interface MaiBookingActionConfig {
   queryLayout?: (query: WeeklyLayoutQueryPayload) => Promise<WeeklyLayout>;
   bookSlot?: (payload: MaiBookSlotPayload) => Promise<void>;
-  requestAuth?: () => Promise<MaiBookingAuthIdentity>;
+  requestAuth?: () => Promise<MaiBookingAuthIdentity | null | undefined>;
   mutateCommand?: (envelope: BookingCommand) => Promise<WasmResponse<"applied">>;
 }
 
@@ -67,35 +74,79 @@ function initialAuth(actor: MaiBookingActorConfig): MaiBookingAuthIdentity | nul
 
 function createQueryPayload(
   view: MaiBookingViewConfig,
-  doctor: MaiBookingDoctor | null
+  resource: MaiBookingResource | null
 ): WeeklyLayoutQueryPayload {
   return {
     anchor_date: view.anchorDate,
     timezone: view.timezone,
     visible_start_minute: view.visibleStartMinute,
     visible_end_minute: view.visibleEndMinute,
-    view_filter: doctor
+    view_filter: resource
       ? {
           mode: "owners",
-          ids: [doctor.resourceOwnerId],
+          ids: [resource.resourceOwnerId],
         }
       : undefined,
   };
 }
 
+function normalizeInitialState(params: {
+  actor: MaiBookingActorConfig;
+  booking: MaiBookingConfig;
+  locations: MaiBookingLocation[];
+  modelValue: MaiBookingFlowState | null;
+}): MaiBookingFlowState {
+  if (params.modelValue) {
+    return params.modelValue;
+  }
+
+  let state = initialBookingFlowState(initialAuth(params.actor));
+  const shouldAutoSelectLocation =
+    params.booking.autoSelectSingleLocation &&
+    params.locations.length === 1 &&
+    !params.booking.selectedLocationId;
+
+  if (shouldAutoSelectLocation) {
+    state = selectBookingLocation(state, params.locations[0].locationId);
+  } else if (params.booking.selectedLocationId) {
+    state = selectBookingLocation(state, params.booking.selectedLocationId);
+  }
+
+  if (params.booking.selectedCategoryId) {
+    state = selectBookingCategory(state, params.booking.selectedCategoryId);
+    if (params.booking.selectedResourceId) {
+      state = selectBookingResource(state, params.booking.selectedResourceId);
+    }
+  }
+
+  if (params.booking.notes) {
+    state = setBookingNotes(state, params.booking.notes);
+  }
+
+  if (params.locations.length > 0 && !state.selectedLocationId) {
+    state = { ...state, step: "select-location" };
+  }
+
+  return state;
+}
+
 export const MaiBookingFlow = defineComponent({
   name: "MaiBookingFlow",
   props: {
-    clinic: {
-      type: Object as PropType<MaiBookingClinic>,
+    context: {
+      type: Object as PropType<MaiBookingContext>,
       required: true,
     },
-    specialties: {
-      type: Array as PropType<MaiBookingSpecialty[]>,
+    locations: {
+      type: Array as PropType<MaiBookingLocation[]>,
+      default: () => [],
+    },
+    categories: {
+      type: Array as PropType<MaiBookingCategory[]>,
       required: true,
     },
-    doctors: {
-      type: Array as PropType<MaiBookingDoctor[]>,
+    resources: {
+      type: Array as PropType<MaiBookingResource[]>,
       default: () => [],
     },
     layout: {
@@ -122,15 +173,26 @@ export const MaiBookingFlow = defineComponent({
       type: Object as PropType<MaiBookingConfig>,
       default: () => ({}),
     },
+    copy: {
+      type: Object as PropType<MaiBookingCopy>,
+      default: () => ({}),
+    },
     actions: {
       type: Object as PropType<MaiBookingActionConfig>,
       default: () => ({}),
     },
+    modelValue: {
+      type: Object as PropType<MaiBookingFlowState | null>,
+      default: null,
+    },
   },
   emits: {
+    "update:modelValue": (state: MaiBookingFlowState) => typeof state.step === "string",
     navigateWeek: (shift: -1 | 0 | 1) => shift === -1 || shift === 0 || shift === 1,
-    specialtySelected: (specialtyId: string) => specialtyId.length > 0,
-    doctorSelected: (doctorId: string | null) => doctorId === null || doctorId.length > 0,
+    locationSelected: (locationId: string) => locationId.length > 0,
+    categorySelected: (categoryId: string) => categoryId.length > 0,
+    resourceSelected: (resourceId: string | null) =>
+      resourceId === null || resourceId.length > 0,
     slotSelected: (slot: MaiBookingAvailabilitySlot) => slot.slotId.length > 0,
     authRequired: () => true,
     authCompleted: (auth: MaiBookingAuthIdentity) =>
@@ -142,44 +204,69 @@ export const MaiBookingFlow = defineComponent({
       error.action.length > 0 && error.message.length > 0,
   },
   setup(props, { emit }) {
-    const state = ref(initialBookingFlowState(initialAuth(props.actor)));
+    const state = ref(
+      normalizeInitialState({
+        actor: props.actor,
+        booking: props.booking,
+        locations: props.locations,
+        modelValue: props.modelValue,
+      })
+    );
     const queriedLayout = ref<WeeklyLayout | null>(null);
 
-    if (props.booking.selectedSpecialtyId) {
-      state.value = selectBookingSpecialty(
-        state.value,
-        props.booking.selectedSpecialtyId
-      );
-      if (props.booking.selectedDoctorId) {
-        state.value = selectBookingDoctor(
-          state.value,
-          props.booking.selectedDoctorId
-        );
-      }
+    function setState(nextState: MaiBookingFlowState): void {
+      state.value = nextState;
+      emit("update:modelValue", nextState);
     }
 
-    const selectedSpecialty = computed(
+    watch(
+      () => props.modelValue,
+      (nextState) => {
+        if (nextState) {
+          state.value = nextState;
+        }
+      }
+    );
+
+    watch(
+      () => [props.actor.inviteeId, props.actor.userDisplayName, props.actor.createdBy],
+      () => {
+        const auth = initialAuth(props.actor);
+        if (auth && auth.inviteeId !== state.value.auth?.inviteeId) {
+          setState(completeBookingAuth(state.value, auth));
+          emit("authCompleted", auth);
+        }
+      }
+    );
+
+    const selectedLocation = computed(
       () =>
-        props.specialties.find(
-          (specialty) => specialty.specialtyId === state.value.selectedSpecialtyId
+        props.locations.find(
+          (location) => location.locationId === state.value.selectedLocationId
+        ) ?? null
+    );
+    const selectedCategory = computed(
+      () =>
+        props.categories.find(
+          (category) => category.categoryId === state.value.selectedCategoryId
         ) ?? null
     );
     const selectedReason = computed(
-      () => selectedSpecialty.value?.reasonLabel ?? selectedSpecialty.value?.label ?? ""
+      () => selectedCategory.value?.description ?? selectedCategory.value?.label ?? ""
     );
-    const eligibleDoctors = computed(() =>
-      eligibleDoctorsForSpecialty(
-        props.doctors,
-        state.value.selectedSpecialtyId
+    const eligibleResources = computed(() =>
+      eligibleResourcesForCategory(
+        props.resources,
+        state.value.selectedCategoryId
       )
     );
     const eligibleResourceOwnerIds = computed(
-      () => new Set(eligibleDoctors.value.map((doctor) => doctor.resourceOwnerId))
+      () => new Set(eligibleResources.value.map((resource) => resource.resourceOwnerId))
     );
-    const selectedDoctor = computed(
+    const selectedResource = computed(
       () =>
-        props.doctors.find(
-          (doctor) => doctor.doctorId === state.value.selectedDoctorId
+        props.resources.find(
+          (resource) => resource.resourceId === state.value.selectedResourceId
         ) ?? null
     );
     const availableSlots = computed(() => {
@@ -191,23 +278,26 @@ export const MaiBookingFlow = defineComponent({
               props.slotOwners
             );
 
-      if (selectedDoctor.value) {
-        return baseSlots.filter(
-          (slot) =>
-            !slot.resourceOwnerId ||
-            slot.resourceOwnerId === selectedDoctor.value?.resourceOwnerId
-        );
+      const filteredByResource = selectedResource.value
+        ? baseSlots.filter(
+            (slot) =>
+              (!slot.resourceOwnerId ||
+                slot.resourceOwnerId === selectedResource.value?.resourceOwnerId) &&
+              (!slot.resourceId || slot.resourceId === selectedResource.value?.resourceId)
+          )
+        : state.value.selectedCategoryId
+          ? baseSlots.filter(
+              (slot) =>
+                !slot.resourceOwnerId ||
+                eligibleResourceOwnerIds.value.has(slot.resourceOwnerId)
+            )
+          : baseSlots;
+
+      if (!selectedResource.value && props.booking.dedupeAvailabilityByStartMinute) {
+        return dedupeAvailabilitySlotsByStartMinute(filteredByResource);
       }
 
-      if (state.value.selectedSpecialtyId) {
-        return baseSlots.filter(
-          (slot) =>
-            !slot.resourceOwnerId ||
-            eligibleResourceOwnerIds.value.has(slot.resourceOwnerId)
-        );
-      }
-
-      return baseSlots;
+      return sortAvailabilitySlots(filteredByResource);
     });
     const selectedSlot = computed(
       () =>
@@ -216,43 +306,60 @@ export const MaiBookingFlow = defineComponent({
         ) ?? state.value.selectedSlot
     );
     const weekLabel = computed(() => {
+      if (props.view.weekLabel) {
+        return props.view.weekLabel;
+      }
       const layout = queriedLayout.value ?? props.layout;
       if (layout) {
         return weekRangeLabel(layout.week_start, layout.week_end);
       }
       return props.view.anchorDate;
     });
+    const locationRequired = computed(() => props.locations.length > 0);
+    const canChooseCategory = computed(
+      () => !locationRequired.value || Boolean(state.value.selectedLocationId)
+    );
 
     async function refreshAvailability(): Promise<void> {
       if (!props.actions.queryLayout) {
         return;
       }
       queriedLayout.value = await props.actions.queryLayout(
-        createQueryPayload(props.view, selectedDoctor.value)
+        createQueryPayload(props.view, selectedResource.value)
       );
     }
 
     function emitError(action: string, message: string): void {
       const error = { action, message };
-      state.value = bookingFlowError(state.value, error);
+      setState(bookingFlowError(state.value, error));
       emit("bookingError", error);
     }
 
-    async function handleSpecialtySelected(specialtyId: string): Promise<void> {
-      state.value = selectBookingSpecialty(state.value, specialtyId);
-      emit("specialtySelected", specialtyId);
+    function handleLocationSelected(locationId: string): void {
+      setState(selectBookingLocation(state.value, locationId));
+      emit("locationSelected", locationId);
+    }
+
+    async function handleCategorySelected(categoryId: string): Promise<void> {
+      setState(selectBookingCategory(state.value, categoryId));
+      emit("categorySelected", categoryId);
       await refreshAvailability();
     }
 
-    async function handleDoctorSelected(doctorId: string | null): Promise<void> {
-      state.value = selectBookingDoctor(state.value, doctorId);
-      emit("doctorSelected", doctorId);
+    async function handleResourceSelected(resourceId: string | null): Promise<void> {
+      setState(selectBookingResource(state.value, resourceId));
+      emit("resourceSelected", resourceId);
       await refreshAvailability();
     }
 
     function handleSlotSelected(slot: MaiBookingAvailabilitySlot): void {
-      state.value = selectBookingSlot(state.value, slot);
+      setState(selectBookingSlot(state.value, slot));
       emit("slotSelected", slot);
+    }
+
+    function handleNotesInput(event: Event): void {
+      const target = event.target instanceof HTMLTextAreaElement ? event.target : null;
+      setState(setBookingNotes(state.value, target?.value ?? ""));
     }
 
     async function ensureAuth(): Promise<MaiBookingAuthIdentity | null> {
@@ -260,12 +367,15 @@ export const MaiBookingFlow = defineComponent({
         return state.value.auth;
       }
       emit("authRequired");
-      state.value = beginBookingConfirmation(state.value);
+      setState(beginBookingConfirmation(state.value));
       if (!props.actions.requestAuth) {
         return null;
       }
       const auth = await props.actions.requestAuth();
-      state.value = completeBookingAuth(state.value, auth);
+      if (!auth) {
+        return null;
+      }
+      setState(completeBookingAuth(state.value, auth));
       emit("authCompleted", auth);
       return auth;
     }
@@ -277,8 +387,8 @@ export const MaiBookingFlow = defineComponent({
       }
 
       const slot = selectedSlot.value;
-      if (!selectedSpecialty.value || !slot) {
-        emitError("confirm-booking", "select a specialty and slot before confirming");
+      if (!selectedCategory.value || !slot) {
+        emitError("confirm-booking", "select a category and slot before confirming");
         return;
       }
 
@@ -299,10 +409,21 @@ export const MaiBookingFlow = defineComponent({
           userDisplayName: auth.userDisplayName,
           reason: selectedReason.value,
         }),
+        notes: state.value.notes || undefined,
+        locationId: state.value.selectedLocationId ?? undefined,
+        categoryId: selectedCategory.value.categoryId,
+        resourceId: selectedResource.value?.resourceId ?? slot.resourceId,
+        metadata: {
+          context: props.context.metadata,
+          location: selectedLocation.value?.metadata,
+          category: selectedCategory.value.metadata,
+          resource: selectedResource.value?.metadata,
+          slot: slot.metadata,
+        },
       };
 
       const command = createBookSlotCommand(payload);
-      state.value = beginBookingConfirmation(state.value);
+      setState(beginBookingConfirmation(state.value));
       emit("bookingSubmitted", payload);
 
       try {
@@ -314,10 +435,10 @@ export const MaiBookingFlow = defineComponent({
           throw new Error("no booking action configured");
         }
 
-        state.value = markAvailabilityRefreshing(state.value);
+        setState(markAvailabilityRefreshing(state.value));
         await refreshAvailability();
         emit("availabilityRefreshed");
-        state.value = markBookingConfirmed(state.value);
+        setState(markBookingConfirmed(state.value));
         emit("bookingConfirmed", payload);
       } catch (error) {
         emitError(
@@ -330,34 +451,65 @@ export const MaiBookingFlow = defineComponent({
     }
 
     return () => (
-      <section class="mai-booking-flow" aria-label={`${props.clinic.name ?? "Clinic"} booking`}>
-        <MaiSpecialtyPicker
-          specialties={props.specialties}
-          selectedSpecialtyId={state.value.selectedSpecialtyId ?? undefined}
-          onSpecialtySelected={handleSpecialtySelected}
-        />
-        {state.value.selectedSpecialtyId ? (
-          <MaiDoctorPicker
-            doctors={eligibleDoctors.value}
-            selectedSpecialtyId={state.value.selectedSpecialtyId}
-            selectedDoctorId={state.value.selectedDoctorId ?? undefined}
-            onDoctorSelected={handleDoctorSelected}
+      <section class="mai-booking-flow" aria-label={`${props.context.label ?? "Resource"} booking`}>
+        {props.locations.length > 0 ? (
+          <MaiLocationPicker
+            locations={props.locations}
+            selectedLocationId={state.value.selectedLocationId ?? undefined}
+            copy={props.copy}
+            onLocationSelected={handleLocationSelected}
           />
         ) : null}
-        {state.value.selectedSpecialtyId ? (
+        {canChooseCategory.value ? (
+          <MaiCategoryPicker
+            categories={props.categories}
+            selectedCategoryId={state.value.selectedCategoryId ?? undefined}
+            copy={props.copy}
+            onCategorySelected={handleCategorySelected}
+          />
+        ) : null}
+        {state.value.selectedCategoryId ? (
+          <MaiResourcePicker
+            resources={eligibleResources.value}
+            selectedCategoryId={state.value.selectedCategoryId}
+            selectedResourceId={state.value.selectedResourceId ?? undefined}
+            copy={props.copy}
+            onResourceSelected={handleResourceSelected}
+          />
+        ) : null}
+        {state.value.selectedCategoryId ? (
           <MaiAvailabilityPicker
             slots={availableSlots.value}
             selectedSlotId={state.value.selectedSlot?.slotId ?? undefined}
             weekLabel={weekLabel.value}
             timeLabelFormat={props.view.timeLabelFormat ?? "24h"}
+            slotVisibility={props.booking.slotVisibility ?? "available-only"}
+            isLoading={props.booking.isAvailabilityLoading ?? state.value.step === "refreshing"}
+            copy={props.copy}
             onNavigateWeek={(shift) => emit("navigateWeek", shift)}
             onSlotSelected={handleSlotSelected}
           />
+        ) : null}
+        {state.value.selectedSlot ? (
+          <section class="mai-booking-card" aria-labelledby="mai-booking-notes-title">
+            <div class="mai-booking-card__body">
+              <h3 class="mai-booking-card__title" id="mai-booking-notes-title">
+                {props.copy.notesTitle ?? "Notes"}
+              </h3>
+              <textarea
+                class="mai-booking-notes"
+                value={state.value.notes}
+                placeholder={props.copy.notesPlaceholder ?? ""}
+                onInput={handleNotesInput}
+              />
+            </div>
+          </section>
         ) : null}
         {state.value.selectedSlot && !state.value.auth?.inviteeId ? (
           <MaiBookingAuthGate
             hasInvitee={false}
             isBusy={state.value.step === "submitting"}
+            copy={props.copy}
             onRequestAuth={ensureAuth}
           />
         ) : null}
@@ -366,17 +518,20 @@ export const MaiBookingFlow = defineComponent({
             reason={selectedReason.value}
             userDisplayName={state.value.auth.userDisplayName}
             slot={state.value.selectedSlot}
-            doctorDisplayName={selectedDoctor.value?.displayName ?? ""}
+            location={selectedLocation.value}
+            resourceLabel={selectedResource.value?.label ?? selectedSlot.value?.resourceLabel ?? ""}
+            notes={state.value.notes}
             timeLabelFormat={props.view.timeLabelFormat ?? "24h"}
             isBusy={
               state.value.step === "submitting" || state.value.step === "refreshing"
             }
+            copy={props.copy}
             onBack={() => {
-              state.value = {
+              setState({
                 ...state.value,
                 selectedSlot: null,
                 step: "select-slot",
-              };
+              });
             }}
             onConfirm={submitBooking}
           />

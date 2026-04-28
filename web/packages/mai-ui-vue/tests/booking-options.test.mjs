@@ -2,50 +2,54 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { MaiDoctorPicker } from "../dist/booking/MaiDoctorPicker.js";
-import { MaiSpecialtyPicker } from "../dist/booking/MaiSpecialtyPicker.js";
-import { eligibleDoctorsForSpecialty } from "../dist/booking/options.js";
+import { MaiCategoryPicker } from "../dist/booking/MaiCategoryPicker.js";
+import { MaiLocationPicker } from "../dist/booking/MaiLocationPicker.js";
+import { MaiResourcePicker } from "../dist/booking/MaiResourcePicker.js";
+import { eligibleResourcesForCategory } from "../dist/booking/options.js";
 
 const distStyles = readFileSync(
   new URL("../dist/styles.css", import.meta.url),
   "utf8"
 );
 
-test("specialty and doctor pickers expose deterministic event contracts", () => {
-  assert.equal(MaiSpecialtyPicker.name, "MaiSpecialtyPicker");
-  assert.equal(MaiDoctorPicker.name, "MaiDoctorPicker");
+test("booking option pickers expose deterministic event contracts", () => {
+  assert.equal(MaiCategoryPicker.name, "MaiCategoryPicker");
+  assert.equal(MaiLocationPicker.name, "MaiLocationPicker");
+  assert.equal(MaiResourcePicker.name, "MaiResourcePicker");
   assert.equal(
-    MaiSpecialtyPicker.emits.specialtySelected("dermatology"),
+    MaiCategoryPicker.emits.categorySelected("category-1"),
     true
   );
-  assert.equal(MaiSpecialtyPicker.emits.specialtySelected(""), false);
-  assert.equal(MaiDoctorPicker.emits.doctorSelected(null), true);
-  assert.equal(MaiDoctorPicker.emits.doctorSelected("doctor-1"), true);
+  assert.equal(MaiCategoryPicker.emits.categorySelected(""), false);
+  assert.equal(MaiLocationPicker.emits.locationSelected(""), false);
+  assert.equal(MaiLocationPicker.emits.locationSelected("location-1"), true);
+  assert.equal(MaiResourcePicker.emits.resourceSelected(null), true);
+  assert.equal(MaiResourcePicker.emits.resourceSelected("resource-1"), true);
 });
 
-test("eligibleDoctorsForSpecialty returns only matching doctors", () => {
-  const doctors = [
+test("eligibleResourcesForCategory returns only matching resources", () => {
+  const resources = [
     {
-      doctorId: "doctor-1",
-      displayName: "Dr Martin",
-      specialtyIds: ["dermatology"],
+      resourceId: "resource-1",
+      label: "Resource One",
+      categoryIds: ["category-a"],
       resourceOwnerId: "owner-1",
     },
     {
-      doctorId: "doctor-2",
-      displayName: "Dr Simon",
-      specialtyIds: ["cardiology"],
+      resourceId: "resource-2",
+      label: "Resource Two",
+      categoryIds: ["category-b"],
       resourceOwnerId: "owner-2",
     },
   ];
 
   assert.deepEqual(
-    eligibleDoctorsForSpecialty(doctors, "dermatology").map(
-      (doctor) => doctor.doctorId
+    eligibleResourcesForCategory(resources, "category-a").map(
+      (resource) => resource.resourceId
     ),
-    ["doctor-1"]
+    ["resource-1"]
   );
-  assert.deepEqual(eligibleDoctorsForSpecialty(doctors, null), []);
+  assert.deepEqual(eligibleResourcesForCategory(resources, null), []);
 });
 
 test("booking option styles use design tokens and avoid gradients", () => {

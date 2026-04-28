@@ -6,6 +6,9 @@ import { MaiAvailabilityPicker } from "../dist/booking/MaiAvailabilityPicker.js"
 import {
   availabilitySlotsForDay,
   availabilitySlotsFromWeeklyLayout,
+  dedupeAvailabilitySlotsByStartMinute,
+  filterAvailabilitySlotsByVisibility,
+  isBookableSlotStatus,
   sortAvailabilitySlots,
 } from "../dist/booking/availability.js";
 
@@ -42,8 +45,8 @@ test("availability mapper projects weekly layout slots deterministically", () =>
     {
       "slot-a": {
         resourceOwnerId: "owner-1",
-        doctorId: "doctor-1",
-        doctorDisplayName: "Dr Martin",
+        resourceId: "resource-1",
+        resourceLabel: "Resource One",
       },
     }
   );
@@ -52,7 +55,7 @@ test("availability mapper projects weekly layout slots deterministically", () =>
     slots.map((slot) => slot.slotId),
     ["slot-a", "slot-b"]
   );
-  assert.equal(slots[0].doctorDisplayName, "Dr Martin");
+  assert.equal(slots[0].resourceLabel, "Resource One");
 });
 
 test("availability slots are sorted and grouped by day", () => {
@@ -69,6 +72,45 @@ test("availability slots are sorted and grouped by day", () => {
   assert.deepEqual(
     availabilitySlotsForDay(slots, 1).map((slot) => slot.slotId),
     ["slot-1", "slot-2"]
+  );
+});
+
+test("availability visibility and dedupe helpers prefer bookable slots", () => {
+  const slots = [
+    {
+      slotId: "slot-booked",
+      dayIndex: 1,
+      startMinute: 540,
+      endMinute: 570,
+      status: "booked",
+    },
+    {
+      slotId: "slot-open",
+      dayIndex: 1,
+      startMinute: 540,
+      endMinute: 570,
+      status: "available",
+    },
+    {
+      slotId: "slot-cancelled",
+      dayIndex: 1,
+      startMinute: 600,
+      endMinute: 630,
+      status: "cancelled",
+    },
+  ];
+
+  assert.equal(isBookableSlotStatus("available"), true);
+  assert.equal(isBookableSlotStatus("booked"), false);
+  assert.deepEqual(
+    filterAvailabilitySlotsByVisibility(slots, "available-only").map(
+      (slot) => slot.slotId
+    ),
+    ["slot-open"]
+  );
+  assert.deepEqual(
+    dedupeAvailabilitySlotsByStartMinute(slots).map((slot) => slot.slotId),
+    ["slot-open", "slot-cancelled"]
   );
 });
 

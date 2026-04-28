@@ -8,15 +8,18 @@ import {
   initialBookingFlowState,
   markAvailabilityRefreshing,
   markBookingConfirmed,
+  selectBookingCategory,
+  selectBookingLocation,
+  selectBookingResource,
   selectBookingSlot,
-  selectBookingSpecialty,
-  selectCompatibleBookingDoctor,
+  selectCompatibleBookingResource,
+  setBookingNotes,
 } from "../dist/booking/state.js";
 
-test("specialty selection opens slot selection and clears doctor and slot", () => {
+test("location and category selection clear dependent booking state", () => {
   const state = {
     ...initialBookingFlowState(),
-    selectedDoctorId: "doctor-1",
+    selectedResourceId: "resource-1",
     selectedSlot: {
       slotId: "slot-1",
       dayIndex: 1,
@@ -25,60 +28,65 @@ test("specialty selection opens slot selection and clears doctor and slot", () =
     },
   };
 
-  const next = selectBookingSpecialty(state, "dermatology");
+  const location = selectBookingLocation(state, "location-1");
+  const next = selectBookingCategory(location, "category-a");
 
+  assert.equal(location.step, "select-category");
+  assert.equal(location.selectedLocationId, "location-1");
+  assert.equal(location.selectedSlot, null);
   assert.equal(next.step, "select-slot");
-  assert.equal(next.selectedSpecialtyId, "dermatology");
-  assert.equal(next.selectedDoctorId, null);
+  assert.equal(next.selectedCategoryId, "category-a");
+  assert.equal(next.selectedResourceId, null);
   assert.equal(next.selectedSlot, null);
 });
 
-test("doctor selection is optional and rejects incompatible doctors", () => {
-  const state = selectBookingSpecialty(
-    initialBookingFlowState(),
-    "dermatology"
-  );
+test("resource selection is optional and rejects incompatible resources", () => {
+  const state = selectBookingCategory(initialBookingFlowState(), "category-a");
 
-  const incompatible = selectCompatibleBookingDoctor(state, {
-    doctorId: "doctor-1",
-    displayName: "Dr Martin",
-    specialtyIds: ["cardiology"],
+  const incompatible = selectCompatibleBookingResource(state, {
+    resourceId: "resource-1",
+    label: "Resource One",
+    categoryIds: ["category-b"],
     resourceOwnerId: "owner-1",
   });
-  const compatible = selectCompatibleBookingDoctor(state, {
-    doctorId: "doctor-2",
-    displayName: "Dr Simon",
-    specialtyIds: ["dermatology"],
+  const compatible = selectCompatibleBookingResource(state, {
+    resourceId: "resource-2",
+    label: "Resource Two",
+    categoryIds: ["category-a"],
     resourceOwnerId: "owner-2",
   });
+  const optional = selectBookingResource(state, null);
 
-  assert.equal(incompatible.selectedDoctorId, null);
-  assert.equal(compatible.selectedDoctorId, "doctor-2");
+  assert.equal(incompatible.selectedResourceId, null);
+  assert.equal(compatible.selectedResourceId, "resource-2");
+  assert.equal(optional.selectedResourceId, null);
 });
 
-test("booking cannot submit until specialty slot and invitee are available", () => {
+test("booking cannot submit until category slot and invitee are available", () => {
   let state = initialBookingFlowState();
   assert.equal(canSubmitBooking(state), false);
 
-  state = selectBookingSpecialty(state, "dermatology");
+  state = selectBookingCategory(state, "category-a");
   state = selectBookingSlot(state, {
     slotId: "slot-1",
     dayIndex: 1,
     startMinute: 540,
     endMinute: 570,
   });
+  state = setBookingNotes(state, "Needs accessibility support");
   assert.equal(canSubmitBooking(state), false);
+  assert.equal(state.notes, "Needs accessibility support");
 
   state = completeBookingAuth(state, {
-    inviteeId: "patient-1",
-    userDisplayName: "Camille Martin",
+    inviteeId: "participant-1",
+    userDisplayName: "Alex Martin",
   });
   assert.equal(canSubmitBooking(state), true);
 });
 
 test("confirmation requires auth before submitting", () => {
   const state = selectBookingSlot(
-    selectBookingSpecialty(initialBookingFlowState(), "dermatology"),
+    selectBookingCategory(initialBookingFlowState(), "category-a"),
     {
       slotId: "slot-1",
       dayIndex: 1,
@@ -91,8 +99,8 @@ test("confirmation requires auth before submitting", () => {
   assert.equal(
     beginBookingConfirmation(
       completeBookingAuth(state, {
-        inviteeId: "patient-1",
-        userDisplayName: "Camille Martin",
+        inviteeId: "participant-1",
+        userDisplayName: "Alex Martin",
       })
     ).step,
     "submitting"
@@ -102,7 +110,7 @@ test("confirmation requires auth before submitting", () => {
 test("successful booking refreshes availability before confirmed state", () => {
   const state = completeBookingAuth(
     selectBookingSlot(
-      selectBookingSpecialty(initialBookingFlowState(), "dermatology"),
+      selectBookingCategory(initialBookingFlowState(), "category-a"),
       {
         slotId: "slot-1",
         dayIndex: 1,
@@ -111,8 +119,8 @@ test("successful booking refreshes availability before confirmed state", () => {
       }
     ),
     {
-      inviteeId: "patient-1",
-      userDisplayName: "Camille Martin",
+      inviteeId: "participant-1",
+      userDisplayName: "Alex Martin",
     }
   );
 

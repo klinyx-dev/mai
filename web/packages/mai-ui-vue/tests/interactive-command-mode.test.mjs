@@ -14,7 +14,7 @@ import {
 const options = {
   createdBy: "ui-operator",
   appointmentIdFactory: (slotId) => `appt-for-${slotId}`,
-  bookAppointmentInviteeIds: ["patient-demo"],
+  bookAppointmentInviteeIds: ["participant-demo"],
   bookAppointmentTitle: "Consultation",
   bookAppointmentCreatedBy: "",
   cancelAppointmentBy: "",
@@ -50,7 +50,7 @@ test("maps book-slot payload to add_appointment command envelope", () => {
     payload: {
       appointment_id: "appt-for-slot-2",
       slot_id: "slot-2",
-      invitee_ids: ["patient-demo"],
+      invitee_ids: ["participant-demo"],
       title: "Consultation",
       created_by: "ui-operator",
     },
