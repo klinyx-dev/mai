@@ -28,6 +28,17 @@ export interface MaiBookingSlotSelection {
   resourceOwnerId?: string;
 }
 
+export interface MaiBookingAvailabilitySlot extends MaiBookingSlotSelection {
+  doctorId?: string;
+  doctorDisplayName?: string;
+}
+
+export interface MaiBookingSlotOwner {
+  resourceOwnerId: string;
+  doctorId?: string;
+  doctorDisplayName?: string;
+}
+
 export interface MaiBookingAuthIdentity {
   inviteeId: string;
   userDisplayName: string;

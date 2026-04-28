@@ -117,4 +117,141 @@
         font-weight: 650;
         line-height: 1;
     }
+
+    .mai-booking-toolbar {
+        display: flex;
+        gap: var(--space-3);
+        align-items: start;
+        justify-content: space-between;
+    }
+
+    .mai-booking-week-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    .mai-booking-nav-button {
+        min-height: 32px;
+        padding: 0 var(--space-3);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        background: var(--color-surface);
+        color: var(--color-text);
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .mai-booking-nav-button:hover {
+        border-color: var(--color-border-strong);
+        background: var(--color-bg-subtle);
+    }
+
+    .mai-booking-nav-button:focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    .mai-booking-week-label {
+        min-width: 132px;
+        margin: 0;
+        color: var(--color-text-muted);
+        font-size: 0.8125rem;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.3;
+        text-align: center;
+    }
+
+    .mai-booking-days {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(112px, 1fr));
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        background: var(--color-surface);
+    }
+
+    .mai-booking-day {
+        display: grid;
+        align-content: start;
+        min-width: 0;
+        border-right: 1px solid var(--color-border-subtle);
+        background: var(--color-surface);
+    }
+
+    .mai-booking-day:last-child {
+        border-right: 0;
+    }
+
+    .mai-booking-day__label {
+        margin: 0;
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 1px solid var(--color-border-subtle);
+        color: var(--color-text-muted);
+        font-size: 0.75rem;
+        font-weight: 650;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .mai-booking-slot-list {
+        display: grid;
+        gap: var(--space-2);
+        padding: var(--space-2);
+    }
+
+    .mai-booking-slot {
+        display: grid;
+        gap: var(--space-1);
+        width: 100%;
+        min-height: 44px;
+        padding: var(--space-2);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        background: var(--color-bg-subtle);
+        color: var(--color-text);
+        cursor: pointer;
+        font: inherit;
+        text-align: left;
+    }
+
+    .mai-booking-slot:hover {
+        border-color: var(--color-border-strong);
+        background: var(--color-surface);
+    }
+
+    .mai-booking-slot:focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    .mai-booking-slot--selected {
+        border-color: var(--color-text-strong);
+        box-shadow: var(--shadow-ring);
+    }
+
+    .mai-booking-slot__time {
+        color: var(--color-text-strong);
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .mai-booking-slot__doctor,
+    .mai-booking-day__empty,
+    .mai-booking-empty {
+        color: var(--color-text-muted);
+        font-size: 0.8125rem;
+        line-height: 1.35;
+    }
+
+    .mai-booking-day__empty,
+    .mai-booking-empty {
+        margin: 0;
+        padding: var(--space-3);
+    }
 }

@@ -30,10 +30,12 @@ export type {
   MaiSlotRescheduledEventPayload,
 } from "./types/interactive";
 export type {
+  MaiBookingAvailabilitySlot,
   MaiBookingAuthIdentity,
   MaiBookingDoctor,
   MaiBookingError,
   MaiBookingFlowState,
+  MaiBookingSlotOwner,
   MaiBookingSlotSelection,
   MaiBookingSpecialty,
   MaiBookingStep,
