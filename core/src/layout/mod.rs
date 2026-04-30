@@ -4,4 +4,4 @@ pub mod overlap;
 pub mod weekly_layout;
 
 pub use output::{AppointmentLayoutNode, SlotLayoutNode, WeeklyLayout};
-pub use weekly_layout::WeeklyLayoutQuery;
+pub use weekly_layout::{CalendarOwnerFilter, WeeklyLayoutQuery};

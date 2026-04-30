@@ -14,14 +14,7 @@ pub fn project_slot_layout_nodes(
     let mut nodes = state
         .slots
         .values()
-        .filter(|slot| {
-            query
-                .resource_owner_ids
-                .as_ref()
-                .is_none_or(|resource_owner_ids| {
-                    resource_owner_ids.contains(&slot.resource_owner_id)
-                })
-        })
+        .filter(|slot| query.owner_filter.matches_owner(&slot.resource_owner_id))
         .filter_map(|slot| slot_to_layout_node(slot, query, &week))
         .collect::<Vec<_>>();
 
@@ -55,13 +48,7 @@ pub fn project_appointment_layout_nodes(
             let slot = state.slots.get(&appointment.slot_id)?;
 
             // Filter appointments by the slot's resource owner.
-            if query
-                .resource_owner_ids
-                .as_ref()
-                .is_some_and(|resource_owner_ids| {
-                    !resource_owner_ids.contains(&slot.resource_owner_id)
-                })
-            {
+            if !query.owner_filter.matches_owner(&slot.resource_owner_id) {
                 return None;
             }
 

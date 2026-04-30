@@ -18,5 +18,7 @@ pub use domain::{
     ActorId, ActorRef, Appointment, AppointmentId, Slot, SlotId, SlotStatus, TimeRange,
     TimeRangeError, WeekRange, WeekRangeError,
 };
-pub use layout::{AppointmentLayoutNode, SlotLayoutNode, WeeklyLayout, WeeklyLayoutQuery};
+pub use layout::{
+    AppointmentLayoutNode, CalendarOwnerFilter, SlotLayoutNode, WeeklyLayout, WeeklyLayoutQuery,
+};
 pub use state::ScheduleState;

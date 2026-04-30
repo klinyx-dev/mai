@@ -1,6 +1,6 @@
 use chrono::{LocalResult, NaiveDate, TimeZone, Utc};
 
-use crate::{ActorId, WeeklyLayoutQuery};
+use crate::{ActorId, CalendarOwnerFilter, WeeklyLayoutQuery};
 
 use super::{WasmAdapterError, WasmViewFilterMode, WasmWeeklyLayoutQuery};
 
@@ -32,16 +32,18 @@ pub(crate) fn core_weekly_query(
 ) -> WeeklyLayoutQuery {
     WeeklyLayoutQuery {
         anchor_date,
-        resource_owner_ids: query.view_filter.as_ref().and_then(|view_filter| {
+        owner_filter: query.view_filter.as_ref().map_or(CalendarOwnerFilter::All, |view_filter| {
             match view_filter.mode {
-                WasmViewFilterMode::All => None,
-                WasmViewFilterMode::Owners | WasmViewFilterMode::Group => Some(
-                    view_filter
-                        .ids
-                        .iter()
-                        .map(|id| ActorId::new(id.as_str()))
-                        .collect(),
-                ),
+                WasmViewFilterMode::All => CalendarOwnerFilter::All,
+                WasmViewFilterMode::Owners | WasmViewFilterMode::Group => {
+                    CalendarOwnerFilter::from_owner_ids(
+                        view_filter
+                            .ids
+                            .iter()
+                            .map(|id| ActorId::new(id.as_str()))
+                            .collect(),
+                    )
+                }
             }
         }),
         visible_start_minute: query.visible_start_minute,

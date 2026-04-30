@@ -4,11 +4,48 @@ use serde::{Deserialize, Serialize};
 use crate::StructuralError;
 use crate::{ActorId, domain::week::WeekRange};
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum CalendarOwnerFilter {
+    #[default]
+    All,
+    None,
+    Owners(Vec<ActorId>),
+}
+
+impl CalendarOwnerFilter {
+    pub fn from_owner_ids(owner_ids: Vec<ActorId>) -> Self {
+        let mut unique = Vec::new();
+        for owner_id in owner_ids {
+            if !unique.contains(&owner_id) {
+                unique.push(owner_id);
+            }
+        }
+
+        if unique.is_empty() {
+            Self::None
+        } else {
+            Self::Owners(unique)
+        }
+    }
+
+    pub fn matches_owner(&self, owner_id: &ActorId) -> bool {
+        match self {
+            Self::All => true,
+            Self::None => false,
+            Self::Owners(owner_ids) => owner_ids.contains(owner_id),
+        }
+    }
+
+    pub fn is_all(&self) -> bool {
+        matches!(self, Self::All)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WeeklyLayoutQuery {
     pub anchor_date: NaiveDate,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resource_owner_ids: Option<Vec<ActorId>>,
+    #[serde(default, skip_serializing_if = "CalendarOwnerFilter::is_all")]
+    pub owner_filter: CalendarOwnerFilter,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub visible_start_minute: Option<u16>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -28,7 +65,7 @@ impl WeeklyLayoutQuery {
     pub fn new(anchor_date: NaiveDate) -> Self {
         Self {
             anchor_date,
-            resource_owner_ids: None,
+            owner_filter: CalendarOwnerFilter::All,
             visible_start_minute: None,
             visible_end_minute: None,
         }

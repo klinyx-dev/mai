@@ -1,7 +1,7 @@
 use chrono::{Datelike, NaiveDate, TimeZone, Utc};
 
 use super::{
-    WeeklyLayoutQuery, day_start_from_week, project_appointment_layout_nodes,
+    CalendarOwnerFilter, WeeklyLayoutQuery, day_start_from_week, project_appointment_layout_nodes,
     project_slot_layout_nodes, week_range_from_anchor,
 };
 use crate::domain::appointment::Appointment;
@@ -186,7 +186,7 @@ fn resource_owner_filter_limits_slot_projection() {
     );
 
     let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
-    query.resource_owner_ids = Some(vec![ActorId::new("owner-1")]);
+    query.owner_filter = CalendarOwnerFilter::from_owner_ids(vec![ActorId::new("owner-1")]);
 
     let nodes = project_slot_layout_nodes(&state, &query);
     assert_eq!(nodes.len(), 1);
@@ -399,7 +399,7 @@ fn resource_owner_filter_limits_appointment_projection_by_slot_resource_owner() 
     );
 
     let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
-    query.resource_owner_ids = Some(vec![ActorId::new("owner-1")]);
+    query.owner_filter = CalendarOwnerFilter::from_owner_ids(vec![ActorId::new("owner-1")]);
 
     let nodes = project_appointment_layout_nodes(&state, &query);
     assert_eq!(nodes.len(), 1);
@@ -544,7 +544,7 @@ fn projections_are_identical_across_insertion_orders() {
 #[test]
 fn filtered_projections_are_identical_across_insertion_orders() {
     let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
-    query.resource_owner_ids = Some(vec![ActorId::new("owner-1")]);
+    query.owner_filter = CalendarOwnerFilter::from_owner_ids(vec![ActorId::new("owner-1")]);
     query.visible_start_minute = Some(9 * 60 + 30);
     query.visible_end_minute = Some(10 * 60 + 30);
 
@@ -847,6 +847,54 @@ fn visible_window_clips_and_filters_appointment_projection() {
     assert_eq!(nodes[1].end_minute, 10 * 60 + 30);
     assert!(!nodes[1].clipped_start);
     assert!(nodes[1].clipped_end);
+}
+
+#[test]
+fn owner_filter_none_returns_no_slots_or_appointments() {
+    let mut state = ScheduleState::new();
+    state.slots.insert(
+        SlotId::new("slot-1"),
+        slot(
+            "slot-1",
+            SlotStatus::Available,
+            Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+        ),
+    );
+    state.slots.insert(
+        SlotId::new("slot-2"),
+        slot(
+            "slot-2",
+            SlotStatus::Booked,
+            Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+            Utc.with_ymd_and_hms(2026, 1, 7, 12, 0, 0).unwrap(),
+        ),
+    );
+    state.appointments.insert(
+        AppointmentId::new("appt-1"),
+        appointment("appt-1", "slot-2"),
+    );
+
+    let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+    query.owner_filter = CalendarOwnerFilter::None;
+
+    assert!(project_slot_layout_nodes(&state, &query).is_empty());
+    assert!(project_appointment_layout_nodes(&state, &query).is_empty());
+}
+
+#[test]
+fn owner_filter_deduplicates_owner_ids_deterministically() {
+    let filter = CalendarOwnerFilter::from_owner_ids(vec![
+        ActorId::new("owner-1"),
+        ActorId::new("owner-1"),
+        ActorId::new("owner-2"),
+        ActorId::new("owner-2"),
+    ]);
+
+    assert_eq!(
+        filter,
+        CalendarOwnerFilter::Owners(vec![ActorId::new("owner-1"), ActorId::new("owner-2")])
+    );
 }
 
 fn slot(
