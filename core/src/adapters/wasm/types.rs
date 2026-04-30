@@ -10,6 +10,7 @@ use crate::{
 #[serde(rename_all = "snake_case")]
 pub enum WasmViewFilterMode {
     All,
+    None,
     Owners,
     Group,
 }

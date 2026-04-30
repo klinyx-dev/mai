@@ -35,6 +35,7 @@ pub(crate) fn core_weekly_query(
         owner_filter: query.view_filter.as_ref().map_or(CalendarOwnerFilter::All, |view_filter| {
             match view_filter.mode {
                 WasmViewFilterMode::All => CalendarOwnerFilter::All,
+                WasmViewFilterMode::None => CalendarOwnerFilter::None,
                 WasmViewFilterMode::Owners | WasmViewFilterMode::Group => {
                     CalendarOwnerFilter::from_owner_ids(
                         view_filter

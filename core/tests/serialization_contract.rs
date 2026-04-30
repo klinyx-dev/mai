@@ -197,6 +197,27 @@ fn wasm_query_request_accepts_view_filter_optional_fields() {
 }
 
 #[test]
+fn wasm_query_request_accepts_none_view_filter_mode() {
+    let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+        anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+        view_filter: Some(WasmViewFilter {
+            mode: WasmViewFilterMode::None,
+            ids: vec![],
+        }),
+        visible_start_minute: None,
+        visible_end_minute: None,
+        timezone: None,
+    });
+
+    let json = serde_json::to_value(&request).unwrap();
+    assert_eq!(json["payload"]["view_filter"]["mode"], "none");
+    assert!(json["payload"]["view_filter"]["ids"].is_null());
+
+    let restored: WasmQueryRequest = serde_json::from_value(json).unwrap();
+    assert_eq!(restored, request);
+}
+
+#[test]
 fn wasm_error_response_wraps_scheduler_error() {
     let response = WasmCommandResponse::Error {
         error: WasmAdapterError::from_scheduler_error(SchedulerError::Business(
@@ -436,6 +457,79 @@ fn wasm_adapter_wrapper_returns_weekly_layout_via_query_json_entrypoint() {
         payload["data"]["appointments"][0]["appointment_id"],
         "appt-9001"
     );
+}
+
+#[test]
+fn wasm_adapter_wrapper_treats_empty_owners_filter_as_none() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "resource_owner_id":"owner-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let add_appointment_json = r#"{
+        "command":"add_appointment",
+        "payload":{
+            "appointment_id":"appt-9001",
+            "slot_id":"slot-1001",
+            "invitee_ids":["patient-77"],
+            "title":"Follow-up Consultation",
+            "created_by":"staff-3"
+        }
+    }"#;
+    let query_json = r#"{
+        "query":"weekly_layout",
+        "payload":{
+            "anchor_date":"2026-05-07",
+            "view_filter":{"mode":"owners","ids":[]}
+        }
+    }"#;
+
+    adapter.execute_command_json(add_slot_json);
+    adapter.execute_command_json(add_appointment_json);
+
+    let response = adapter.execute_query_json(query_json);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "success");
+    assert_eq!(payload["data"]["slots"].as_array().unwrap().len(), 0);
+    assert_eq!(payload["data"]["appointments"].as_array().unwrap().len(), 0);
+}
+
+#[test]
+fn wasm_adapter_wrapper_applies_none_filter_mode() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "resource_owner_id":"owner-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let query_json = r#"{
+        "query":"weekly_layout",
+        "payload":{
+            "anchor_date":"2026-05-07",
+            "view_filter":{"mode":"none"}
+        }
+    }"#;
+
+    adapter.execute_command_json(add_slot_json);
+
+    let response = adapter.execute_query_json(query_json);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "success");
+    assert_eq!(payload["data"]["slots"].as_array().unwrap().len(), 0);
+    assert_eq!(payload["data"]["appointments"].as_array().unwrap().len(), 0);
 }
 
 #[test]
