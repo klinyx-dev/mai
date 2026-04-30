@@ -90,6 +90,14 @@
         border: 1px dashed var(--color-border-strong);
     }
 
+    .mai-board__event--draft-active {
+        z-index: 7;
+        box-shadow: var(--shadow-md);
+        border-style: solid;
+        border-color: var(--color-text-strong);
+        opacity: 0.96;
+    }
+
     .mai-board__event-resize-handle {
         position: absolute;
         left: 8px;

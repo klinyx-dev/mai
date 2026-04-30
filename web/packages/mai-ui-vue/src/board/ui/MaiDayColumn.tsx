@@ -315,6 +315,7 @@ export const MaiDayColumn = defineComponent({
                 startMinute={activeDraft.startMinute}
                 endMinute={activeDraft.endMinute}
                 minuteLabel={props.minuteLabel}
+                dragging={Boolean(dragDraft.value)}
               />
             );
           })() : null}

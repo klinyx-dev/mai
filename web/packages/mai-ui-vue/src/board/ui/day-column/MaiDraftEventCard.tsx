@@ -13,6 +13,11 @@ export const MaiDraftEventCard = defineComponent({
     startMinute: { type: Number, required: true },
     endMinute: { type: Number, required: true },
     minuteLabel: { type: Function as PropType<(value: number) => string>, required: true },
+    dragging: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   setup(props) {
     return () => {
@@ -23,9 +28,14 @@ export const MaiDraftEventCard = defineComponent({
 
       return (
         <div
-          class={["mai-board__event", "mai-board__event--draft", `mai-board__event--${density}`].join(
-            " "
-          )}
+          class={[
+            "mai-board__event",
+            "mai-board__event--draft",
+            props.dragging ? "mai-board__event--draft-active" : "",
+            `mai-board__event--${density}`,
+          ]
+            .filter(Boolean)
+            .join(" ")}
           style={{ top: `${props.top}%`, height: `${props.height}%` }}
         >
           {isInline ? (
