@@ -93,6 +93,7 @@ export const MaiAvailabilityPicker = defineComponent({
             </div>
           </div>
           <div
+            class="mai-booking-availability-content"
             aria-live="polite"
             aria-atomic="true"
             role={props.isLoading || visibleSlots.length === 0 ? "status" : undefined}
