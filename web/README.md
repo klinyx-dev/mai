@@ -70,9 +70,11 @@ UI package tests now cover:
   - `slot-created`, `slot-rescheduled`, `slot-booked`, `slot-cancelled`, `slot-deleted`
   - `appointment-cancelled`, `appointment-deleted`
   - `interaction-error`
+- It exposes `MAI_BOARD_INTERACTIVE_EVENTS` as the canonical event-name constants for app integrations.
 - Slot direct manipulation behavior:
   - drag slot chip body to move time/day (15-minute snap),
   - drag top/bottom slot edge to resize time range (15-minute snap),
+  - keyboard resize on focused slot handles (15-minute step via arrow keys),
   - on drop/end, wrapper emits `slot-rescheduled` and supports callback mode (`rescheduleSlot`) or adapter mode (`mutateCommand` -> `reschedule_slot`).
 - Empty-cell behavior:
   - click blank cell to open create-slot card,
@@ -122,6 +124,7 @@ It supports:
 - sign-in/sign-up handoff before confirmation,
 - appointment title generation from user display name plus selected category,
 - immediate availability refresh after successful booking.
+- exported booking event-name constants via `MAI_BOOKING_FLOW_EVENTS`.
 
 The scheduling core still only sees fixed-slot appointment commands. Domain records, resource catalog data, and auth identity stay in the app/UI boundary.
 

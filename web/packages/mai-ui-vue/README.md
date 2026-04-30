@@ -156,5 +156,9 @@ UI implementation must comply with the repository `DESIGN.md`: monochrome-first,
 - Booking components: `MaiLocationPicker`, `MaiCategoryPicker`, `MaiResourcePicker`, `MaiAvailabilityPicker`, `MaiBookingAuthGate`, `MaiBookingConfirmCard`
 - Action cards: `MaiCreateSlotCard`, `MaiSlotActionsCard`, `MaiAppointmentActionsCard`
 - Integration: `useMai`, `createNuxtMaiState`
-- Interaction constants: `INTERACTION_ACTIONS`, `INTERACTION_SUCCESS_EVENTS`
+- Event/interaction constants:
+  - `MAI_BOARD_INTERACTIVE_EVENTS`
+  - `MAI_BOOKING_FLOW_EVENTS`
+  - `INTERACTION_ACTIONS`
+  - `INTERACTION_SUCCESS_EVENTS`
 - Types: import from `@mai/mai-ui-vue` (single stable type surface)
