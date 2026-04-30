@@ -82,7 +82,16 @@ export function isMaiViewFilter(value: unknown): value is MaiViewFilter {
     return false;
   }
   const payload = value as Record<string, unknown>;
-  return typeof payload.mode === "string" && Array.isArray(payload.ids);
+  if (payload.mode === "all" || payload.mode === "none") {
+    return true;
+  }
+  if (payload.mode === "owners" || payload.mode === "group") {
+    return (
+      Array.isArray(payload.ids) &&
+      payload.ids.every((id) => typeof id === "string")
+    );
+  }
+  return false;
 }
 
 export function isMaiInteractionErrorPayload(

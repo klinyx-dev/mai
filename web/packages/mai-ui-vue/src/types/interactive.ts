@@ -81,10 +81,7 @@ export interface MaiBoardInteractiveViewConfig {
 }
 
 export type MaiViewFilterMode = WeeklyViewFilterMode;
-
-export interface MaiViewFilter extends WeeklyViewFilter {
-  ids: string[];
-}
+export type MaiViewFilter = WeeklyViewFilter;
 
 export interface MaiViewFilterOption {
   label: string;
