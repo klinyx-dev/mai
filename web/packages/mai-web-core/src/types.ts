@@ -32,12 +32,16 @@ export interface WeeklyLayout {
   appointments: AppointmentLayoutNode[];
 }
 
-export type WeeklyViewFilterMode = "all" | "owners" | "group";
+export type WeeklyViewFilterMode = "all" | "none" | "owners" | "group";
 
-export interface WeeklyViewFilter {
-  mode: WeeklyViewFilterMode;
-  ids?: string[];
-}
+export type WeeklyViewFilter =
+  | { mode: "all" }
+  | { mode: "none" }
+  | {
+      mode: "owners" | "group";
+      // Empty IDs remain a deterministic "none selected" contract at the core boundary.
+      ids: string[];
+    };
 
 export type WasmResponse<T> =
   | { status: "success"; data: T }

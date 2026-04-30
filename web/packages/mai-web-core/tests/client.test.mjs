@@ -38,6 +38,62 @@ test("executeWeeklyLayoutQuery returns parsed success payload", () => {
   assert.equal(response.status, "success");
 });
 
+test("executeWeeklyLayoutQuery serializes none filter mode", () => {
+  let captured = "";
+  const adapter = {
+    execute_command_json: () => '{"status":"success","data":"applied"}',
+    execute_query_json: (input) => {
+      captured = input;
+      return JSON.stringify({
+        status: "success",
+        data: {
+          week_start: "2026-05-04",
+          week_end: "2026-05-11",
+          slots: [],
+          appointments: [],
+        },
+      });
+    },
+  };
+
+  const response = executeWeeklyLayoutQuery(adapter, {
+    anchor_date: "2026-05-07",
+    view_filter: { mode: "none" },
+  });
+
+  assert.equal(response.status, "success");
+  const parsed = JSON.parse(captured);
+  assert.equal(parsed.payload.view_filter.mode, "none");
+});
+
+test("executeWeeklyLayoutQuery keeps empty owner IDs payload deterministic", () => {
+  let captured = "";
+  const adapter = {
+    execute_command_json: () => '{"status":"success","data":"applied"}',
+    execute_query_json: (input) => {
+      captured = input;
+      return JSON.stringify({
+        status: "success",
+        data: {
+          week_start: "2026-05-04",
+          week_end: "2026-05-11",
+          slots: [],
+          appointments: [],
+        },
+      });
+    },
+  };
+
+  const response = executeWeeklyLayoutQuery(adapter, {
+    anchor_date: "2026-05-07",
+    view_filter: { mode: "owners", ids: [] },
+  });
+
+  assert.equal(response.status, "success");
+  const parsed = JSON.parse(captured);
+  assert.deepEqual(parsed.payload.view_filter, { mode: "owners", ids: [] });
+});
+
 test("executeCommand sends command envelope and parses success payload", () => {
   let captured = "";
   const adapter = {
@@ -135,5 +191,22 @@ test("createQueryEnvelope uses centralized query constants", () => {
     payload: {
       anchor_date: "2026-05-07",
     },
+  });
+});
+
+test("createQueryEnvelope accepts explicit none and group filter payloads", () => {
+  const noneQuery = createQueryEnvelope(QUERIES.WEEKLY_LAYOUT, {
+    anchor_date: "2026-05-07",
+    view_filter: { mode: "none" },
+  });
+  const groupQuery = createQueryEnvelope(QUERIES.WEEKLY_LAYOUT, {
+    anchor_date: "2026-05-07",
+    view_filter: { mode: "group", ids: ["team-a"] },
+  });
+
+  assert.deepEqual(noneQuery.payload.view_filter, { mode: "none" });
+  assert.deepEqual(groupQuery.payload.view_filter, {
+    mode: "group",
+    ids: ["team-a"],
   });
 });
