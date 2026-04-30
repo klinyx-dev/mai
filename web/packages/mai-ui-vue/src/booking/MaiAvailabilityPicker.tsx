@@ -57,7 +57,11 @@ export const MaiAvailabilityPicker = defineComponent({
       );
 
       return (
-        <section class="mai-booking-section" aria-labelledby="mai-booking-availability-title">
+        <section
+          class="mai-booking-section"
+          aria-labelledby="mai-booking-availability-title"
+          aria-busy={props.isLoading}
+        >
           <div class="mai-booking-toolbar">
             <div class="mai-booking-section__header">
               <p class="mai-booking-section__eyebrow">
@@ -88,66 +92,72 @@ export const MaiAvailabilityPicker = defineComponent({
               </button>
             </div>
           </div>
-          {props.isLoading ? (
-            <p class="mai-booking-empty">
-              {props.copy.loadingAvailability ?? "Loading availability..."}
-            </p>
-          ) : visibleSlots.length === 0 ? (
-            <p class="mai-booking-empty">
-              {props.copy.emptyAvailability ?? "No available times this week"}
-            </p>
-          ) : (
-            <div class="mai-booking-days">
-              {DAY_LABELS.map((label, dayIndex) => {
-                const daySlots = availabilitySlotsForDay(visibleSlots, dayIndex);
-                return (
-                  <section class="mai-booking-day" key={label}>
-                    <h4 class="mai-booking-day__label">{label}</h4>
-                    <div class="mai-booking-slot-list">
-                      {daySlots.length === 0 ? (
-                        <p class="mai-booking-day__empty">
-                          {props.copy.emptyDay ?? "No times"}
-                        </p>
-                      ) : (
-                        daySlots.map((slot) => {
-                          const isSelected = props.selectedSlotId === slot.slotId;
-                          const isBookable = isBookableSlotStatus(slot.status);
-                          const timeLabel = `${formatMinuteLabel(
-                            slot.startMinute,
-                            props.timeLabelFormat
-                          )} - ${formatMinuteLabel(
-                            slot.endMinute,
-                            props.timeLabelFormat
-                          )}`;
-                          return (
-                            <button
-                              type="button"
-                              class={[
-                                "mai-booking-slot",
-                                isSelected ? "mai-booking-slot--selected" : "",
-                                !isBookable ? "mai-booking-slot--disabled" : "",
-                              ]}
-                              aria-pressed={isSelected}
-                              disabled={!isBookable}
-                              onClick={() => emit("slotSelected", slot)}
-                              key={slot.slotId}
-                            >
-                              <span class="mai-booking-slot__time">{timeLabel}</span>
-                              {slot.resourceLabel ? (
-                                <span class="mai-booking-slot__resource">
-                                  {slot.resourceLabel}
-                                </span>
-                              ) : null}
-                            </button>
-                          );
-                        })
-                      )}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-          )}
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            role={props.isLoading || visibleSlots.length === 0 ? "status" : undefined}
+          >
+            {props.isLoading ? (
+              <p class="mai-booking-empty">
+                {props.copy.loadingAvailability ?? "Loading availability…"}
+              </p>
+            ) : visibleSlots.length === 0 ? (
+              <p class="mai-booking-empty">
+                {props.copy.emptyAvailability ?? "No available times this week"}
+              </p>
+            ) : (
+              <div class="mai-booking-days">
+                {DAY_LABELS.map((label, dayIndex) => {
+                  const daySlots = availabilitySlotsForDay(visibleSlots, dayIndex);
+                  return (
+                    <section class="mai-booking-day" key={label}>
+                      <h4 class="mai-booking-day__label">{label}</h4>
+                      <div class="mai-booking-slot-list">
+                        {daySlots.length === 0 ? (
+                          <p class="mai-booking-day__empty">
+                            {props.copy.emptyDay ?? "No times"}
+                          </p>
+                        ) : (
+                          daySlots.map((slot) => {
+                            const isSelected = props.selectedSlotId === slot.slotId;
+                            const isBookable = isBookableSlotStatus(slot.status);
+                            const timeLabel = `${formatMinuteLabel(
+                              slot.startMinute,
+                              props.timeLabelFormat
+                            )} - ${formatMinuteLabel(
+                              slot.endMinute,
+                              props.timeLabelFormat
+                            )}`;
+                            return (
+                              <button
+                                type="button"
+                                class={[
+                                  "mai-booking-slot",
+                                  isSelected ? "mai-booking-slot--selected" : "",
+                                  !isBookable ? "mai-booking-slot--disabled" : "",
+                                ]}
+                                aria-pressed={isSelected}
+                                disabled={!isBookable}
+                                onClick={() => emit("slotSelected", slot)}
+                                key={slot.slotId}
+                              >
+                                <span class="mai-booking-slot__time">{timeLabel}</span>
+                                {slot.resourceLabel ? (
+                                  <span class="mai-booking-slot__resource">
+                                    {slot.resourceLabel}
+                                  </span>
+                                ) : null}
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </section>
       );
     };
