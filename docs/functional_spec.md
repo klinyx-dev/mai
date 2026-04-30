@@ -200,10 +200,15 @@ System must NOT output:
 
 ### FR-12: Resource owner-Scoped Weekly Query
 System must:
-- Accept optional resource owner filter metadata in weekly query
-- Return slot nodes only for matching resource owner
-- Return appointment nodes only when referenced slot resource owner matches filter
-- Preserve existing unfiltered behavior when resource owner filter is absent
+- Accept optional resource owner calendar filter metadata in weekly query
+- Support explicit filter semantics:
+  - `all`: no owner filter is applied
+  - `owners`: include only listed resource owners
+  - `owners` with an empty list: include no resource owners (deterministic empty result)
+- Return slot nodes only for matching slot resource owner
+- Return appointment nodes only when the referenced slot resource owner matches filter
+- Preserve existing unfiltered behavior when owner filter mode is `all` or absent
+- Treat group/specialty/doctor filters as boundary concerns that must resolve to resource owner IDs before core query evaluation
 
 ### FR-13: Visible-Hour Window Query
 System must:
@@ -282,6 +287,8 @@ The flow must preserve the fixed-slot booking model:
 20. Client-facing booking must not bypass slot availability validation
 21. Client-facing booking confirmation requires an authenticated invitee identity supplied by the consuming app
 22. Client-facing appointment title is derived from user display name plus selected consultation reason
+23. Calendar filter mode `owners` with an empty owner list yields no slot or appointment nodes
+24. Appointment filtering is evaluated through the referenced slot resource owner, not appointment creator or invitee
 
 ---
 

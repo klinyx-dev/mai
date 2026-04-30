@@ -517,9 +517,15 @@ This is explicitly required by the functional spec, which says layout output mus
 
 ### 10.2 Input query
 ```rust
+pub enum CalendarOwnerFilter {
+    All,
+    None,
+    Owners(Vec<ActorId>),
+}
+
 pub struct WeeklyLayoutQuery {
     pub anchor_date: NaiveDate,
-    pub resource_owner_id: Option<ActorId>,
+    pub owner_filter: CalendarOwnerFilter,
     pub visible_start_minute: Option<u16>,
     pub visible_end_minute: Option<u16>,
 }
@@ -533,12 +539,17 @@ Current shipped boundary behavior (TM8 completed on 2026-04-21):
 - domain/layout modules stay timezone-rule-free
 
 Query rules:
-- when `resource_owner_id` is present, projection includes only data for that resource owner
+- `owner_filter = All` preserves existing unfiltered projection behavior
+- `owner_filter = None` yields no slot and no appointment nodes
+- `owner_filter = Owners(ids)` includes only nodes whose slot `resource_owner_id` is in `ids`
+- an empty owner list must be normalized deterministically to `CalendarOwnerFilter::None`
+- appointment filtering must always be evaluated through the referenced slot owner
+- owner groups, specialties, or doctor cohorts are resolved at adapter/application boundary to owner IDs before building `WeeklyLayoutQuery`
 - when visible window bounds are present, projection applies deterministic clipping/filtering to that window
 - invalid window bounds are rejected deterministically at the query boundary:
   - `visible_start_minute` and `visible_end_minute` must be within `0..=1440`
   - `visible_start_minute < visible_end_minute`
-- omitted optional fields preserve current behavior
+- omitted optional window fields preserve current behavior
 
 ### 10.3 Output shape
 ```rust
