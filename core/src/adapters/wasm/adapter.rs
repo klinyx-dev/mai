@@ -23,13 +23,17 @@ impl WasmSchedulerAdapter {
 
     pub fn execute_command(&mut self, request: WasmCommandRequest) -> WasmCommandResponse {
         let result = match request {
-            WasmCommandRequest::AddSlot(cmd) => self.service.add_slot(cmd),
-            WasmCommandRequest::DeleteSlot(cmd) => self.service.delete_slot(cmd),
-            WasmCommandRequest::CancelSlot(cmd) => self.service.cancel_slot(cmd),
-            WasmCommandRequest::AddAppointment(cmd) => self.service.add_appointment(cmd),
-            WasmCommandRequest::CancelAppointment(cmd) => self.service.cancel_appointment(cmd),
-            WasmCommandRequest::DeleteAppointment(cmd) => self.service.delete_appointment(cmd),
-            WasmCommandRequest::RescheduleSlot(cmd) => self.service.reschedule_slot(cmd),
+            WasmCommandRequest::AddSlot(cmd) => self.service.add_slot(cmd.into()),
+            WasmCommandRequest::DeleteSlot(cmd) => self.service.delete_slot(cmd.into()),
+            WasmCommandRequest::CancelSlot(cmd) => self.service.cancel_slot(cmd.into()),
+            WasmCommandRequest::AddAppointment(cmd) => self.service.add_appointment(cmd.into()),
+            WasmCommandRequest::CancelAppointment(cmd) => {
+                self.service.cancel_appointment(cmd.into())
+            }
+            WasmCommandRequest::DeleteAppointment(cmd) => {
+                self.service.delete_appointment(cmd.into())
+            }
+            WasmCommandRequest::RescheduleSlot(cmd) => self.service.reschedule_slot(cmd.into()),
         };
 
         match result {

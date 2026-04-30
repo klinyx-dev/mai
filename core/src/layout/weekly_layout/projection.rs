@@ -4,18 +4,25 @@ use crate::layout::output::{AppointmentLayoutNode, SlotLayoutNode};
 use crate::state::schedule_state::ScheduleState;
 
 use super::position::slot_layout_position;
-use super::query::{WeeklyLayoutQuery, week_range_from_anchor};
+use super::query::{ResolvedWeeklyLayoutQuery, WeeklyLayoutQuery, resolve_weekly_layout_query};
 
 pub fn project_slot_layout_nodes(
     state: &ScheduleState,
     query: &WeeklyLayoutQuery,
 ) -> Vec<SlotLayoutNode> {
-    let week = week_range_from_anchor(query.anchor_date);
+    let resolved = resolve_weekly_layout_query(query.clone())
+        .expect("projection requires validated weekly layout query");
+    project_slot_layout_nodes_resolved(state, &resolved)
+}
+
+pub fn project_slot_layout_nodes_resolved(
+    state: &ScheduleState,
+    query: &ResolvedWeeklyLayoutQuery,
+) -> Vec<SlotLayoutNode> {
     let mut nodes = state
-        .slots
-        .values()
+        .slots_iter()
         .filter(|slot| query.owner_filter.matches_owner(&slot.resource_owner_id))
-        .filter_map(|slot| slot_to_layout_node(slot, query, &week))
+        .filter_map(|slot| slot_to_layout_node(slot, query))
         .collect::<Vec<_>>();
 
     nodes.sort_by(|left, right| {
@@ -40,19 +47,26 @@ pub fn project_appointment_layout_nodes(
     state: &ScheduleState,
     query: &WeeklyLayoutQuery,
 ) -> Vec<AppointmentLayoutNode> {
-    let week = week_range_from_anchor(query.anchor_date);
+    let resolved = resolve_weekly_layout_query(query.clone())
+        .expect("projection requires validated weekly layout query");
+    project_appointment_layout_nodes_resolved(state, &resolved)
+}
+
+pub fn project_appointment_layout_nodes_resolved(
+    state: &ScheduleState,
+    query: &ResolvedWeeklyLayoutQuery,
+) -> Vec<AppointmentLayoutNode> {
     let mut nodes = state
-        .appointments
-        .values()
+        .appointments_iter()
         .filter_map(|appointment| {
-            let slot = state.slots.get(&appointment.slot_id)?;
+            let slot = state.slot(&appointment.slot_id)?;
 
             // Filter appointments by the slot's resource owner.
             if !query.owner_filter.matches_owner(&slot.resource_owner_id) {
                 return None;
             }
 
-            let position = slot_layout_position(slot, &week)?;
+            let position = slot_layout_position(slot, &query.week)?;
             let clipped = apply_visible_window(
                 position.start_minute,
                 position.end_minute,
@@ -91,16 +105,12 @@ pub fn project_appointment_layout_nodes(
     nodes
 }
 
-fn slot_to_layout_node(
-    slot: &Slot,
-    query: &WeeklyLayoutQuery,
-    week: &crate::domain::week::WeekRange,
-) -> Option<SlotLayoutNode> {
+fn slot_to_layout_node(slot: &Slot, query: &ResolvedWeeklyLayoutQuery) -> Option<SlotLayoutNode> {
     if slot.status != SlotStatus::Available {
         return None;
     }
 
-    let position = slot_layout_position(slot, week)?;
+    let position = slot_layout_position(slot, &query.week)?;
     let clipped = apply_visible_window(
         position.start_minute,
         position.end_minute,
@@ -132,12 +142,10 @@ fn apply_visible_window(
     end_minute: u16,
     clipped_start: bool,
     clipped_end: bool,
-    query: &WeeklyLayoutQuery,
+    query: &ResolvedWeeklyLayoutQuery,
 ) -> Option<VisibleWindowClippedPosition> {
-    let window_start = query.visible_start_minute.unwrap_or(0);
-    let window_end = query
-        .visible_end_minute
-        .unwrap_or(crate::layout::weekly_layout::MINUTES_PER_DAY);
+    let window_start = query.visible_window.start_minute;
+    let window_end = query.visible_window.end_minute;
 
     if end_minute <= window_start || start_minute >= window_end {
         return None;

@@ -4,7 +4,8 @@ use std::fmt;
 use std::sync::Arc;
 
 mod actors;
-mod commands;
+mod commands_appointment;
+mod commands_slot;
 mod queries;
 
 #[cfg(test)]

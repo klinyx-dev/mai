@@ -2,44 +2,8 @@ use chrono::{Datelike, Duration, NaiveDate};
 use serde::{Deserialize, Serialize};
 
 use crate::StructuralError;
-use crate::{ActorId, domain::week::WeekRange};
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum CalendarOwnerFilter {
-    #[default]
-    All,
-    None,
-    Owners(Vec<ActorId>),
-}
-
-impl CalendarOwnerFilter {
-    pub fn from_owner_ids(owner_ids: Vec<ActorId>) -> Self {
-        let mut unique = Vec::new();
-        for owner_id in owner_ids {
-            if !unique.contains(&owner_id) {
-                unique.push(owner_id);
-            }
-        }
-
-        if unique.is_empty() {
-            Self::None
-        } else {
-            Self::Owners(unique)
-        }
-    }
-
-    pub fn matches_owner(&self, owner_id: &ActorId) -> bool {
-        match self {
-            Self::All => true,
-            Self::None => false,
-            Self::Owners(owner_ids) => owner_ids.contains(owner_id),
-        }
-    }
-
-    pub fn is_all(&self) -> bool {
-        matches!(self, Self::All)
-    }
-}
+use crate::domain::week::WeekRange;
+use crate::layout::query_filter::CalendarOwnerFilter;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WeeklyLayoutQuery {
@@ -59,6 +23,14 @@ pub const MINUTES_PER_DAY: u16 = 1440;
 pub struct VisibleMinuteWindow {
     pub start_minute: u16,
     pub end_minute: u16,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ResolvedWeeklyLayoutQuery {
+    pub anchor_date: NaiveDate,
+    pub week: WeekRange,
+    pub owner_filter: CalendarOwnerFilter,
+    pub visible_window: VisibleMinuteWindow,
 }
 
 impl WeeklyLayoutQuery {
@@ -104,11 +76,7 @@ pub fn day_start_from_week(week_start: NaiveDate, day_index: u8) -> Option<Naive
 
 pub fn resolve_visible_minute_window(
     query: &WeeklyLayoutQuery,
-) -> Result<Option<VisibleMinuteWindow>, StructuralError> {
-    if query.visible_start_minute.is_none() && query.visible_end_minute.is_none() {
-        return Ok(None);
-    }
-
+) -> Result<VisibleMinuteWindow, StructuralError> {
     let start_minute = query.visible_start_minute.unwrap_or(0);
     let end_minute = query.visible_end_minute.unwrap_or(MINUTES_PER_DAY);
 
@@ -117,8 +85,21 @@ pub fn resolve_visible_minute_window(
         return Err(StructuralError::InvalidVisibleWindow);
     }
 
-    Ok(Some(VisibleMinuteWindow {
+    Ok(VisibleMinuteWindow {
         start_minute,
         end_minute,
-    }))
+    })
+}
+
+pub fn resolve_weekly_layout_query(
+    query: WeeklyLayoutQuery,
+) -> Result<ResolvedWeeklyLayoutQuery, StructuralError> {
+    let visible_window = resolve_visible_minute_window(&query)?;
+    let owner_filter = query.owner_filter.clone();
+    Ok(ResolvedWeeklyLayoutQuery {
+        anchor_date: query.anchor_date,
+        week: week_range_from_anchor(query.anchor_date),
+        owner_filter,
+        visible_window,
+    })
 }

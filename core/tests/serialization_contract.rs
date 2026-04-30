@@ -3,11 +3,11 @@ use mai::{
     AddAppointmentCommand, AddSlotCommand, BusinessRuleError, CancelAppointmentCommand,
     ReferentialError, SchedulerError, WeeklyLayoutQuery,
     adapters::wasm::{
-        WasmAdapterError, WasmBindgenAdapter, WasmCommandRequest, WasmCommandResponse,
-        WasmErrorCategory, WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse,
-        WasmSchedulerAdapter, WasmViewFilter, WasmViewFilterMode, WasmWeeklyLayoutQuery,
-        parse_command_request, parse_query_request, render_command_response,
-        render_query_response,
+        WasmAdapterError, WasmAddSlotPayload, WasmBindgenAdapter, WasmCancelAppointmentPayload,
+        WasmCommandRequest, WasmCommandResponse, WasmDeleteSlotPayload, WasmErrorCategory,
+        WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse, WasmSchedulerAdapter,
+        WasmViewFilter, WasmViewFilterMode, WasmWeeklyLayoutQuery, parse_command_request,
+        parse_query_request, render_command_response, render_query_response,
     },
 };
 
@@ -85,7 +85,7 @@ fn scheduler_error_serializes_with_stable_tagged_shape() {
 
 #[test]
 fn wasm_command_request_uses_tagged_envelope() {
-    let request = WasmCommandRequest::AddSlot(AddSlotCommand {
+    let request = WasmCommandRequest::AddSlot(WasmAddSlotPayload {
         slot_id: "slot-1001".into(),
         start: Utc.with_ymd_and_hms(2026, 5, 4, 9, 0, 0).unwrap(),
         end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
@@ -105,7 +105,7 @@ fn wasm_command_request_uses_tagged_envelope() {
 
 #[test]
 fn wasm_cancel_appointment_request_uses_tagged_envelope() {
-    let request = WasmCommandRequest::CancelAppointment(CancelAppointmentCommand {
+    let request = WasmCommandRequest::CancelAppointment(WasmCancelAppointmentPayload {
         appointment_id: "appt-9001".into(),
         cancelled_by: "patient-77".into(),
     });
@@ -252,7 +252,7 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
 
     assert_eq!(
         command,
-        WasmCommandRequest::DeleteSlot(mai::DeleteSlotCommand {
+        WasmCommandRequest::DeleteSlot(WasmDeleteSlotPayload {
             slot_id: "slot-1001".into(),
         })
     );

@@ -32,21 +32,24 @@ pub(crate) fn core_weekly_query(
 ) -> WeeklyLayoutQuery {
     WeeklyLayoutQuery {
         anchor_date,
-        owner_filter: query.view_filter.as_ref().map_or(CalendarOwnerFilter::All, |view_filter| {
-            match view_filter.mode {
-                WasmViewFilterMode::All => CalendarOwnerFilter::All,
-                WasmViewFilterMode::None => CalendarOwnerFilter::None,
-                WasmViewFilterMode::Owners | WasmViewFilterMode::Group => {
-                    CalendarOwnerFilter::from_owner_ids(
-                        view_filter
-                            .ids
-                            .iter()
-                            .map(|id| ActorId::new(id.as_str()))
-                            .collect(),
-                    )
+        owner_filter: query
+            .view_filter
+            .as_ref()
+            .map_or(CalendarOwnerFilter::All, |view_filter| {
+                match view_filter.mode {
+                    WasmViewFilterMode::All => CalendarOwnerFilter::All,
+                    WasmViewFilterMode::None => CalendarOwnerFilter::None,
+                    WasmViewFilterMode::Owners | WasmViewFilterMode::Group => {
+                        CalendarOwnerFilter::from_owner_ids(
+                            view_filter
+                                .ids
+                                .iter()
+                                .map(|id| ActorId::new(id.as_str()))
+                                .collect(),
+                        )
+                    }
                 }
-            }
-        }),
+            }),
         visible_start_minute: query.visible_start_minute,
         visible_end_minute: query.visible_end_minute,
     }

@@ -54,6 +54,9 @@ fn referential_error_code(error: &ReferentialError) -> &'static str {
         ReferentialError::AppointmentNotFound => "appointment_not_found",
         ReferentialError::ResourceOwnerNotFound => "resource_owner_not_found",
         ReferentialError::CreatorNotFound => "creator_not_found",
+        ReferentialError::InviteeNotFound => "invitee_not_found",
+        ReferentialError::UpdaterNotFound => "updater_not_found",
+        ReferentialError::CancellerNotFound => "canceller_not_found",
     }
 }
 

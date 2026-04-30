@@ -44,9 +44,11 @@ fn add_slot_book_unbook_and_layout_flow() {
         })
         .unwrap();
 
-    let layout = service.get_weekly_layout(WeeklyLayoutQuery::new(
-        NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-    ));
+    let layout = service
+        .get_weekly_layout_checked(WeeklyLayoutQuery::new(
+            NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        ))
+        .expect("valid query should succeed");
 
     assert_eq!(layout.slots.len(), 1);
     assert!(layout.appointments.is_empty());
@@ -69,9 +71,11 @@ fn participant_can_cancel_appointment_and_unbook_slot() {
         })
         .unwrap();
 
-    let layout = service.get_weekly_layout(WeeklyLayoutQuery::new(
-        NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-    ));
+    let layout = service
+        .get_weekly_layout_checked(WeeklyLayoutQuery::new(
+            NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        ))
+        .expect("valid query should succeed");
 
     assert_eq!(layout.slots.len(), 1);
     assert!(layout.appointments.is_empty());
@@ -133,9 +137,11 @@ fn overlapping_slots_different_resource_owners_are_allowed() {
         .add_slot(add_slot_command("slot-2", "owner-2", 9, 10))
         .unwrap();
 
-    let layout = service.get_weekly_layout(WeeklyLayoutQuery::new(
-        NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-    ));
+    let layout = service
+        .get_weekly_layout_checked(WeeklyLayoutQuery::new(
+            NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        ))
+        .expect("valid query should succeed");
 
     assert_eq!(layout.slots.len(), 2);
     assert!(
@@ -150,4 +156,57 @@ fn overlapping_slots_different_resource_owners_are_allowed() {
             .iter()
             .any(|node| node.slot_id == SlotId::new("slot-2"))
     );
+}
+
+#[test]
+fn duplicate_slot_id_is_replaced_by_latest_slot_definition() {
+    let mut service = SchedulerService::new();
+    service
+        .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
+        .unwrap();
+    service
+        .add_slot(add_slot_command("slot-1", "owner-1", 11, 12))
+        .unwrap();
+
+    let layout = service
+        .get_weekly_layout_checked(WeeklyLayoutQuery::new(
+            NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        ))
+        .expect("valid query should succeed");
+
+    assert_eq!(layout.slots.len(), 1);
+    assert_eq!(layout.slots[0].slot_id, SlotId::new("slot-1"));
+    assert_eq!(layout.slots[0].start_minute, 11 * 60);
+    assert_eq!(layout.slots[0].end_minute, 12 * 60);
+}
+
+#[test]
+fn duplicate_appointment_id_is_replaced_by_latest_appointment_definition() {
+    let mut service = SchedulerService::new();
+    service
+        .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
+        .unwrap();
+    service
+        .add_slot(add_slot_command("slot-2", "owner-1", 11, 12))
+        .unwrap();
+
+    service
+        .add_appointment(add_appointment_command("appt-1", "slot-1"))
+        .unwrap();
+    service
+        .add_appointment(add_appointment_command("appt-1", "slot-2"))
+        .unwrap();
+
+    let layout = service
+        .get_weekly_layout_checked(WeeklyLayoutQuery::new(
+            NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        ))
+        .expect("valid query should succeed");
+
+    assert_eq!(layout.appointments.len(), 1);
+    assert_eq!(
+        layout.appointments[0].appointment_id,
+        AppointmentId::new("appt-1")
+    );
+    assert_eq!(layout.appointments[0].slot_id, SlotId::new("slot-2"));
 }

@@ -3,8 +3,8 @@ pub mod application;
 pub mod commands;
 pub mod domain;
 pub mod layout;
-pub mod state;
-pub mod validation;
+mod state;
+mod validation;
 
 pub use application::{
     ActorLookup, BusinessRuleError, CommandResult, ReferentialError, SchedulerError,

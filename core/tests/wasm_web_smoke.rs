@@ -143,7 +143,13 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
     let none_mode_json: serde_json::Value = serde_json::from_str(&none_mode_response).unwrap();
     assert_eq!(none_mode_json["status"], "success");
     assert_eq!(none_mode_json["data"]["slots"].as_array().unwrap().len(), 0);
-    assert_eq!(none_mode_json["data"]["appointments"].as_array().unwrap().len(), 0);
+    assert_eq!(
+        none_mode_json["data"]["appointments"]
+            .as_array()
+            .unwrap()
+            .len(),
+        0
+    );
 
     let empty_owners_response = adapter.execute_query_json(
         r#"{
@@ -157,9 +163,15 @@ fn web_consumer_smoke_flow_covers_success_and_error_envelopes() {
     let empty_owners_json: serde_json::Value =
         serde_json::from_str(&empty_owners_response).unwrap();
     assert_eq!(empty_owners_json["status"], "success");
-    assert_eq!(empty_owners_json["data"]["slots"].as_array().unwrap().len(), 0);
     assert_eq!(
-        empty_owners_json["data"]["appointments"].as_array().unwrap().len(),
+        empty_owners_json["data"]["slots"].as_array().unwrap().len(),
+        0
+    );
+    assert_eq!(
+        empty_owners_json["data"]["appointments"]
+            .as_array()
+            .unwrap()
+            .len(),
         0
     );
 }
