@@ -9,6 +9,12 @@ import {
   normalizeVisibleWindow,
 } from "../dist/board/model/view-model.js";
 import {
+  buildNowIndicatorForDate,
+  buildNowIndicatorForWeek,
+  localIsoDateFromDate,
+  minuteOfDayFromDate,
+} from "../dist/board/model/now-indicator.js";
+import {
   toAppointmentClickPayload,
   toEmptyCellClickPayload,
   toSlotClickPayload,
@@ -37,6 +43,75 @@ test("formats minute labels in 24h and 12h modes", () => {
   assert.equal(formatMinuteLabel(780, "24h"), "13:00");
   assert.equal(formatMinuteLabel(0, "12h"), "12:00 AM");
   assert.equal(formatMinuteLabel(780, "12h"), "1:00 PM");
+});
+
+test("computes reusable now indicator position for the rendered current date", () => {
+  const now = new Date(2026, 4, 6, 9, 30);
+
+  assert.equal(localIsoDateFromDate(now), "2026-05-06");
+  assert.equal(minuteOfDayFromDate(now), 570);
+  assert.deepEqual(
+    buildNowIndicatorForDate({
+      dateIso: "2026-05-06",
+      visibleStartMinute: 480,
+      visibleEndMinute: 1080,
+      now,
+    }),
+    {
+      minuteOfDay: 570,
+      topPercent: 15,
+    }
+  );
+});
+
+test("does not render now indicator for another date or outside visible time", () => {
+  const now = new Date(2026, 4, 6, 9, 30);
+
+  assert.equal(
+    buildNowIndicatorForDate({
+      dateIso: "2026-05-07",
+      visibleStartMinute: 480,
+      visibleEndMinute: 1080,
+      now,
+    }),
+    null
+  );
+  assert.equal(
+    buildNowIndicatorForDate({
+      dateIso: "2026-05-06",
+      visibleStartMinute: 600,
+      visibleEndMinute: 1080,
+      now,
+    }),
+    null
+  );
+});
+
+test("wraps now indicator position with a week day index", () => {
+  const now = new Date(2026, 4, 6, 9, 30);
+
+  assert.deepEqual(
+    buildNowIndicatorForWeek({
+      weekStartIso: "2026-05-04",
+      visibleStartMinute: 480,
+      visibleEndMinute: 1080,
+      now,
+    }),
+    {
+      minuteOfDay: 570,
+      topPercent: 15,
+      dayIndex: 2,
+    }
+  );
+  assert.equal(
+    buildNowIndicatorForWeek({
+      weekStartIso: "2026-05-11",
+      visibleStartMinute: 480,
+      visibleEndMinute: 1080,
+      now,
+    }),
+    null
+  );
 });
 
 test("maps slot and appointment interaction payloads", () => {
