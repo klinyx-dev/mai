@@ -95,10 +95,18 @@
         left: 8px;
         right: 8px;
         height: 12px;
+        margin: 0;
+        padding: 0;
+        border: 0;
         border-radius: 2px;
         z-index: 2;
         background: transparent;
         touch-action: none;
+    }
+
+    .mai-board__event-resize-handle:focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 1px;
     }
 
     .mai-board__event-resize-handles {

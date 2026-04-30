@@ -1,6 +1,7 @@
 import { defineComponent, h, ref, type PropType } from "vue";
 import type { InteractionAnchorRect, SlotRescheduleActionEventPayload } from "../../types";
 import type { CalendarEvent } from "../model/view-model";
+import { MIN_SLOT_SPAN_MINUTES } from "../model/slot-gesture";
 import { MaiEventCardBody } from "./event-card/MaiEventCardBody";
 import { MaiEventResizeHandles } from "./event-card/MaiEventResizeHandles";
 import {
@@ -15,6 +16,10 @@ import {
   swallowNextClickFromDrag,
 } from "./event-card/helpers";
 import type { DragMode, DragState } from "./event-card/types";
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
 
 export const MaiEventCard = defineComponent({
   name: "MaiEventCard",
@@ -157,6 +162,44 @@ export const MaiEventCard = defineComponent({
       }
     }
 
+    function resizeByKeyboard(mode: DragMode, deltaMinutes: number) {
+      if (props.event.kind !== "slot" || !props.onSlotReschedule || deltaMinutes === 0) {
+        return;
+      }
+
+      const baseStart = props.event.startMinute;
+      const baseEnd = props.event.endMinute;
+      let nextStart = baseStart;
+      let nextEnd = baseEnd;
+
+      if (mode === "resize-top") {
+        nextStart = clamp(
+          baseStart + deltaMinutes,
+          0,
+          baseEnd - MIN_SLOT_SPAN_MINUTES
+        );
+      } else if (mode === "resize-bottom") {
+        nextEnd = clamp(
+          baseEnd + deltaMinutes,
+          baseStart + MIN_SLOT_SPAN_MINUTES,
+          1440
+        );
+      } else {
+        return;
+      }
+
+      if (nextStart === baseStart && nextEnd === baseEnd) {
+        return;
+      }
+
+      props.onSlotReschedule({
+        slotId: props.event.slotId,
+        dayIndex: props.event.dayIndex,
+        startMinute: nextStart,
+        endMinute: nextEnd,
+      });
+    }
+
     return () => {
       const state = dragState.value;
       const showGhost = Boolean(state && dragMoved.value);
@@ -197,7 +240,10 @@ export const MaiEventCard = defineComponent({
           onPointerdown={(event) => startDrag("move", event)}
         >
           {props.event.kind === "slot" ? (
-            <MaiEventResizeHandles onStartDrag={startDrag} />
+            <MaiEventResizeHandles
+              onStartDrag={startDrag}
+              onResizeByKeyboard={resizeByKeyboard}
+            />
           ) : null}
           <MaiEventCardBody
             eventKind={props.event.kind}
