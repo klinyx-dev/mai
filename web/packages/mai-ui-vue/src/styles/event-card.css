@@ -17,6 +17,7 @@
         transform 160ms ease,
         background-color 160ms ease,
         opacity 160ms ease;
+        touch-action: none;
     }
 
     .mai-board__event:hover {
@@ -97,6 +98,7 @@
         border-radius: 2px;
         z-index: 2;
         background: transparent;
+        touch-action: none;
     }
 
     .mai-board__event-resize-handles {

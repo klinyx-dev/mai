@@ -79,7 +79,7 @@ export const MaiEventCard = defineComponent({
     }
 
     function bindDragLifecycle() {
-      const onMove = (moveEvent: MouseEvent) => {
+      const onMove = (moveEvent: PointerEvent) => {
         const state = dragState.value;
         if (!state) {
           return;
@@ -100,8 +100,8 @@ export const MaiEventCard = defineComponent({
       };
 
       const onUp = () => {
-        window.removeEventListener("mousemove", onMove);
-        window.removeEventListener("mouseup", onUp);
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
 
         if (dragMoved.value) {
           swallowNextClickFromDrag();
@@ -113,11 +113,11 @@ export const MaiEventCard = defineComponent({
         suppressNextClick.value = dragMoved.value;
       };
 
-      window.addEventListener("mousemove", onMove);
-      window.addEventListener("mouseup", onUp);
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
     }
 
-    function startDrag(mode: DragMode, event: MouseEvent) {
+    function startDrag(mode: DragMode, event: PointerEvent) {
       if (event.button !== 0 || props.event.kind !== "slot") {
         return;
       }
@@ -194,7 +194,7 @@ export const MaiEventCard = defineComponent({
             );
           }}
           onKeydown={handleKeydown}
-          onMousedown={(event) => startDrag("move", event)}
+          onPointerdown={(event) => startDrag("move", event)}
         >
           {props.event.kind === "slot" ? (
             <MaiEventResizeHandles onStartDrag={startDrag} />
