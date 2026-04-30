@@ -2,6 +2,7 @@ use crate::application::errors::{BusinessRuleError, ReferentialError, SchedulerE
 use crate::state::schedule_state::ScheduleState;
 use std::collections::HashSet;
 
+// Validate that each appointment has a corresponding slot in the schedule state
 pub fn validate_slot_appointment_invariants(state: &ScheduleState) -> Result<(), SchedulerError> {
     let appointment_ids = state.appointment_ids_sorted();
     let mut seen_slot_ids = HashSet::new();

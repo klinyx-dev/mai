@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+// Errors that occur before the business logic is executed
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
 pub enum StructuralError {
     #[error("invalid time range")]
@@ -29,6 +30,7 @@ pub enum ReferentialError {
     CancellerNotFound,
 }
 
+// Errors that occur during the business logic execution
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
 pub enum BusinessRuleError {
     #[error("slot overlaps with an existing active slot for the same resource owner")]

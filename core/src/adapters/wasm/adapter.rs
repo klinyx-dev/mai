@@ -21,6 +21,8 @@ impl WasmSchedulerAdapter {
         }
     }
 
+    // Execute a command request from the WASM adapter
+    // Returns a response indicating whether the command was successfully executed
     pub fn execute_command(&mut self, request: WasmCommandRequest) -> WasmCommandResponse {
         let result = match request {
             WasmCommandRequest::AddSlot(cmd) => self.service.add_slot(cmd.into()),
@@ -46,6 +48,8 @@ impl WasmSchedulerAdapter {
         }
     }
 
+    // Execute a query request from the WASM adapter
+    // Returns a response containing the query result or an error
     pub fn execute_query(&self, request: WasmQueryRequest) -> WasmQueryResponse {
         match request {
             WasmQueryRequest::WeeklyLayout(query) => match normalize_weekly_anchor_date(&query) {
@@ -63,6 +67,7 @@ impl WasmSchedulerAdapter {
         }
     }
 
+    // Execute a command request from the WASM adapter using a JSON string
     pub fn execute_command_json(&mut self, input: &str) -> String {
         let response = match parse_command_request(input) {
             Ok(request) => self.execute_command(request),
@@ -74,6 +79,7 @@ impl WasmSchedulerAdapter {
         render_command_response(&response).expect("adapter command response must be serializable")
     }
 
+    // Execute a query request from the WASM adapter using a JSON string
     pub fn execute_query_json(&self, input: &str) -> String {
         let response = match parse_query_request(input) {
             Ok(request) => self.execute_query(request),

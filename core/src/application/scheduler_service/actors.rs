@@ -4,6 +4,7 @@ use crate::application::errors::ReferentialError;
 use super::SchedulerService;
 
 impl SchedulerService {
+    // Check if the actor exists
     pub(crate) fn ensure_actor_exists(
         &self,
         actor_id: &crate::domain::ActorId,

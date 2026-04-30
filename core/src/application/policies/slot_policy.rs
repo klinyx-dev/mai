@@ -4,6 +4,8 @@ use crate::domain::slot::Slot;
 use crate::domain::time_range::TimeRange;
 use crate::state::schedule_state::ScheduleState;
 
+// Verify if the candidate slot overlaps with any existing slot for the resource owner
+// Returns an error if the candidate slot overlaps with an existing slot
 pub fn ensure_no_overlap_for_resource_owner(
     state: &ScheduleState,
     candidate: &Slot,
@@ -23,10 +25,12 @@ pub fn ensure_no_overlap_for_resource_owner(
     Ok(())
 }
 
+// Check if the slot status is active (available or booked)
 fn is_active(status: SlotStatus) -> bool {
     matches!(status, SlotStatus::Available | SlotStatus::Booked)
 }
 
+// Check if two time ranges overlap
 fn overlaps(left: &TimeRange, right: &TimeRange) -> bool {
     left.start < right.end && right.start < left.end
 }

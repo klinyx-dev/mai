@@ -13,6 +13,7 @@ pub(super) struct SlotLayoutPosition {
     pub(super) clipped_end: bool,
 }
 
+// Calculate the layout position of a slot within a week
 pub(super) fn slot_layout_position(slot: &Slot, week: &WeekRange) -> Option<SlotLayoutPosition> {
     let week_clipped = clip_time_range_to_week(&slot.time, week)?;
     let day = week_clipped.start.date_naive();
@@ -37,6 +38,7 @@ pub(super) fn slot_layout_position(slot: &Slot, week: &WeekRange) -> Option<Slot
     })
 }
 
+// Calculate the number of minutes since the start of a day
 fn minutes_since_day_start(timestamp: DateTime<Utc>, day_start: DateTime<Utc>) -> Option<u16> {
     let minutes = (timestamp - day_start).num_minutes();
     u16::try_from(minutes).ok()

@@ -4,6 +4,8 @@ use crate::{ActorId, CalendarOwnerFilter, WeeklyLayoutQuery};
 
 use super::{WasmAdapterError, WasmViewFilterMode, WasmWeeklyLayoutQuery};
 
+// Normalize the weekly anchor date based on the timezone
+// Converts the anchor date to UTC if a timezone is specified
 pub(crate) fn normalize_weekly_anchor_date(
     query: &WasmWeeklyLayoutQuery,
 ) -> Result<NaiveDate, WasmAdapterError> {
@@ -26,6 +28,8 @@ pub(crate) fn normalize_weekly_anchor_date(
         .ok_or_else(WasmAdapterError::invalid_timezone)
 }
 
+// Convert the anchor date to UTC based on the timezone,
+// or return the anchor date if no timezone is specified
 pub(crate) fn core_weekly_query(
     anchor_date: NaiveDate,
     query: &WasmWeeklyLayoutQuery,
@@ -55,6 +59,7 @@ pub(crate) fn core_weekly_query(
     }
 }
 
+// Convert a local anchor date to a UTC date based on the timezone
 fn local_anchor_to_utc_date(anchor_date: NaiveDate, timezone: chrono_tz::Tz) -> Option<NaiveDate> {
     for hour in 0..24 {
         let local_time = anchor_date.and_hms_opt(hour, 0, 0)?;

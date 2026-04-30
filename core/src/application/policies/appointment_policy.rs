@@ -4,6 +4,8 @@ use crate::domain::ids::{ActorId, SlotId};
 use crate::domain::slot::Slot;
 use crate::state::schedule_state::ScheduleState;
 
+// Verify if there is already an appointment for the given slot
+// Returns an error if an appointment already exists for the slot
 pub fn ensure_no_appointment_for_slot(
     state: &ScheduleState,
     slot_id: &SlotId,
@@ -17,6 +19,8 @@ pub fn ensure_no_appointment_for_slot(
     Ok(())
 }
 
+// Verify if the actor can cancel the appointment
+// Returns an error if the actor is NOT allowed to cancel the appointment
 pub fn ensure_actor_can_cancel_appointment(
     appointment: &Appointment,
     slot: &Slot,
