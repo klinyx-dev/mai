@@ -84,10 +84,18 @@ export function buildActivePopoverStyle(params: {
     return popoverStyleFromAnchorRect(selection.selectedAppointment.anchorRect);
   }
   if (selection.pendingSlotDraft) {
+    const draftStartMinute =
+      typeof selection.pendingSlotDraft.startMinute === "number"
+        ? selection.pendingSlotDraft.startMinute
+        : selection.pendingSlotDraft.minuteOfDay;
+    const draftEndMinute =
+      typeof selection.pendingSlotDraft.endMinute === "number"
+        ? selection.pendingSlotDraft.endMinute
+        : draftStartMinute + params.defaultSlotDurationMinutes;
     const anchorRect = buildDraftAnchorRect({
       columnRect: selection.pendingSlotDraft.columnRect,
-      minuteOfDay: selection.pendingSlotDraft.minuteOfDay,
-      durationMinutes: params.defaultSlotDurationMinutes,
+      minuteOfDay: draftStartMinute,
+      durationMinutes: Math.max(draftEndMinute - draftStartMinute, MIN_SLOT_SPAN_MINUTES),
       visibleStartMinute: params.visibleStartMinute,
       visibleEndMinute: params.visibleEndMinute,
     });
@@ -104,14 +112,23 @@ export function buildPreviewSlotDraft(params: {
     return null;
   }
 
-  const startMinute = Math.max(
+  const fallbackStartMinute = Math.max(
     0,
     Math.min(1440, params.selection.pendingSlotDraft.minuteOfDay)
   );
+  const rawStartMinute =
+    typeof params.selection.pendingSlotDraft.startMinute === "number"
+      ? params.selection.pendingSlotDraft.startMinute
+      : fallbackStartMinute;
+  const startMinute = Math.max(0, Math.min(1440, rawStartMinute));
 
+  const rawEndMinute =
+    typeof params.selection.pendingSlotDraft.endMinute === "number"
+      ? params.selection.pendingSlotDraft.endMinute
+      : startMinute + params.defaultSlotDurationMinutes;
   const endMinute = Math.max(
     startMinute + MIN_SLOT_SPAN_MINUTES,
-    Math.min(1440, startMinute + params.defaultSlotDurationMinutes)
+    Math.min(1440, rawEndMinute)
   );
 
   return {

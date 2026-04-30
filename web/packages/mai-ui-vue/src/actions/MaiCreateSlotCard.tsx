@@ -57,12 +57,25 @@ export const MaiCreateSlotCard = defineComponent({
 
     function resetDraftTimeFields() {
       const safeDuration = clampSlotDurationMinutes(props.defaultDurationMinutes);
-      startTimeLabel.value = timeLabelFromMinuteOfDay(props.draft.minuteOfDay);
-      endTimeLabel.value = timeLabelFromMinuteOfDay(props.draft.minuteOfDay + safeDuration);
+      const startMinute =
+        typeof props.draft.startMinute === "number"
+          ? props.draft.startMinute
+          : props.draft.minuteOfDay;
+      const endMinute =
+        typeof props.draft.endMinute === "number"
+          ? props.draft.endMinute
+          : startMinute + safeDuration;
+      startTimeLabel.value = timeLabelFromMinuteOfDay(startMinute);
+      endTimeLabel.value = timeLabelFromMinuteOfDay(endMinute);
     }
 
     watch(
-      () => [props.draft.dayIndex, props.draft.minuteOfDay],
+      () => [
+        props.draft.dayIndex,
+        props.draft.minuteOfDay,
+        props.draft.startMinute,
+        props.draft.endMinute,
+      ],
       () => resetDraftTimeFields(),
       { immediate: true }
     );
@@ -71,8 +84,14 @@ export const MaiCreateSlotCard = defineComponent({
       const parsedStartMinute = minuteOfDayFromTimeLabel(startTimeLabel.value);
       const parsedEndMinute = minuteOfDayFromTimeLabel(endTimeLabel.value);
       const fallbackDuration = clampSlotDurationMinutes(props.defaultDurationMinutes);
-      const fallbackStart = props.draft.minuteOfDay;
-      const fallbackEnd = props.draft.minuteOfDay + fallbackDuration;
+      const fallbackStart =
+        typeof props.draft.startMinute === "number"
+          ? props.draft.startMinute
+          : props.draft.minuteOfDay;
+      const fallbackEnd =
+        typeof props.draft.endMinute === "number"
+          ? props.draft.endMinute
+          : fallbackStart + fallbackDuration;
 
       return buildCreateSlotPayloadFromRange({
         weekStartIso: props.weekStartIso,

@@ -64,6 +64,21 @@ test("empty cell click on different target also closes create-slot popover", () 
   assert.equal(overlayKindForSelection(toggled), "none");
 });
 
+test("empty cell draft preserves dragged range when present", () => {
+  const payload = {
+    dayIndex: 2,
+    minuteOfDay: 540,
+    startMinute: 615,
+    endMinute: 705,
+    clientX: 120,
+    clientY: 240,
+    columnRect: { left: 80, top: 120, width: 160, height: 600 },
+  };
+  const selection = withEmptyCellDraft(payload);
+
+  assert.deepEqual(selection.pendingSlotDraft, payload);
+});
+
 test("slot click opens slot actions popover", () => {
   const next = withSlotSelected({
     slotId: "slot-1",
