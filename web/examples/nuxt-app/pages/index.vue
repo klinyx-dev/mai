@@ -12,9 +12,8 @@ import type {
   MaiAppointmentChangedEventPayload,
   MaiInteractionErrorPayload,
   MaiSlotCreatedEventPayload,
-  MaiSlotRescheduledEventPayload,
   MaiViewFilter,
-  MaiViewFilterOption,
+  MaiSlotRescheduledEventPayload,
   SlotActionEventPayload,
 } from "@mai/mai-ui-vue";
 
@@ -25,14 +24,28 @@ const loading = ref(false);
 const errorMessage = ref<string | null>(null);
 const interactionMessage = ref<string>("No UI interaction yet.");
 const anchorDate = ref("2026-05-07");
-const resourceOwnerId = "owner-42";
+const ownerIds = ["owner-42", "owner-77", "owner-90"] as const;
+const ownerLabels: Record<(typeof ownerIds)[number], string> = {
+  "owner-42": "Dr Martin",
+  "owner-77": "Dr Bernard",
+  "owner-90": "Dr Dupont",
+};
+const selectedOwnerIds = ref<string[]>([ownerIds[0]]);
 const operatorId = "operator-1";
-const activeViewFilter = ref<MaiViewFilter>({ mode: "owners", ids: [resourceOwnerId] });
-const viewFilterOptions: MaiViewFilterOption[] = [
-  { label: "All resources", value: { mode: "all", ids: [] } },
-  { label: "Selected owners", value: { mode: "owners", ids: [resourceOwnerId] } },
-  { label: "Team A", value: { mode: "group", ids: [resourceOwnerId] } },
-];
+
+function uniqueIds(ids: readonly string[]): string[] {
+  return Array.from(new Set(ids));
+}
+
+function toOwnerFilter(ids: readonly string[]): MaiViewFilter {
+  const normalizedIds = uniqueIds(ids);
+  if (normalizedIds.length === 0) {
+    return { mode: "none" };
+  }
+  return { mode: "owners", ids: normalizedIds };
+}
+
+const activeViewFilter = ref<MaiViewFilter>(toOwnerFilter(selectedOwnerIds.value));
 
 let mai: ReturnType<typeof useMai> | null = null;
 const SUCCESS_EVENT_TO_ACTION = {
@@ -161,7 +174,7 @@ const boardView = {
 } as const;
 
 const boardActor = computed(() => ({
-  resourceOwnerId,
+  resourceOwnerId: ownerIds[0],
   createdBy: operatorId,
   bookAppointmentInviteeIds: ["participant-7"],
   bookAppointmentTitle: "Planning session",
@@ -176,7 +189,33 @@ const boardActions = {
 async function onViewFilterChange(viewFilter: MaiViewFilter): Promise<void> {
   activeViewFilter.value = viewFilter;
   interactionMessage.value = `view-filter-change: ${viewFilter.mode}`;
+  selectedOwnerIds.value =
+    viewFilter.mode === "owners" || viewFilter.mode === "group"
+      ? uniqueIds(viewFilter.ids)
+      : [];
   await refreshWeek();
+}
+
+async function showAllCalendars(): Promise<void> {
+  selectedOwnerIds.value = [];
+  await onViewFilterChange({ mode: "all" });
+}
+
+async function showNoCalendars(): Promise<void> {
+  selectedOwnerIds.value = [];
+  await onViewFilterChange({ mode: "none" });
+}
+
+function isOwnerSelected(ownerId: string): boolean {
+  return selectedOwnerIds.value.includes(ownerId);
+}
+
+async function toggleOwner(ownerId: string): Promise<void> {
+  const nextSelected = isOwnerSelected(ownerId)
+    ? selectedOwnerIds.value.filter((id) => id !== ownerId)
+    : [...selectedOwnerIds.value, ownerId];
+  selectedOwnerIds.value = uniqueIds(nextSelected);
+  await onViewFilterChange(toOwnerFilter(selectedOwnerIds.value));
 }
 
 onMounted(async () => {
@@ -193,23 +232,55 @@ onMounted(async () => {
     </p>
     <div style="display: flex; gap: 8px; margin: 0 0 12px">
       <button
-        v-for="option in viewFilterOptions"
-        :key="option.label"
         type="button"
         :style="{
-          border: activeViewFilter.mode === option.value.mode ? '1px solid #111827' : '1px solid #d1d5db',
-          background: activeViewFilter.mode === option.value.mode ? '#111827' : '#ffffff',
-          color: activeViewFilter.mode === option.value.mode ? '#ffffff' : '#111827',
+          border: activeViewFilter.mode === 'all' ? '1px solid #111827' : '1px solid #d1d5db',
+          background: activeViewFilter.mode === 'all' ? '#111827' : '#ffffff',
+          color: activeViewFilter.mode === 'all' ? '#ffffff' : '#111827',
           borderRadius: '999px',
           padding: '6px 12px',
           font: '500 13px/1.2 Inter, sans-serif',
           cursor: 'pointer'
         }"
-        @click="onViewFilterChange(option.value)"
+        @click="showAllCalendars"
       >
-        {{ option.label }}
+        All calendars
+      </button>
+      <button
+        type="button"
+        :style="{
+          border: activeViewFilter.mode === 'none' ? '1px solid #111827' : '1px solid #d1d5db',
+          background: activeViewFilter.mode === 'none' ? '#111827' : '#ffffff',
+          color: activeViewFilter.mode === 'none' ? '#ffffff' : '#111827',
+          borderRadius: '999px',
+          padding: '6px 12px',
+          font: '500 13px/1.2 Inter, sans-serif',
+          cursor: 'pointer'
+        }"
+        @click="showNoCalendars"
+      >
+        No calendars
       </button>
     </div>
+    <fieldset
+      style="margin: 0 0 12px; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 12px"
+    >
+      <legend style="padding: 0 4px; font: 500 12px/1.2 Inter, sans-serif; color: #4b5563">
+        Resource owners
+      </legend>
+      <label
+        v-for="ownerId in ownerIds"
+        :key="ownerId"
+        style="display: flex; align-items: center; gap: 8px; margin: 6px 0; font: 500 13px/1.4 Inter, sans-serif; color: #111827; cursor: pointer"
+      >
+        <input
+          type="checkbox"
+          :checked="isOwnerSelected(ownerId)"
+          @change="toggleOwner(ownerId)"
+        />
+        <span>{{ ownerLabels[ownerId] }}</span>
+      </label>
+    </fieldset>
     <ClientOnly>
       <MaiBoardInteractive
         :layout="layout"
@@ -219,7 +290,6 @@ onMounted(async () => {
         :view="boardView"
         :actor="boardActor"
         :view-filter="activeViewFilter"
-        :view-filter-options="viewFilterOptions"
         :actions="boardActions"
         @navigate-week="navigateWeek"
         @slot-created="onSlotCreated"
