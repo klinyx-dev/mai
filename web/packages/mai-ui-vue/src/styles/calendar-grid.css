@@ -123,6 +123,27 @@
         pointer-events: none;
     }
 
+    .mai-board__now-indicator {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0;
+        border-top: 1px solid #dc2626;
+        transform: translateY(-0.5px);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .mai-board__now-indicator-dot {
+        position: absolute;
+        top: -4px;
+        left: 6px;
+        width: 7px;
+        height: 7px;
+        border-radius: var(--radius-full);
+        background: #dc2626;
+    }
+
     .mai-board__empty {
         position: absolute;
         top: 12px;

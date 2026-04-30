@@ -42,6 +42,11 @@ export const MaiBoard = defineComponent({
                 visibleStartMinute={controller.visibleWindow.value.startMinute}
                 visibleEndMinute={controller.visibleWindow.value.endMinute}
                 totalVisibleMinutes={controller.totalVisibleMinutes.value}
+                nowIndicatorTopPercent={
+                  controller.nowIndicator.value?.dayIndex === column.dayIndex
+                    ? controller.nowIndicator.value.topPercent
+                    : null
+                }
                 onSlotClick={controller.handleSlotClick}
                 onAppointmentClick={controller.handleAppointmentClick}
                 onEmptyCellClick={controller.handleEmptyCellClick}

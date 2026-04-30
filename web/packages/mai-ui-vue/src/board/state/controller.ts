@@ -20,6 +20,7 @@ import {
   startOfWeekIso,
   weekRangeLabel,
 } from "../model/view-model";
+import { buildNowIndicatorForWeek } from "../model/now-indicator";
 
 export function useMaiBoardController(props: MaiBoardProps, emit: MaiBoardEmit) {
   const selectedSlot = ref<SlotClickEventPayload | null>(null);
@@ -52,6 +53,14 @@ export function useMaiBoardController(props: MaiBoardProps, emit: MaiBoardEmit) 
 
   const calendarEvents = computed(() => mapCalendarEvents(props.layout));
   const dayColumns = computed(() => buildDayColumns(weekStartIso.value, calendarEvents.value));
+  const nowIndicator = computed(() =>
+    buildNowIndicatorForWeek({
+      weekStartIso: weekStartIso.value,
+      visibleStartMinute: visibleWindow.value.startMinute,
+      visibleEndMinute: visibleWindow.value.endMinute,
+      now: new Date(),
+    })
+  );
 
   function clearActions() {
     selectedSlot.value = null;
@@ -128,6 +137,7 @@ export function useMaiBoardController(props: MaiBoardProps, emit: MaiBoardEmit) 
     totalVisibleMinutes,
     minuteTextFormatter,
     dayColumns,
+    nowIndicator,
     clearActions,
     handleSlotClick,
     handleAppointmentClick,

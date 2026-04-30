@@ -1,6 +1,7 @@
 import { defineComponent, h, type PropType } from "vue";
 import { MaiEventCard } from "./MaiEventCard";
 import { MaiDraftEventCard } from "./day-column/MaiDraftEventCard";
+import { MaiNowIndicator } from "./MaiNowIndicator";
 import type { DayColumn } from "../model/view-model";
 import { clampToVisibleRange } from "../model/view-model";
 import { MIN_SLOT_SPAN_MINUTES } from "../model/slot-gesture";
@@ -28,6 +29,11 @@ export const MaiDayColumn = defineComponent({
     visibleStartMinute: { type: Number, required: true },
     visibleEndMinute: { type: Number, required: true },
     totalVisibleMinutes: { type: Number, required: true },
+    nowIndicatorTopPercent: {
+      type: Number as PropType<number | null>,
+      required: false,
+      default: null,
+    },
     onSlotClick: {
       type: Function as PropType<(payload: SlotClickEventPayload) => void>,
       required: true,
@@ -142,6 +148,9 @@ export const MaiDayColumn = defineComponent({
               ></div>
             );
           })}
+          {typeof props.nowIndicatorTopPercent === "number" ? (
+            <MaiNowIndicator topPercent={props.nowIndicatorTopPercent} />
+          ) : null}
           {props.column.events.map((event) => {
             const position = computePosition(event.startMinute, event.endMinute);
             if (!position) {
