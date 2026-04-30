@@ -1251,3 +1251,25 @@ For this project, the correct near-term architecture is:
 - WASM adapter later, not TypeScript core first
 
 Anything else creates unnecessary rework
+
+## 22. Core Layer Dependency Contract
+
+The core architecture is enforced by layer responsibility and dependency direction:
+
+- `domain`: entities and value objects only; no adapter/platform knowledge
+- `application`: orchestrates commands/queries and state mutation
+- `state`: controlled storage surface for slots/appointments
+- `layout`: semantic projections only
+- `adapters`: transport/wire/platform boundary
+
+Dependency direction is inward:
+- `adapters -> application -> domain/state/layout`
+
+Forbidden dependency examples:
+- `domain -> adapters`
+- `layout -> adapters`
+- `domain -> application`
+
+Public API strategy:
+- expose stable service, command/query contracts, and layout outputs
+- keep internal validation/state/helper modules non-primary and constrained
