@@ -22,6 +22,11 @@ Use `MaiBoardInteractive` when you want built-in action cards and command orches
 
 Use `MaiBookingFlow` when you want a client-facing booking flow.
 
+Board interaction highlights:
+- current-time indicator line (today column only, minute-level refresh),
+- blank-space click to open create-slot overlay,
+- blank-space drag to preselect create-slot time range.
+
 ## `MaiBoardInteractive` (recommended)
 
 ```vue

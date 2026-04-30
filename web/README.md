@@ -79,7 +79,11 @@ UI package tests now cover:
 - Empty-cell behavior:
   - click blank cell to open create-slot card,
   - click the same blank cell again to close it,
-  - click another blank cell to retarget the current draft.
+  - click another blank cell to retarget the current draft,
+  - drag on blank grid space (down or up) to preselect a time range and open create-slot with that range.
+- Current-time behavior:
+  - a red now-indicator line is rendered on the current day when now is inside the visible time window,
+  - indicator position refreshes on minute boundaries.
 - Create-slot card supports editable start/end times (`HH:MM`, minute precision); emitted payload is normalized deterministically when the edited range is invalid (`start >= end`).
 
 Example consumption:
