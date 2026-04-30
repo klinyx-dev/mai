@@ -27,6 +27,14 @@ Board interaction highlights:
 - blank-space click to open create-slot overlay,
 - blank-space drag to preselect create-slot time range.
 
+`MaiBoardInteractive` calendar filter contract:
+- `{ mode: "all" }`
+- `{ mode: "none" }`
+- `{ mode: "owners", ids: string[] }`
+- `{ mode: "group", ids: string[] }`
+
+For `owners` and `group`, an empty `ids` selection is treated as "none selected" at the core query boundary.
+
 ## `MaiBoardInteractive` (recommended)
 
 ```vue
@@ -61,6 +69,7 @@ const actions = { mutateCommand };
     :anchor-date="anchorDate"
     :view="view"
     :actor="actor"
+    :view-filter="{ mode: 'owners', ids: ['owner-42'] }"
     :actions="actions"
     @navigate-week="navigateWeek"
     @slot-created="refreshWeek"

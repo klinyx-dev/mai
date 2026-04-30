@@ -71,6 +71,12 @@ UI package tests now cover:
   - `appointment-cancelled`, `appointment-deleted`
   - `interaction-error`
 - It exposes `MAI_BOARD_INTERACTIVE_EVENTS` as the canonical event-name constants for app integrations.
+- Calendar filter contract for `view_filter` / `viewFilter`:
+  - `{ mode: "all" }`: show all resource owners.
+  - `{ mode: "none" }`: show no resource owners (empty calendar result by design).
+  - `{ mode: "owners", ids: [...] }`: show only listed resource owners.
+  - `{ mode: "group", ids: [...] }`: boundary-level grouping mode; IDs must already be resolved for the query boundary.
+  - Empty `ids` for `owners`/`group` deterministically maps to no selected owners.
 - Slot direct manipulation behavior:
   - drag slot chip body to move time/day (15-minute snap),
   - drag top/bottom slot edge to resize time range (15-minute snap),
@@ -189,6 +195,22 @@ const command = createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
 });
 
 const ok = await mai.mutate(command);
+```
+
+## Calendar filtering contract
+
+Core layout filtering is owner-based and deterministic:
+- slots are filtered by `resource_owner_id`,
+- appointments are included/excluded through their referenced slot owner,
+- clinic/specialty/doctor UI filters must resolve to owner IDs before calling the core query.
+
+Query payload examples:
+
+```ts
+{ view_filter: { mode: "all" } }
+{ view_filter: { mode: "none" } }
+{ view_filter: { mode: "owners", ids: ["owner-42", "owner-77"] } }
+{ view_filter: { mode: "group", ids: ["team-a"] } }
 ```
 
 Why:
