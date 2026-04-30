@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  computeCreateDraftFromBlankDrag,
   computeMoveDraft,
   computeResizeBottomDraft,
   computeResizeTopDraft,
+  minuteOfDayFromPointer,
 } from "../dist/board/model/slot-gesture.js";
 
 const gestureBaseline = {
@@ -63,5 +65,81 @@ test("computeResizeBottomDraft clamps to day boundary", () => {
   assert.deepEqual(draft, {
     startMinute: 1380,
     endMinute: 1440,
+  });
+});
+
+test("minuteOfDayFromPointer maps pointer position to snapped minutes", () => {
+  const minute = minuteOfDayFromPointer({
+    clientY: 200,
+    columnTop: 100,
+    columnHeight: 600,
+    visibleStartMinute: 480,
+    visibleEndMinute: 1080,
+  });
+
+  assert.equal(minute, 585);
+});
+
+test("computeCreateDraftFromBlankDrag builds a downward drag range", () => {
+  const draft = computeCreateDraftFromBlankDrag({
+    pointerDownClientY: 100,
+    pointerCurrentClientY: 200,
+    columnTop: 100,
+    columnHeight: 600,
+    visibleStartMinute: 480,
+    visibleEndMinute: 1080,
+  });
+
+  assert.deepEqual(draft, {
+    startMinute: 480,
+    endMinute: 585,
+  });
+});
+
+test("computeCreateDraftFromBlankDrag normalizes upward drag range", () => {
+  const draft = computeCreateDraftFromBlankDrag({
+    pointerDownClientY: 260,
+    pointerCurrentClientY: 140,
+    columnTop: 100,
+    columnHeight: 600,
+    visibleStartMinute: 480,
+    visibleEndMinute: 1080,
+  });
+
+  assert.deepEqual(draft, {
+    startMinute: 525,
+    endMinute: 645,
+  });
+});
+
+test("computeCreateDraftFromBlankDrag enforces minimum slot span", () => {
+  const draft = computeCreateDraftFromBlankDrag({
+    pointerDownClientY: 100,
+    pointerCurrentClientY: 102,
+    columnTop: 100,
+    columnHeight: 600,
+    visibleStartMinute: 480,
+    visibleEndMinute: 1080,
+  });
+
+  assert.deepEqual(draft, {
+    startMinute: 480,
+    endMinute: 485,
+  });
+});
+
+test("computeCreateDraftFromBlankDrag clamps to visible window", () => {
+  const draft = computeCreateDraftFromBlankDrag({
+    pointerDownClientY: 700,
+    pointerCurrentClientY: 900,
+    columnTop: 100,
+    columnHeight: 600,
+    visibleStartMinute: 480,
+    visibleEndMinute: 1080,
+  });
+
+  assert.deepEqual(draft, {
+    startMinute: 1080 - 5,
+    endMinute: 1080,
   });
 });
