@@ -15,6 +15,7 @@ export type {
 } from "./types/actions";
 export type {
   MaiActionRunner,
+  MaiBoardInteractiveEvent,
   MaiAppointmentChangedEventPayload,
   MaiBoardInteractiveActionConfig,
   MaiBoardInteractiveActorConfig,

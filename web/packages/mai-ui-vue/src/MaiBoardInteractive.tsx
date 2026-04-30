@@ -42,6 +42,7 @@ import {
   maiBoardInteractiveEmits,
   maiBoardInteractiveProps,
 } from "./interactive/board-interactive-contract";
+import { MAI_BOARD_INTERACTIVE_EVENTS } from "./types/interactive";
 import type {
   MaiActionRunner,
   MaiInteractionAction,
@@ -146,9 +147,9 @@ export const MaiBoardInteractive = defineComponent({
         handler,
         state: selection.value,
       });
-      if (outcome.emittedEvent === "interaction-error") {
+      if (outcome.emittedEvent === MAI_BOARD_INTERACTIVE_EVENTS.INTERACTION_ERROR) {
         interactionError.value = outcome.emittedPayload.message;
-        emit("interaction-error", outcome.emittedPayload);
+        emit(MAI_BOARD_INTERACTIVE_EVENTS.INTERACTION_ERROR, outcome.emittedPayload);
       } else {
         selection.value = outcome.nextState;
         (emit as (event: string, payload: unknown) => void)(

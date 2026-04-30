@@ -39,8 +39,9 @@ test("exports primary package entry points", () => {
 test("exports interactive constants", () => {
   assert.match(
     distEntry,
-    /export \{ INTERACTION_ACTIONS, INTERACTION_SUCCESS_EVENTS \} from "\.\/types\/interactive";/
+    /MAI_BOARD_INTERACTIVE_EVENTS/
   );
+  assert.match(distTypes, /MaiBoardInteractiveEvent/);
   assert.match(
     distTypes,
     /MaiBoardInteractiveActionConfig/,

@@ -4,7 +4,11 @@ import {
   withSlotSelected,
   type MaiInteractionSelectionState,
 } from "./state";
-import { INTERACTION_ACTIONS, INTERACTION_SUCCESS_EVENTS } from "../types/interactive";
+import {
+  INTERACTION_ACTIONS,
+  INTERACTION_SUCCESS_EVENTS,
+  MAI_BOARD_INTERACTIVE_EVENTS,
+} from "../types/interactive";
 import type {
   AppointmentActionEventPayload,
   AppointmentClickEventPayload,
@@ -58,21 +62,21 @@ interface BoardListenersParams {
 export function createBoardListeners(params: BoardListenersParams) {
   return {
     [BOARD_EVENT_KEYS.NAVIGATE_WEEK]: (shift: WeekShift) =>
-      params.emit("navigate-week", shift),
+      params.emit(MAI_BOARD_INTERACTIVE_EVENTS.NAVIGATE_WEEK, shift),
     [BOARD_EVENT_KEYS.SLOT_CLICK]: (payload: SlotClickEventPayload) => {
       params.setSelection(withSlotSelected(payload));
       params.clearInteractionError();
-      params.emit("slot-click", payload);
+      params.emit(MAI_BOARD_INTERACTIVE_EVENTS.SLOT_CLICK, payload);
     },
     [BOARD_EVENT_KEYS.APPOINTMENT_CLICK]: (payload: AppointmentClickEventPayload) => {
       params.setSelection(withAppointmentSelected(payload));
       params.clearInteractionError();
-      params.emit("appointment-click", payload);
+      params.emit(MAI_BOARD_INTERACTIVE_EVENTS.APPOINTMENT_CLICK, payload);
     },
     [BOARD_EVENT_KEYS.EMPTY_CELL_CLICK]: (payload: EmptyCellClickEventPayload) => {
       params.setSelection(applyEmptyCellClick(params.getSelection(), payload));
       params.clearInteractionError();
-      params.emit("empty-cell-click", payload);
+      params.emit(MAI_BOARD_INTERACTIVE_EVENTS.EMPTY_CELL_CLICK, payload);
     },
     [BOARD_EVENT_KEYS.RESCHEDULE_SLOT]: (payload: SlotRescheduleActionEventPayload) =>
       params.runAction(
