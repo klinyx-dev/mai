@@ -159,3 +159,21 @@ export interface MaiBookingFlowState {
   auth: MaiBookingAuthIdentity | null;
   error: MaiBookingError | null;
 }
+
+export const MAI_BOOKING_FLOW_EVENTS = {
+  UPDATE_MODEL_VALUE: "update:modelValue",
+  NAVIGATE_WEEK: "navigateWeek",
+  LOCATION_SELECTED: "locationSelected",
+  CATEGORY_SELECTED: "categorySelected",
+  RESOURCE_SELECTED: "resourceSelected",
+  SLOT_SELECTED: "slotSelected",
+  AUTH_REQUIRED: "authRequired",
+  AUTH_COMPLETED: "authCompleted",
+  BOOKING_SUBMITTED: "bookingSubmitted",
+  BOOKING_CONFIRMED: "bookingConfirmed",
+  AVAILABILITY_REFRESHED: "availabilityRefreshed",
+  BOOKING_ERROR: "bookingError",
+} as const;
+
+export type MaiBookingFlowEvent =
+  (typeof MAI_BOOKING_FLOW_EVENTS)[keyof typeof MAI_BOOKING_FLOW_EVENTS];

@@ -51,6 +51,7 @@ import type {
   MaiBookingSlotOwner,
   MaiBookingViewConfig,
 } from "./types/booking";
+import { MAI_BOOKING_FLOW_EVENTS } from "./types/booking.js";
 
 type BookingCommand = TypedCommandEnvelope<"add_appointment">;
 
@@ -187,20 +188,27 @@ export const MaiBookingFlow = defineComponent({
     },
   },
   emits: {
-    "update:modelValue": (state: MaiBookingFlowState) => typeof state.step === "string",
-    navigateWeek: (shift: -1 | 0 | 1) => shift === -1 || shift === 0 || shift === 1,
-    locationSelected: (locationId: string) => locationId.length > 0,
-    categorySelected: (categoryId: string) => categoryId.length > 0,
-    resourceSelected: (resourceId: string | null) =>
+    [MAI_BOOKING_FLOW_EVENTS.UPDATE_MODEL_VALUE]: (state: MaiBookingFlowState) =>
+      typeof state.step === "string",
+    [MAI_BOOKING_FLOW_EVENTS.NAVIGATE_WEEK]: (shift: -1 | 0 | 1) =>
+      shift === -1 || shift === 0 || shift === 1,
+    [MAI_BOOKING_FLOW_EVENTS.LOCATION_SELECTED]: (locationId: string) =>
+      locationId.length > 0,
+    [MAI_BOOKING_FLOW_EVENTS.CATEGORY_SELECTED]: (categoryId: string) =>
+      categoryId.length > 0,
+    [MAI_BOOKING_FLOW_EVENTS.RESOURCE_SELECTED]: (resourceId: string | null) =>
       resourceId === null || resourceId.length > 0,
-    slotSelected: (slot: MaiBookingAvailabilitySlot) => slot.slotId.length > 0,
-    authRequired: () => true,
-    authCompleted: (auth: MaiBookingAuthIdentity) =>
+    [MAI_BOOKING_FLOW_EVENTS.SLOT_SELECTED]: (slot: MaiBookingAvailabilitySlot) =>
+      slot.slotId.length > 0,
+    [MAI_BOOKING_FLOW_EVENTS.AUTH_REQUIRED]: () => true,
+    [MAI_BOOKING_FLOW_EVENTS.AUTH_COMPLETED]: (auth: MaiBookingAuthIdentity) =>
       auth.inviteeId.length > 0 && auth.userDisplayName.length > 0,
-    bookingSubmitted: (payload: MaiBookSlotPayload) => payload.slotId.length > 0,
-    bookingConfirmed: (payload: MaiBookSlotPayload) => payload.slotId.length > 0,
-    availabilityRefreshed: () => true,
-    bookingError: (error: MaiBookingError) =>
+    [MAI_BOOKING_FLOW_EVENTS.BOOKING_SUBMITTED]: (payload: MaiBookSlotPayload) =>
+      payload.slotId.length > 0,
+    [MAI_BOOKING_FLOW_EVENTS.BOOKING_CONFIRMED]: (payload: MaiBookSlotPayload) =>
+      payload.slotId.length > 0,
+    [MAI_BOOKING_FLOW_EVENTS.AVAILABILITY_REFRESHED]: () => true,
+    [MAI_BOOKING_FLOW_EVENTS.BOOKING_ERROR]: (error: MaiBookingError) =>
       error.action.length > 0 && error.message.length > 0,
   },
   setup(props, { emit }) {
@@ -216,7 +224,7 @@ export const MaiBookingFlow = defineComponent({
 
     function setState(nextState: MaiBookingFlowState): void {
       state.value = nextState;
-      emit("update:modelValue", nextState);
+      emit(MAI_BOOKING_FLOW_EVENTS.UPDATE_MODEL_VALUE, nextState);
     }
 
     watch(
@@ -234,7 +242,7 @@ export const MaiBookingFlow = defineComponent({
         const auth = initialAuth(props.actor);
         if (auth && auth.inviteeId !== state.value.auth?.inviteeId) {
           setState(completeBookingAuth(state.value, auth));
-          emit("authCompleted", auth);
+          emit(MAI_BOOKING_FLOW_EVENTS.AUTH_COMPLETED, auth);
         }
       }
     );
@@ -332,29 +340,29 @@ export const MaiBookingFlow = defineComponent({
     function emitError(action: string, message: string): void {
       const error = { action, message };
       setState(bookingFlowError(state.value, error));
-      emit("bookingError", error);
+      emit(MAI_BOOKING_FLOW_EVENTS.BOOKING_ERROR, error);
     }
 
     function handleLocationSelected(locationId: string): void {
       setState(selectBookingLocation(state.value, locationId));
-      emit("locationSelected", locationId);
+      emit(MAI_BOOKING_FLOW_EVENTS.LOCATION_SELECTED, locationId);
     }
 
     async function handleCategorySelected(categoryId: string): Promise<void> {
       setState(selectBookingCategory(state.value, categoryId));
-      emit("categorySelected", categoryId);
+      emit(MAI_BOOKING_FLOW_EVENTS.CATEGORY_SELECTED, categoryId);
       await refreshAvailability();
     }
 
     async function handleResourceSelected(resourceId: string | null): Promise<void> {
       setState(selectBookingResource(state.value, resourceId));
-      emit("resourceSelected", resourceId);
+      emit(MAI_BOOKING_FLOW_EVENTS.RESOURCE_SELECTED, resourceId);
       await refreshAvailability();
     }
 
     function handleSlotSelected(slot: MaiBookingAvailabilitySlot): void {
       setState(selectBookingSlot(state.value, slot));
-      emit("slotSelected", slot);
+      emit(MAI_BOOKING_FLOW_EVENTS.SLOT_SELECTED, slot);
     }
 
     function handleNotesInput(event: Event): void {
@@ -366,7 +374,7 @@ export const MaiBookingFlow = defineComponent({
       if (state.value.auth?.inviteeId) {
         return state.value.auth;
       }
-      emit("authRequired");
+      emit(MAI_BOOKING_FLOW_EVENTS.AUTH_REQUIRED);
       setState(beginBookingConfirmation(state.value));
       if (!props.actions.requestAuth) {
         return null;
@@ -376,7 +384,7 @@ export const MaiBookingFlow = defineComponent({
         return null;
       }
       setState(completeBookingAuth(state.value, auth));
-      emit("authCompleted", auth);
+      emit(MAI_BOOKING_FLOW_EVENTS.AUTH_COMPLETED, auth);
       return auth;
     }
 
@@ -424,7 +432,7 @@ export const MaiBookingFlow = defineComponent({
 
       const command = createBookSlotCommand(payload);
       setState(beginBookingConfirmation(state.value));
-      emit("bookingSubmitted", payload);
+      emit(MAI_BOOKING_FLOW_EVENTS.BOOKING_SUBMITTED, payload);
 
       try {
         if (props.actions.bookSlot) {
@@ -437,9 +445,9 @@ export const MaiBookingFlow = defineComponent({
 
         setState(markAvailabilityRefreshing(state.value));
         await refreshAvailability();
-        emit("availabilityRefreshed");
+        emit(MAI_BOOKING_FLOW_EVENTS.AVAILABILITY_REFRESHED);
         setState(markBookingConfirmed(state.value));
-        emit("bookingConfirmed", payload);
+        emit(MAI_BOOKING_FLOW_EVENTS.BOOKING_CONFIRMED, payload);
       } catch (error) {
         emitError(
           "confirm-booking",
@@ -486,7 +494,7 @@ export const MaiBookingFlow = defineComponent({
             slotVisibility={props.booking.slotVisibility ?? "available-only"}
             isLoading={props.booking.isAvailabilityLoading ?? state.value.step === "refreshing"}
             copy={props.copy}
-            onNavigateWeek={(shift) => emit("navigateWeek", shift)}
+            onNavigateWeek={(shift) => emit(MAI_BOOKING_FLOW_EVENTS.NAVIGATE_WEEK, shift)}
             onSlotSelected={handleSlotSelected}
           />
         ) : null}

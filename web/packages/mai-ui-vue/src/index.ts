@@ -1,6 +1,7 @@
 export { MaiBoard } from "./MaiBoard";
 export { MaiBoardInteractive } from "./MaiBoardInteractive";
 export { MaiBookingFlow, type MaiBookingActionConfig } from "./MaiBookingFlow";
+export { MAI_BOOKING_FLOW_EVENTS } from "./types/booking";
 export {
   INTERACTION_ACTIONS,
   INTERACTION_SUCCESS_EVENTS,
@@ -46,6 +47,7 @@ export type {
   TimeLabelFormat,
   WeekShift,
   MaiBookSlotPayload,
+  MaiBookingFlowEvent,
   MaiBookingActorConfig,
   MaiBookingAuthIdentity,
   MaiBookingAvailabilitySlot,

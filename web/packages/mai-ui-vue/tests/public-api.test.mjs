@@ -41,7 +41,12 @@ test("exports interactive constants", () => {
     distEntry,
     /MAI_BOARD_INTERACTIVE_EVENTS/
   );
+  assert.match(
+    distEntry,
+    /MAI_BOOKING_FLOW_EVENTS/
+  );
   assert.match(distTypes, /MaiBoardInteractiveEvent/);
+  assert.match(distTypes, /MaiBookingFlowEvent/);
   assert.match(
     distTypes,
     /MaiBoardInteractiveActionConfig/,

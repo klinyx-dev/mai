@@ -32,6 +32,7 @@ export type {
 } from "./types/interactive";
 export type {
   MaiBookSlotPayload,
+  MaiBookingFlowEvent,
   MaiBookingActorConfig,
   MaiBookingAvailabilitySlot,
   MaiBookingAuthIdentity,
