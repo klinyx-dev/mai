@@ -10,6 +10,7 @@ export {
 export { MaiSlotActionsCard } from "./actions/MaiSlotActionsCard";
 export { MaiAppointmentActionsCard } from "./actions/MaiAppointmentActionsCard";
 export { MaiCreateSlotCard } from "./actions/MaiCreateSlotCard";
+export { MaiCalendarFilterToolbar } from "./filters";
 export {
   MaiAvailabilityPicker,
   MaiBookingAuthGate,
@@ -35,6 +36,7 @@ export type {
   MaiBoardInteractiveActorConfig,
   MaiViewFilter,
   MaiViewFilterMode,
+  MaiCalendarFilterOwnerOption,
   MaiViewFilterOption,
   MaiBoardInteractiveViewConfig,
   MaiInteractionAction,

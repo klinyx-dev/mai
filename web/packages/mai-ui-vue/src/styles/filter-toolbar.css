@@ -1,0 +1,128 @@
+@layer mai.components {
+    .mai-filter-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        margin: 0 0 var(--space-3);
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-lg);
+        background: var(--color-bg-subtle);
+        box-shadow: var(--shadow-ring);
+    }
+
+    .mai-filter-toolbar__label {
+        color: var(--color-text);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+
+    .mai-filter-toolbar__controls {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    .mai-filter-toolbar__mode-button,
+    .mai-filter-toolbar__dropdown-trigger {
+        height: 36px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: var(--radius-md);
+        background: var(--color-surface);
+        color: var(--color-text);
+        box-shadow: var(--shadow-sm);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .mai-filter-toolbar__mode-button:hover,
+    .mai-filter-toolbar__dropdown-trigger:hover {
+        background: var(--color-action-muted);
+    }
+
+    .mai-filter-toolbar__mode-button--active {
+        background: var(--color-action);
+        color: var(--color-text-inverse);
+        box-shadow: var(--shadow-button-inset);
+    }
+
+    .mai-filter-toolbar__mode-button:focus-visible,
+    .mai-filter-toolbar__dropdown-trigger:focus-visible,
+    .mai-filter-toolbar__owner-label:focus-within {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    .mai-filter-toolbar__dropdown {
+        position: relative;
+    }
+
+    .mai-filter-toolbar__dropdown-trigger {
+        min-width: 180px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+        text-align: left;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mai-filter-toolbar__chevron {
+        color: var(--color-text-subtle);
+        font-size: 11px;
+    }
+
+    .mai-filter-toolbar__dropdown-panel {
+        position: absolute;
+        top: calc(100% + var(--space-1));
+        right: 0;
+        z-index: 20;
+        width: 240px;
+        max-height: 260px;
+        overflow: auto;
+        padding: var(--space-2);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        box-shadow: var(--shadow-md);
+    }
+
+    .mai-filter-toolbar__owner-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: var(--space-1);
+    }
+
+    .mai-filter-toolbar__owner-item {
+        margin: 0;
+        padding: 0;
+    }
+
+    .mai-filter-toolbar__owner-label {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        min-height: 36px;
+        padding: 0 var(--space-2);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        color: var(--color-text);
+    }
+
+    .mai-filter-toolbar__owner-label:hover {
+        background: var(--color-bg-muted);
+    }
+
+    .mai-filter-toolbar__owner-text {
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.25;
+    }
+}

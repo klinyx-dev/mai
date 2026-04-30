@@ -4,6 +4,7 @@ import {
   INTERACTION_ACTIONS,
   INTERACTION_SUCCESS_EVENTS,
   MaiBoardInteractive,
+  MaiCalendarFilterToolbar,
   useMai,
 } from "@mai/mai-ui-vue";
 import type { AnyCommandEnvelope } from "@mai/mai-web-core";
@@ -13,6 +14,7 @@ import type {
   MaiInteractionErrorPayload,
   MaiSlotCreatedEventPayload,
   MaiViewFilter,
+  MaiCalendarFilterOwnerOption,
   MaiSlotRescheduledEventPayload,
   SlotActionEventPayload,
 } from "@mai/mai-ui-vue";
@@ -30,6 +32,10 @@ const ownerLabels: Record<(typeof ownerIds)[number], string> = {
   "owner-77": "Dr Bernard",
   "owner-90": "Dr Dupont",
 };
+const ownerOptions: MaiCalendarFilterOwnerOption[] = ownerIds.map((ownerId) => ({
+  id: ownerId,
+  label: ownerLabels[ownerId],
+}));
 const selectedOwnerIds = ref<string[]>([ownerIds[0]]);
 const operatorId = "operator-1";
 
@@ -196,28 +202,6 @@ async function onViewFilterChange(viewFilter: MaiViewFilter): Promise<void> {
   await refreshWeek();
 }
 
-async function showAllCalendars(): Promise<void> {
-  selectedOwnerIds.value = [];
-  await onViewFilterChange({ mode: "all" });
-}
-
-async function showNoCalendars(): Promise<void> {
-  selectedOwnerIds.value = [];
-  await onViewFilterChange({ mode: "none" });
-}
-
-function isOwnerSelected(ownerId: string): boolean {
-  return selectedOwnerIds.value.includes(ownerId);
-}
-
-async function toggleOwner(ownerId: string): Promise<void> {
-  const nextSelected = isOwnerSelected(ownerId)
-    ? selectedOwnerIds.value.filter((id) => id !== ownerId)
-    : [...selectedOwnerIds.value, ownerId];
-  selectedOwnerIds.value = uniqueIds(nextSelected);
-  await onViewFilterChange(toOwnerFilter(selectedOwnerIds.value));
-}
-
 onMounted(async () => {
   const { $mai } = useNuxtApp();
   mai = useMai({ adapter: $mai.adapter });
@@ -226,61 +210,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main style="background: #fff; padding: 0; min-height: 100vh; box-sizing: border-box">
-    <p style="margin: 0 0 12px; color: #5b6472; font: 500 13px/1.5 Inter, sans-serif">
+  <main class="mai-example-page">
+    <p class="mai-example-feedback">
       {{ interactionMessage }}
     </p>
-    <div style="display: flex; gap: 8px; margin: 0 0 12px">
-      <button
-        type="button"
-        :style="{
-          border: activeViewFilter.mode === 'all' ? '1px solid #111827' : '1px solid #d1d5db',
-          background: activeViewFilter.mode === 'all' ? '#111827' : '#ffffff',
-          color: activeViewFilter.mode === 'all' ? '#ffffff' : '#111827',
-          borderRadius: '999px',
-          padding: '6px 12px',
-          font: '500 13px/1.2 Inter, sans-serif',
-          cursor: 'pointer'
-        }"
-        @click="showAllCalendars"
-      >
-        All calendars
-      </button>
-      <button
-        type="button"
-        :style="{
-          border: activeViewFilter.mode === 'none' ? '1px solid #111827' : '1px solid #d1d5db',
-          background: activeViewFilter.mode === 'none' ? '#111827' : '#ffffff',
-          color: activeViewFilter.mode === 'none' ? '#ffffff' : '#111827',
-          borderRadius: '999px',
-          padding: '6px 12px',
-          font: '500 13px/1.2 Inter, sans-serif',
-          cursor: 'pointer'
-        }"
-        @click="showNoCalendars"
-      >
-        No calendars
-      </button>
-    </div>
-    <fieldset
-      style="margin: 0 0 12px; border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 12px"
-    >
-      <legend style="padding: 0 4px; font: 500 12px/1.2 Inter, sans-serif; color: #4b5563">
-        Resource owners
-      </legend>
-      <label
-        v-for="ownerId in ownerIds"
-        :key="ownerId"
-        style="display: flex; align-items: center; gap: 8px; margin: 6px 0; font: 500 13px/1.4 Inter, sans-serif; color: #111827; cursor: pointer"
-      >
-        <input
-          type="checkbox"
-          :checked="isOwnerSelected(ownerId)"
-          @change="toggleOwner(ownerId)"
-        />
-        <span>{{ ownerLabels[ownerId] }}</span>
-      </label>
-    </fieldset>
+    <MaiCalendarFilterToolbar
+      label="Resource Owners"
+      :value="activeViewFilter"
+      :owner-options="ownerOptions"
+      @change="onViewFilterChange"
+    />
     <ClientOnly>
       <MaiBoardInteractive
         :layout="layout"
@@ -305,3 +244,20 @@ onMounted(async () => {
     </ClientOnly>
   </main>
 </template>
+
+<style scoped>
+.mai-example-page {
+  background: var(--color-bg);
+  padding: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.mai-example-feedback {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+</style>

@@ -21,6 +21,10 @@ test("exports primary package entry points", () => {
     distEntry,
     /export \{ MaiBoardInteractive \} from "\.\/MaiBoardInteractive";/
   );
+  assert.match(
+    distEntry,
+    /export \{ MaiCalendarFilterToolbar \} from "\.\/filters";/
+  );
   assert.match(distEntry, /export \{ useMai \} from "\.\/integration";/);
   assert.match(
     distEntry,
@@ -58,6 +62,10 @@ test("exports interactive constants", () => {
   assert.match(
     distTypes,
     /MaiBoardInteractiveViewConfig/,
+  );
+  assert.match(
+    distTypes,
+    /MaiCalendarFilterOwnerOption/,
   );
 });
 

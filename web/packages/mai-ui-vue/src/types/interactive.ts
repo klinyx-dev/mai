@@ -88,6 +88,11 @@ export interface MaiViewFilterOption {
   value: MaiViewFilter;
 }
 
+export interface MaiCalendarFilterOwnerOption {
+  id: string;
+  label: string;
+}
+
 export interface MaiBoardInteractiveActorConfig {
   resourceOwnerId: string;
   createdBy: string;

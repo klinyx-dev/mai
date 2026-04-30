@@ -21,6 +21,7 @@ export type {
   MaiBoardInteractiveActorConfig,
   MaiViewFilter,
   MaiViewFilterMode,
+  MaiCalendarFilterOwnerOption,
   MaiViewFilterOption,
   MaiBoardInteractiveViewConfig,
   MaiInteractionAction,
