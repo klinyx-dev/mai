@@ -62,6 +62,8 @@ export function toEmptyCellClickPayload(input: {
   visibleStartMinute: number;
   totalVisibleMinutes: number;
   columnRect: InteractionAnchorRect;
+  draftStartMinute?: number;
+  draftEndMinute?: number;
 }): EmptyCellClickEventPayload {
   const relativeY = Math.max(0, Math.min(input.clientY - input.top, input.height));
   const ratio = input.height > 0 ? relativeY / input.height : 0;
@@ -69,11 +71,22 @@ export function toEmptyCellClickPayload(input: {
     input.visibleStartMinute + ratio * input.totalVisibleMinutes
   );
 
-  return {
+  const payload: EmptyCellClickEventPayload = {
     dayIndex: input.dayIndex,
     minuteOfDay: Math.min(Math.max(minute, 0), 1440),
     clientX: input.clientX,
     clientY: input.clientY,
     columnRect: toAnchorRect(input.columnRect),
   };
+
+  if (
+    typeof input.draftStartMinute === "number" &&
+    typeof input.draftEndMinute === "number"
+  ) {
+    payload.startMinute = input.draftStartMinute;
+    payload.endMinute = input.draftEndMinute;
+    payload.minuteOfDay = input.draftStartMinute;
+  }
+
+  return payload;
 }

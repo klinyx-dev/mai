@@ -57,11 +57,25 @@ export function isEmptyCellClickPayload(
     return false;
   }
   const payload = value as Record<string, unknown>;
+  const hasValidDraftStart =
+    payload.startMinute === undefined || isMinuteRange(payload.startMinute);
+  const hasValidDraftEnd =
+    payload.endMinute === undefined || isMinuteRange(payload.endMinute);
+  const hasConsistentDraftRange =
+    payload.startMinute === undefined ||
+    payload.endMinute === undefined ||
+    (typeof payload.startMinute === "number" &&
+      typeof payload.endMinute === "number" &&
+      payload.endMinute >= payload.startMinute);
+
   return (
     Number.isInteger(payload.dayIndex) &&
     typeof payload.minuteOfDay === "number" &&
     typeof payload.clientX === "number" &&
-    typeof payload.clientY === "number"
+    typeof payload.clientY === "number" &&
+    hasValidDraftStart &&
+    hasValidDraftEnd &&
+    hasConsistentDraftRange
   );
 }
 

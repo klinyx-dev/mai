@@ -33,6 +33,8 @@ export interface AppointmentClickEventPayload {
 export interface EmptyCellClickEventPayload {
   dayIndex: number;
   minuteOfDay: number;
+  startMinute?: number;
+  endMinute?: number;
   clientX: number;
   clientY: number;
   columnRect: InteractionAnchorRect;

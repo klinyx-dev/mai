@@ -1,10 +1,13 @@
-import { defineComponent, h, type PropType } from "vue";
+import { defineComponent, h, ref, type PropType } from "vue";
 import { MaiEventCard } from "./MaiEventCard";
 import { MaiDraftEventCard } from "./day-column/MaiDraftEventCard";
 import { MaiNowIndicator } from "./MaiNowIndicator";
 import type { DayColumn } from "../model/view-model";
 import { clampToVisibleRange } from "../model/view-model";
-import { MIN_SLOT_SPAN_MINUTES } from "../model/slot-gesture";
+import {
+  computeCreateDraftFromBlankDrag,
+  MIN_SLOT_SPAN_MINUTES,
+} from "../model/slot-gesture";
 import {
   toAppointmentClickPayload,
   toEmptyCellClickPayload,
@@ -58,7 +61,17 @@ export const MaiDayColumn = defineComponent({
     },
   },
   setup(props) {
+    const DRAG_ACTIVATION_PX = 4;
     const tickCount = Math.max(props.hourTicks.length - 1, 1);
+    const dragDraft = ref<SlotDraftPreview | null>(null);
+    const pointerSession = ref<{
+      pointerId: number;
+      startClientX: number;
+      startClientY: number;
+      gridRect: DOMRect;
+    } | null>(null);
+    const dragMoved = ref(false);
+    const suppressNextClick = ref(false);
 
     function computePosition(startMinute: number, endMinute: number) {
       const clamped = clampToVisibleRange(
@@ -90,6 +103,10 @@ export const MaiDayColumn = defineComponent({
     }
 
     function handleGridClick(event: MouseEvent) {
+      if (suppressNextClick.value) {
+        suppressNextClick.value = false;
+        return;
+      }
       const grid = event.currentTarget as HTMLElement | null;
       if (!grid) {
         return;
@@ -112,6 +129,98 @@ export const MaiDayColumn = defineComponent({
           },
         })
       );
+    }
+
+    function handleGridPointerDown(event: PointerEvent) {
+      if (event.button !== 0) {
+        return;
+      }
+      const grid = event.currentTarget as HTMLElement | null;
+      if (!grid) {
+        return;
+      }
+      event.preventDefault();
+      grid.setPointerCapture(event.pointerId);
+      pointerSession.value = {
+        pointerId: event.pointerId,
+        startClientX: event.clientX,
+        startClientY: event.clientY,
+        gridRect: grid.getBoundingClientRect(),
+      };
+      dragMoved.value = false;
+      dragDraft.value = null;
+    }
+
+    function handleGridPointerMove(event: PointerEvent) {
+      const session = pointerSession.value;
+      if (!session || event.pointerId !== session.pointerId) {
+        return;
+      }
+      if (
+        Math.hypot(
+          event.clientX - session.startClientX,
+          event.clientY - session.startClientY
+        ) < DRAG_ACTIVATION_PX
+      ) {
+        return;
+      }
+
+      dragMoved.value = true;
+      const draft = computeCreateDraftFromBlankDrag({
+        pointerDownClientY: session.startClientY,
+        pointerCurrentClientY: event.clientY,
+        columnTop: session.gridRect.top,
+        columnHeight: session.gridRect.height,
+        visibleStartMinute: props.visibleStartMinute,
+        visibleEndMinute: props.visibleEndMinute,
+      });
+      dragDraft.value = {
+        dayIndex: props.column.dayIndex,
+        startMinute: draft.startMinute,
+        endMinute: draft.endMinute,
+      };
+    }
+
+    function finishPointerSession() {
+      pointerSession.value = null;
+      dragMoved.value = false;
+      dragDraft.value = null;
+    }
+
+    function handleGridPointerEnd(event: PointerEvent) {
+      const session = pointerSession.value;
+      if (!session || event.pointerId !== session.pointerId) {
+        return;
+      }
+      const grid = event.currentTarget as HTMLElement | null;
+      if (grid?.hasPointerCapture(event.pointerId)) {
+        grid.releasePointerCapture(event.pointerId);
+      }
+
+      if (dragMoved.value && dragDraft.value) {
+        suppressNextClick.value = true;
+        props.onEmptyCellClick(
+          toEmptyCellClickPayload({
+            dayIndex: props.column.dayIndex,
+            clientX: event.clientX,
+            clientY: event.clientY,
+            top: session.gridRect.top,
+            height: session.gridRect.height,
+            visibleStartMinute: props.visibleStartMinute,
+            totalVisibleMinutes: props.totalVisibleMinutes,
+            columnRect: {
+              left: session.gridRect.left,
+              top: session.gridRect.top,
+              width: session.gridRect.width,
+              height: session.gridRect.height,
+            },
+            draftStartMinute: dragDraft.value.startMinute,
+            draftEndMinute: dragDraft.value.endMinute,
+          })
+        );
+      }
+
+      finishPointerSession();
     }
 
     return () => (
@@ -137,7 +246,14 @@ export const MaiDayColumn = defineComponent({
             {props.column.dateLabel}
           </p>
         </header>
-        <div class="mai-board__day-grid" onClick={handleGridClick}>
+        <div
+          class="mai-board__day-grid"
+          onClick={handleGridClick}
+          onPointerdown={handleGridPointerDown}
+          onPointermove={handleGridPointerMove}
+          onPointerup={handleGridPointerEnd}
+          onPointercancel={handleGridPointerEnd}
+        >
           {props.hourTicks.map((tick, index) => {
             const top = (index / tickCount) * 100;
             return (
@@ -171,11 +287,23 @@ export const MaiDayColumn = defineComponent({
               />
             );
           })}
-          {props.previewSlotDraft &&
-          props.previewSlotDraft.dayIndex === props.column.dayIndex ? (() => {
+          {(dragDraft.value ??
+            (props.previewSlotDraft &&
+            props.previewSlotDraft.dayIndex === props.column.dayIndex
+              ? props.previewSlotDraft
+              : null)) ? (() => {
+            const activeDraft =
+              dragDraft.value ??
+              (props.previewSlotDraft &&
+              props.previewSlotDraft.dayIndex === props.column.dayIndex
+                ? props.previewSlotDraft
+                : null);
+            if (!activeDraft) {
+              return null;
+            }
             const position = computePosition(
-              props.previewSlotDraft.startMinute,
-              props.previewSlotDraft.endMinute
+              activeDraft.startMinute,
+              activeDraft.endMinute
             );
             if (!position) {
               return null;
@@ -184,8 +312,8 @@ export const MaiDayColumn = defineComponent({
               <MaiDraftEventCard
                 top={position.top}
                 height={position.height}
-                startMinute={props.previewSlotDraft.startMinute}
-                endMinute={props.previewSlotDraft.endMinute}
+                startMinute={activeDraft.startMinute}
+                endMinute={activeDraft.endMinute}
                 minuteLabel={props.minuteLabel}
               />
             );

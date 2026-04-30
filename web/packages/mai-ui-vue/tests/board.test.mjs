@@ -206,3 +206,38 @@ test("computes empty-cell payload minute anchor from pointer position", () => {
     },
   });
 });
+
+test("computes empty-cell payload from drag range", () => {
+  const payload = toEmptyCellClickPayload({
+    dayIndex: 1,
+    clientX: 300,
+    clientY: 500,
+    top: 200,
+    height: 500,
+    visibleStartMinute: 480,
+    totalVisibleMinutes: 600,
+    columnRect: {
+      left: 280,
+      top: 200,
+      width: 160,
+      height: 500,
+    },
+    draftStartMinute: 615,
+    draftEndMinute: 705,
+  });
+
+  assert.deepEqual(payload, {
+    dayIndex: 1,
+    minuteOfDay: 615,
+    startMinute: 615,
+    endMinute: 705,
+    clientX: 300,
+    clientY: 500,
+    columnRect: {
+      left: 280,
+      top: 200,
+      width: 160,
+      height: 500,
+    },
+  });
+});
