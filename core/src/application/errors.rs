@@ -21,6 +21,12 @@ pub enum ReferentialError {
     ResourceOwnerNotFound,
     #[error("creator not found")]
     CreatorNotFound,
+    #[error("invitee not found")]
+    InviteeNotFound,
+    #[error("updater not found")]
+    UpdaterNotFound,
+    #[error("canceller not found")]
+    CancellerNotFound,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]

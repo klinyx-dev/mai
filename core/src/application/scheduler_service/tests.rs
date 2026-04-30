@@ -219,8 +219,14 @@ fn rescheduling_available_slot_updates_time_range() {
         .slots
         .get(&SlotId::new("slot-1"))
         .expect("slot exists");
-    assert_eq!(slot.time.start, Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap());
-    assert_eq!(slot.time.end, Utc.with_ymd_and_hms(2026, 1, 5, 12, 0, 0).unwrap());
+    assert_eq!(
+        slot.time.start,
+        Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap()
+    );
+    assert_eq!(
+        slot.time.end,
+        Utc.with_ymd_and_hms(2026, 1, 5, 12, 0, 0).unwrap()
+    );
 }
 
 #[test]
@@ -392,9 +398,11 @@ fn get_weekly_layout_returns_projected_nodes() {
         .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
         .unwrap();
 
-    let layout = service.get_weekly_layout(WeeklyLayoutQuery::new(
-        chrono::NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
-    ));
+    let layout = service
+        .get_weekly_layout_checked(WeeklyLayoutQuery::new(
+            chrono::NaiveDate::from_ymd_opt(2026, 1, 8).unwrap(),
+        ))
+        .expect("valid query should succeed");
 
     assert_eq!(
         layout.week_start,
@@ -438,8 +446,7 @@ fn add_slot_rejects_missing_creator_when_lookup_is_enabled() {
 
 #[test]
 fn add_appointment_rejects_missing_creator_when_lookup_is_enabled() {
-    let mut service =
-        SchedulerService::with_actor_lookup(actor_lookup(&["owner-1", "creator-1"]));
+    let mut service = SchedulerService::with_actor_lookup(actor_lookup(&["owner-1", "creator-1"]));
     service.add_slot(add_slot_cmd("slot-1")).unwrap();
 
     let result = service.add_appointment(add_appointment_cmd("appt-1", "slot-1"));
@@ -452,8 +459,7 @@ fn add_appointment_rejects_missing_creator_when_lookup_is_enabled() {
 
 #[test]
 fn reschedule_slot_rejects_missing_updater_when_lookup_is_enabled() {
-    let mut service =
-        SchedulerService::with_actor_lookup(actor_lookup(&["owner-1", "creator-1"]));
+    let mut service = SchedulerService::with_actor_lookup(actor_lookup(&["owner-1", "creator-1"]));
     service.add_slot(add_slot_cmd("slot-1")).unwrap();
 
     let result = service.reschedule_slot(RescheduleSlotCommand {
@@ -465,7 +471,45 @@ fn reschedule_slot_rejects_missing_updater_when_lookup_is_enabled() {
 
     assert_eq!(
         result.expect_err("missing updater should fail"),
-        SchedulerError::Referential(ReferentialError::CreatorNotFound)
+        SchedulerError::Referential(ReferentialError::UpdaterNotFound)
+    );
+}
+
+#[test]
+fn add_appointment_rejects_missing_invitee_when_lookup_is_enabled() {
+    let mut service =
+        SchedulerService::with_actor_lookup(actor_lookup(&["owner-1", "creator-1", "creator-2"]));
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+
+    let result = service.add_appointment(add_appointment_cmd("appt-1", "slot-1"));
+
+    assert_eq!(
+        result.expect_err("missing invitee should fail"),
+        SchedulerError::Referential(ReferentialError::InviteeNotFound)
+    );
+}
+
+#[test]
+fn cancel_appointment_rejects_missing_canceller_when_lookup_is_enabled() {
+    let mut service = SchedulerService::with_actor_lookup(actor_lookup(&[
+        "owner-1",
+        "creator-1",
+        "creator-2",
+        "invitee-1",
+    ]));
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+    service
+        .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
+        .unwrap();
+
+    let result = service.cancel_appointment(CancelAppointmentCommand {
+        appointment_id: AppointmentId::new("appt-1"),
+        cancelled_by: ActorId::new("missing-canceller"),
+    });
+
+    assert_eq!(
+        result.expect_err("missing canceller should fail"),
+        SchedulerError::Referential(ReferentialError::CancellerNotFound)
     );
 }
 

@@ -1,6 +1,7 @@
 pub mod actor_lookup;
 pub mod command_result;
 pub mod errors;
+pub(crate) mod policies;
 pub mod scheduler_service;
 
 pub use actor_lookup::ActorLookup;
