@@ -11,6 +11,7 @@ import {
   filterAvailabilitySlotsByVisibility,
   isBookableSlotStatus,
 } from "./availability.js";
+import { isBookingAvailabilitySlot, isWeekShift } from "../validators/events.js";
 
 export const MaiAvailabilityPicker = defineComponent({
   name: "MaiAvailabilityPicker",
@@ -45,8 +46,8 @@ export const MaiAvailabilityPicker = defineComponent({
     },
   },
   emits: {
-    navigateWeek: (shift: WeekShift) => shift === -1 || shift === 0 || shift === 1,
-    slotSelected: (slot: MaiBookingAvailabilitySlot) => slot.slotId.length > 0,
+    navigateWeek: (shift: WeekShift) => isWeekShift(shift),
+    slotSelected: (slot: MaiBookingAvailabilitySlot) => isBookingAvailabilitySlot(slot),
   },
   setup(props, { emit }) {
     return () => {

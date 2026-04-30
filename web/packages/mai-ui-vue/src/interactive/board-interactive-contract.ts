@@ -17,6 +17,18 @@ import type {
   WeekShift,
 } from "../types";
 import { MAI_BOARD_INTERACTIVE_EVENTS } from "../types/interactive";
+import {
+  isAppointmentActionPayload,
+  isAppointmentClickPayload,
+  isCreateSlotPayload,
+  isEmptyCellClickPayload,
+  isMaiInteractionErrorPayload,
+  isMaiViewFilter,
+  isSlotActionPayload,
+  isSlotClickPayload,
+  isSlotReschedulePayload,
+  isWeekShift,
+} from "../validators/events";
 
 export type PartialViewConfig = Partial<MaiBoardInteractiveViewConfig>;
 export type PartialActorConfig = Partial<MaiBoardInteractiveActorConfig>;
@@ -73,30 +85,29 @@ export const maiBoardInteractiveProps = {
 } as const;
 
 export const maiBoardInteractiveEmits = {
-  [MAI_BOARD_INTERACTIVE_EVENTS.NAVIGATE_WEEK]: (shift: WeekShift) =>
-    shift === -1 || shift === 0 || shift === 1,
+  [MAI_BOARD_INTERACTIVE_EVENTS.NAVIGATE_WEEK]: (shift: WeekShift) => isWeekShift(shift),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_CLICK]: (payload: SlotClickEventPayload) =>
-    typeof payload.slotId === "string",
+    isSlotClickPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.APPOINTMENT_CLICK]: (payload: AppointmentClickEventPayload) =>
-    typeof payload.appointmentId === "string",
+    isAppointmentClickPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.EMPTY_CELL_CLICK]: (payload: EmptyCellClickEventPayload) =>
-    Number.isInteger(payload.dayIndex),
+    isEmptyCellClickPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_CREATED]: (payload: CreateSlotActionEventPayload) =>
-    typeof payload.slotId === "string",
+    isCreateSlotPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_RESCHEDULED]: (payload: SlotRescheduleActionEventPayload) =>
-    typeof payload.slotId === "string",
+    isSlotReschedulePayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_BOOKED]: (payload: SlotActionEventPayload) =>
-    typeof payload.slotId === "string",
+    isSlotActionPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_CANCELLED]: (payload: SlotActionEventPayload) =>
-    typeof payload.slotId === "string",
+    isSlotActionPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_DELETED]: (payload: SlotActionEventPayload) =>
-    typeof payload.slotId === "string",
+    isSlotActionPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.APPOINTMENT_CANCELLED]: (payload: AppointmentActionEventPayload) =>
-    typeof payload.appointmentId === "string",
+    isAppointmentActionPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.APPOINTMENT_DELETED]: (payload: AppointmentActionEventPayload) =>
-    typeof payload.appointmentId === "string",
+    isAppointmentActionPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.VIEW_FILTER_CHANGE]: (payload: MaiViewFilter) =>
-    typeof payload.mode === "string" && Array.isArray(payload.ids),
+    isMaiViewFilter(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.INTERACTION_ERROR]: (payload: MaiInteractionErrorPayload) =>
-    typeof payload.action === "string" && typeof payload.message === "string",
+    isMaiInteractionErrorPayload(payload),
 } as const;

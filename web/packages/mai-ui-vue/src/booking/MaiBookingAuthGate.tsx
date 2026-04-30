@@ -1,5 +1,6 @@
 import { defineComponent, h, type PropType } from "vue";
 import type { MaiBookingCopy } from "../types/booking";
+import { isAlwaysValid } from "../validators/events.js";
 
 export const MaiBookingAuthGate = defineComponent({
   name: "MaiBookingAuthGate",
@@ -18,7 +19,7 @@ export const MaiBookingAuthGate = defineComponent({
     },
   },
   emits: {
-    requestAuth: () => true,
+    requestAuth: () => isAlwaysValid(),
   },
   setup(props, { emit }) {
     return () =>

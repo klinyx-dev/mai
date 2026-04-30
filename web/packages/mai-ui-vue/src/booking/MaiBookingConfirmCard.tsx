@@ -7,6 +7,7 @@ import type {
   MaiBookingLocation,
   MaiBookingSlotSelection,
 } from "../types/booking";
+import { isAlwaysValid } from "../validators/events.js";
 
 export const MaiBookingConfirmCard = defineComponent({
   name: "MaiBookingConfirmCard",
@@ -49,8 +50,8 @@ export const MaiBookingConfirmCard = defineComponent({
     },
   },
   emits: {
-    confirm: () => true,
-    back: () => true,
+    confirm: () => isAlwaysValid(),
+    back: () => isAlwaysValid(),
   },
   setup(props, { emit }) {
     const appointmentTitle = computed(() =>

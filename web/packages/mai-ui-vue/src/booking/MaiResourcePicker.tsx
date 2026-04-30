@@ -1,6 +1,7 @@
 import { computed, defineComponent, h, type PropType } from "vue";
 import type { MaiBookingCopy, MaiBookingResource } from "../types/booking";
 import { eligibleResourcesForCategory } from "./options.js";
+import { isNullableNonEmptyString } from "../validators/events.js";
 
 export const MaiResourcePicker = defineComponent({
   name: "MaiResourcePicker",
@@ -24,7 +25,7 @@ export const MaiResourcePicker = defineComponent({
   },
   emits: {
     resourceSelected: (resourceId: string | null) =>
-      resourceId === null || resourceId.length > 0,
+      isNullableNonEmptyString(resourceId),
   },
   setup(props, { emit }) {
     const eligibleResources = computed(() =>

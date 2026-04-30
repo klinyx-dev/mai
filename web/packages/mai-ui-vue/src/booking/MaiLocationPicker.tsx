@@ -1,5 +1,6 @@
 import { defineComponent, h, type PropType } from "vue";
 import type { MaiBookingCopy, MaiBookingLocation } from "../types/booking";
+import { isNonEmptyString } from "../validators/events.js";
 
 export const MaiLocationPicker = defineComponent({
   name: "MaiLocationPicker",
@@ -18,7 +19,7 @@ export const MaiLocationPicker = defineComponent({
     },
   },
   emits: {
-    locationSelected: (locationId: string) => locationId.length > 0,
+    locationSelected: (locationId: string) => isNonEmptyString(locationId),
   },
   setup(props, { emit }) {
     return () => (

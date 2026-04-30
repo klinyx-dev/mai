@@ -52,6 +52,15 @@ import type {
   MaiBookingViewConfig,
 } from "./types/booking";
 import { MAI_BOOKING_FLOW_EVENTS } from "./types/booking.js";
+import {
+  isBookSlotPayload,
+  isBookingAuthIdentity,
+  isBookingAvailabilitySlot,
+  isBookingError,
+  isNonEmptyString,
+  isNullableNonEmptyString,
+  isWeekShift,
+} from "./validators/events.js";
 
 type BookingCommand = TypedCommandEnvelope<"add_appointment">;
 
@@ -191,25 +200,25 @@ export const MaiBookingFlow = defineComponent({
     [MAI_BOOKING_FLOW_EVENTS.UPDATE_MODEL_VALUE]: (state: MaiBookingFlowState) =>
       typeof state.step === "string",
     [MAI_BOOKING_FLOW_EVENTS.NAVIGATE_WEEK]: (shift: -1 | 0 | 1) =>
-      shift === -1 || shift === 0 || shift === 1,
+      isWeekShift(shift),
     [MAI_BOOKING_FLOW_EVENTS.LOCATION_SELECTED]: (locationId: string) =>
-      locationId.length > 0,
+      isNonEmptyString(locationId),
     [MAI_BOOKING_FLOW_EVENTS.CATEGORY_SELECTED]: (categoryId: string) =>
-      categoryId.length > 0,
+      isNonEmptyString(categoryId),
     [MAI_BOOKING_FLOW_EVENTS.RESOURCE_SELECTED]: (resourceId: string | null) =>
-      resourceId === null || resourceId.length > 0,
+      isNullableNonEmptyString(resourceId),
     [MAI_BOOKING_FLOW_EVENTS.SLOT_SELECTED]: (slot: MaiBookingAvailabilitySlot) =>
-      slot.slotId.length > 0,
+      isBookingAvailabilitySlot(slot),
     [MAI_BOOKING_FLOW_EVENTS.AUTH_REQUIRED]: () => true,
     [MAI_BOOKING_FLOW_EVENTS.AUTH_COMPLETED]: (auth: MaiBookingAuthIdentity) =>
-      auth.inviteeId.length > 0 && auth.userDisplayName.length > 0,
+      isBookingAuthIdentity(auth),
     [MAI_BOOKING_FLOW_EVENTS.BOOKING_SUBMITTED]: (payload: MaiBookSlotPayload) =>
-      payload.slotId.length > 0,
+      isBookSlotPayload(payload),
     [MAI_BOOKING_FLOW_EVENTS.BOOKING_CONFIRMED]: (payload: MaiBookSlotPayload) =>
-      payload.slotId.length > 0,
+      isBookSlotPayload(payload),
     [MAI_BOOKING_FLOW_EVENTS.AVAILABILITY_REFRESHED]: () => true,
     [MAI_BOOKING_FLOW_EVENTS.BOOKING_ERROR]: (error: MaiBookingError) =>
-      error.action.length > 0 && error.message.length > 0,
+      isBookingError(error),
   },
   setup(props, { emit }) {
     const state = ref(
