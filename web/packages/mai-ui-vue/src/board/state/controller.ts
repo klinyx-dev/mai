@@ -21,12 +21,14 @@ import {
   weekRangeLabel,
 } from "../model/view-model";
 import { buildNowIndicatorForWeek } from "../model/now-indicator";
+import { useMinuteNow } from "./now";
 
 export function useMaiBoardController(props: MaiBoardProps, emit: MaiBoardEmit) {
   const selectedSlot = ref<SlotClickEventPayload | null>(null);
   const selectedAppointment = ref<AppointmentClickEventPayload | null>(null);
   const pendingSlotDraft = ref<EmptyCellClickEventPayload | null>(null);
   const fallbackAnchorDate = new Date().toISOString().slice(0, 10);
+  const now = useMinuteNow();
 
   const slotCount = computed(() => props.layout?.slots.length ?? 0);
   const appointmentCount = computed(() => props.layout?.appointments.length ?? 0);
@@ -58,7 +60,7 @@ export function useMaiBoardController(props: MaiBoardProps, emit: MaiBoardEmit) 
       weekStartIso: weekStartIso.value,
       visibleStartMinute: visibleWindow.value.startMinute,
       visibleEndMinute: visibleWindow.value.endMinute,
-      now: new Date(),
+      now: now.value,
     })
   );
 

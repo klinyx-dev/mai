@@ -14,6 +14,7 @@ import {
   localIsoDateFromDate,
   minuteOfDayFromDate,
 } from "../dist/board/model/now-indicator.js";
+import { millisecondsUntilNextMinute } from "../dist/board/state/now.js";
 import {
   toAppointmentClickPayload,
   toEmptyCellClickPayload,
@@ -111,6 +112,17 @@ test("wraps now indicator position with a week day index", () => {
       now,
     }),
     null
+  );
+});
+
+test("computes refresh delay until next minute boundary", () => {
+  assert.equal(
+    millisecondsUntilNextMinute(new Date(2026, 4, 6, 9, 30, 0, 0)),
+    60000
+  );
+  assert.equal(
+    millisecondsUntilNextMinute(new Date(2026, 4, 6, 9, 30, 12, 250)),
+    47750
   );
 });
 
