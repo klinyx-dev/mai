@@ -132,6 +132,7 @@ test("availability picker exposes deterministic event contracts", () => {
 test("availability styles follow scheduler design rules", () => {
   assert.match(distStyles, /\.mai-booking-days/);
   assert.match(distStyles, /\.mai-booking-slot/);
+  assert.match(distStyles, /border:\s*1px solid rgba\(15,\s*118,\s*110,\s*0\.24\)/);
   assert.match(distStyles, /font-variant-numeric:\s*tabular-nums/);
   assert.match(distStyles, /var\(--color-border-subtle\)/);
   assert.doesNotMatch(distStyles, /glass/i);

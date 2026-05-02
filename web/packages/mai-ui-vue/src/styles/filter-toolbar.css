@@ -1,15 +1,18 @@
 @layer mai.components {
     .mai-filter-toolbar {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: space-between;
         gap: var(--space-3);
         margin: 0 0 var(--space-3);
-        padding: var(--space-2) var(--space-3);
+        padding: var(--space-2);
+        width: fit-content;
+        max-width: 100%;
         border: 1px solid var(--color-border-subtle);
-        border-radius: var(--radius-lg);
-        background: var(--color-bg-subtle);
+        border-radius: var(--radius-md);
+        background: var(--color-surface);
         box-shadow: var(--shadow-ring);
+        font-family: var(--font-sans);
     }
 
     .mai-filter-toolbar__label {
@@ -20,16 +23,17 @@
     }
 
     .mai-filter-toolbar__controls {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: var(--space-2);
+        min-width: 0;
     }
 
     .mai-filter-toolbar__mode-button,
     .mai-filter-toolbar__dropdown-trigger {
         height: 36px;
         padding: 0 12px;
-        border: 0;
+        border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
         background: var(--color-surface);
         color: var(--color-text);
@@ -37,15 +41,18 @@
         font-size: 14px;
         font-weight: 500;
         line-height: 1;
+        font-family: var(--font-sans);
         cursor: pointer;
     }
 
     .mai-filter-toolbar__mode-button:hover,
     .mai-filter-toolbar__dropdown-trigger:hover {
         background: var(--color-action-muted);
+        border-color: var(--color-border-strong);
     }
 
     .mai-filter-toolbar__mode-button--active {
+        border-color: var(--color-action);
         background: var(--color-action);
         color: var(--color-text-inverse);
         box-shadow: var(--shadow-button-inset);
@@ -60,10 +67,12 @@
 
     .mai-filter-toolbar__dropdown {
         position: relative;
+        flex: none;
     }
 
     .mai-filter-toolbar__dropdown-trigger {
-        min-width: 180px;
+        width: 190px;
+        max-width: min(190px, calc(100vw - 48px));
         display: inline-flex;
         align-items: center;
         justify-content: space-between;
@@ -82,14 +91,16 @@
         top: calc(100% + var(--space-1));
         right: 0;
         z-index: 20;
-        width: 240px;
+        width: 220px;
+        max-width: calc(100vw - 32px);
         max-height: 260px;
         overflow: auto;
         padding: var(--space-2);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-md);
         background: var(--color-surface);
         box-shadow: var(--shadow-md);
+        font-family: var(--font-sans);
     }
 
     .mai-filter-toolbar__owner-list {
@@ -114,6 +125,7 @@
         border-radius: var(--radius-sm);
         cursor: pointer;
         color: var(--color-text);
+        font-family: var(--font-sans);
     }
 
     .mai-filter-toolbar__owner-label:hover {
@@ -121,8 +133,12 @@
     }
 
     .mai-filter-toolbar__owner-text {
+        min-width: 0;
+        overflow: hidden;
         font-size: 13px;
         font-weight: 500;
         line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }

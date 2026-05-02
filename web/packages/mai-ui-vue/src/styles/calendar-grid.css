@@ -2,7 +2,7 @@
     .mai-board__calendar {
         min-width: 980px;
         display: grid;
-        grid-template-columns: 74px repeat(7, minmax(120px, 1fr));
+        grid-template-columns: 72px repeat(7, minmax(120px, 1fr));
         user-select: none;
         -webkit-user-select: none;
     }
@@ -16,7 +16,7 @@
         position: sticky;
         top: var(--mai-sticky-offset);
         z-index: 3;
-        height: 54px;
+        height: 64px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -40,13 +40,13 @@
         padding: 0 6px;
         display: flex;
         justify-content: flex-end;
-        align-items: center;
+        align-items: flex-start;
         box-sizing: border-box;
         color: var(--color-text-subtle);
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 500;
         line-height: 1;
-        transform: translateY(-50%);
+        transform: translateY(-6px);
         pointer-events: none;
         font-variant-numeric: tabular-nums;
     }
@@ -107,8 +107,8 @@
     .mai-board__day-date--today {
         display: inline-flex;
         width: fit-content;
-        padding: 2px 8px;
-        border-radius: var(--radius-full);
+        padding: 2px 7px;
+        border-radius: var(--radius-sm);
         background: var(--color-text-strong);
         color: var(--color-text-inverse);
     }
@@ -119,7 +119,7 @@
         right: 0;
         height: 0;
         box-sizing: border-box;
-        border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+        border-top: 1px solid rgba(17, 17, 17, 0.06);
         pointer-events: none;
     }
 
@@ -128,7 +128,7 @@
         left: 0;
         right: 0;
         height: 0;
-        border-top: 1px solid #dc2626;
+        border-top: 1px solid var(--color-text-strong);
         transform: translateY(-0.5px);
         pointer-events: none;
         z-index: 2;
@@ -140,8 +140,8 @@
         left: 6px;
         width: 7px;
         height: 7px;
-        border-radius: var(--radius-full);
-        background: #dc2626;
+        border-radius: var(--radius-xs);
+        background: var(--color-text-strong);
     }
 
     .mai-board__empty {
@@ -156,7 +156,7 @@
         line-height: 1.5;
         text-align: center;
         padding: 10px 12px;
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-md);
         background: var(--color-bg-muted);
         border: 1px solid var(--color-border-subtle);
         box-shadow: none;

@@ -1,10 +1,10 @@
 @layer mai.components {
     .mai-board__event {
         position: absolute;
-        left: 10px;
-        right: 10px;
+        left: 8px;
+        right: 8px;
         min-height: 24px;
-        padding: 10px 11px 11px;
+        padding: 9px 10px;
         border-radius: var(--radius-md);
         overflow: hidden;
         background: var(--color-surface);
@@ -13,31 +13,30 @@
         display: flex;
         align-items: stretch;
         transition:
-        box-shadow 160ms ease,
-        transform 160ms ease,
-        background-color 160ms ease,
-        opacity 160ms ease;
+            box-shadow var(--duration-fast) var(--ease-standard),
+            border-color var(--duration-fast) var(--ease-standard),
+            background-color var(--duration-fast) var(--ease-standard),
+            opacity var(--duration-fast) var(--ease-standard);
         touch-action: none;
     }
 
     .mai-board__event:hover {
-        box-shadow: var(--shadow-md);
-        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
     }
 
     .mai-board__event--compact {
         min-height: 20px;
-        padding: 8px 9px;
+        padding: 6px 8px;
     }
 
     .mai-board__event--tight {
         min-height: 17px;
-        padding: 4px 7px;
+        padding: 3px 6px;
     }
 
     .mai-board__event--micro {
         min-height: 14px;
-        padding: 2px 6px;
+        padding: 2px 5px;
     }
 
     .mai-board__event--slot {
@@ -64,9 +63,21 @@
         border: 1px solid rgba(15, 118, 110, 0.24);
     }
 
+    .mai-board__event--slot:hover {
+        background: #fdfdfd;
+        border-color: rgba(15, 118, 110, 0.36);
+    }
+
     .mai-board__event--appointment {
         background: #242424;
+        border: 1px solid #242424;
         color: #ffffff;
+        box-shadow: var(--shadow-md);
+    }
+
+    .mai-board__event--appointment:hover {
+        background: #111111;
+        border-color: #111111;
         box-shadow: var(--shadow-md);
     }
 
@@ -162,7 +173,7 @@
 
     .mai-board__event-summary--inline {
         display: grid;
-        grid-template-columns: max-content minmax(0, 1fr) max-content;
+        grid-template-columns: minmax(0, 1fr) max-content;
         align-items: center;
         align-content: center;
         gap: 6px;
@@ -328,7 +339,25 @@
     }
 
     .mai-board__event--micro .mai-board__event-summary--inline {
-        grid-template-columns: max-content minmax(0, 1fr) max-content;
+        grid-template-columns: minmax(0, 1fr) max-content;
         gap: 4px;
+    }
+
+    .mai-board__event-inline-main {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .mai-board__event-inline-main .mai-board__event-badge,
+    .mai-board__event-inline-main .mai-board__event-heading {
+        width: auto;
+        min-width: 0;
+    }
+
+    .mai-board__event--micro .mai-board__event-heading--inline {
+        display: none;
     }
 }

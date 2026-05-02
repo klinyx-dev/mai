@@ -38,10 +38,12 @@ export const MaiEventCardBody = defineComponent({
               `mai-board__event-summary--${props.density}`,
             ]}
           >
-            <span class="mai-board__event-badge">{title}</span>
-            <p class="mai-board__event-heading mai-board__event-heading--inline">
-              {description}
-            </p>
+            <span class="mai-board__event-inline-main">
+              <span class="mai-board__event-badge">{title}</span>
+              <span class="mai-board__event-heading mai-board__event-heading--inline">
+                {description}
+              </span>
+            </span>
             <p class="mai-board__event-time-row mai-board__event-time-row--inline">
               <span class="mai-board__event-time">{time}</span>
               {props.density === "tight" ? (

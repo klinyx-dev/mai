@@ -65,6 +65,10 @@
         0 12px 24px rgba(34, 42, 53, 0.08);
         --shadow-inset: inset 0 1px 1.5px rgba(0, 0, 0, 0.12);
         --shadow-button-inset: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        --duration-fast: 120ms;
+        --duration-base: 180ms;
+        --duration-slow: 220ms;
+        --ease-standard: cubic-bezier(0.2, 0, 0, 1);
         --mai-sticky-offset: 0px;
     }
 }
