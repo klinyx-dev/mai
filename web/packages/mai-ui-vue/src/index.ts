@@ -22,6 +22,7 @@ export {
 export { useMai, type UseMaiOptions } from "./integration";
 export { createNuxtMaiState, type NuxtMaiPluginState } from "./integration";
 export type {
+  MaiActionVisibility,
   MaiActionRunner,
   MaiBoardInteractiveEvent,
   AppointmentActionEventPayload,

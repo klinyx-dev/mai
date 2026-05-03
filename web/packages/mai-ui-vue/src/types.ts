@@ -14,6 +14,7 @@ export type {
   SlotRescheduleActionEventPayload,
 } from "./types/actions";
 export type {
+  MaiActionVisibility,
   MaiActionRunner,
   MaiBoardInteractiveEvent,
   MaiAppointmentChangedEventPayload,

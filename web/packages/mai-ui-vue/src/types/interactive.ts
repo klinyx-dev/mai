@@ -49,6 +49,7 @@ export const MAI_BOARD_INTERACTIVE_EVENTS = {
 
 export type MaiInteractionAction =
   (typeof INTERACTION_ACTIONS)[keyof typeof INTERACTION_ACTIONS];
+export type MaiActionVisibility = Partial<Record<MaiInteractionAction, boolean>>;
 export type MaiInteractionSuccessEvent =
   (typeof INTERACTION_SUCCESS_EVENTS)[keyof typeof INTERACTION_SUCCESS_EVENTS];
 export type MaiBoardInteractiveEvent =
@@ -113,4 +114,5 @@ export interface MaiBoardInteractiveActionConfig {
   cancelAppointment: MaiActionRunner<AppointmentActionEventPayload> | null;
   deleteAppointment: MaiActionRunner<AppointmentActionEventPayload> | null;
   mutateCommand: MaiActionRunner<AnyCommandEnvelope> | null;
+  visibleActions?: MaiActionVisibility;
 }

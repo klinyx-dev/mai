@@ -243,6 +243,7 @@ export const MaiBoardInteractive = defineComponent({
             <MaiSlotActionsCard
               slot={selection.value.selectedSlot}
               busy={actionBusy.value}
+              visibleActions={resolvedActions.value?.visibleActions}
               onClose={clearSelection}
               {...slotActionsCardListeners.value}
             />
@@ -255,6 +256,7 @@ export const MaiBoardInteractive = defineComponent({
             <MaiAppointmentActionsCard
               appointment={selection.value.selectedAppointment}
               busy={actionBusy.value}
+              visibleActions={resolvedActions.value?.visibleActions}
               onClose={clearSelection}
               {...appointmentActionsCardListeners.value}
             />

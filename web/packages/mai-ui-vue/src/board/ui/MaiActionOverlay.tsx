@@ -4,6 +4,7 @@ import type {
   AppointmentClickEventPayload,
   CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
+  MaiActionVisibility,
   SlotActionEventPayload,
   SlotClickEventPayload,
 } from "../../types";
@@ -49,6 +50,11 @@ export const MaiActionOverlay = defineComponent({
     actionCreatedBy: { type: String, required: true },
     defaultSlotDurationMinutes: { type: Number, required: true },
     actionBusy: { type: Boolean, required: true },
+    visibleActions: {
+      type: Object as PropType<MaiActionVisibility | undefined>,
+      required: false,
+      default: undefined,
+    },
     onCreateSlot: {
       type: Function as PropType<(payload: CreateSlotActionEventPayload) => void>,
       required: true,
@@ -117,6 +123,7 @@ export const MaiActionOverlay = defineComponent({
             <MaiSlotActionsCard
               slot={props.selectedSlot}
               busy={props.actionBusy}
+              visibleActions={props.visibleActions}
               {...{
                 "onBook-slot": props.onBookSlot,
                 "onCancel-slot": props.onCancelSlot,
@@ -134,6 +141,7 @@ export const MaiActionOverlay = defineComponent({
             <MaiAppointmentActionsCard
               appointment={props.selectedAppointment}
               busy={props.actionBusy}
+              visibleActions={props.visibleActions}
               {...{
                 "onCancel-appointment": props.onCancelAppointment,
                 "onDelete-appointment": props.onDeleteAppointment,

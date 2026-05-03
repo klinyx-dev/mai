@@ -2,14 +2,17 @@ import { defineComponent, h, type PropType } from "vue";
 import type {
   AppointmentActionEventPayload,
   AppointmentClickEventPayload,
+  MaiActionVisibility,
 } from "../types";
 import { INTERACTION_ACTIONS } from "../types/interactive";
 import {
+  type ActionButtonModel,
   MaiActionButtons,
   MaiActionCard,
   MaiActionMetaList,
 } from "./MaiActionCard";
 import { buildAppointmentActionPayload } from "./payload";
+import { isMaiActionVisible } from "./visibility";
 
 export const MaiAppointmentActionsCard = defineComponent({
   name: "MaiAppointmentActionsCard",
@@ -22,6 +25,11 @@ export const MaiAppointmentActionsCard = defineComponent({
       type: Boolean,
       required: false,
       default: false,
+    },
+    visibleActions: {
+      type: Object as PropType<MaiActionVisibility | undefined>,
+      required: false,
+      default: undefined,
     },
   },
   emits: {
@@ -38,6 +46,23 @@ export const MaiAppointmentActionsCard = defineComponent({
   setup(props, { emit }) {
     const appointmentPayload = () =>
       buildAppointmentActionPayload(props.appointment.appointmentId);
+    const buttons: ActionButtonModel[] = [
+      {
+        key: INTERACTION_ACTIONS.DELETE_APPOINTMENT,
+        label: "Delete Appointment",
+        tone: "danger",
+        disabled: props.busy,
+        onClick: () =>
+          emit(INTERACTION_ACTIONS.DELETE_APPOINTMENT, appointmentPayload()),
+      },
+      {
+        key: INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
+        label: "Cancel Appointment",
+        disabled: props.busy,
+        onClick: () =>
+          emit(INTERACTION_ACTIONS.CANCEL_APPOINTMENT, appointmentPayload()),
+      },
+    ];
 
     return () =>
       h(
@@ -56,23 +81,12 @@ export const MaiAppointmentActionsCard = defineComponent({
               ],
             }),
             h(MaiActionButtons, {
-              buttons: [
-                {
-                  key: INTERACTION_ACTIONS.DELETE_APPOINTMENT,
-                  label: "Delete Appointment",
-                  tone: "danger",
-                  disabled: props.busy,
-                  onClick: () =>
-                    emit(INTERACTION_ACTIONS.DELETE_APPOINTMENT, appointmentPayload()),
-                },
-                {
-                  key: INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
-                  label: "Cancel Appointment",
-                  disabled: props.busy,
-                  onClick: () =>
-                    emit(INTERACTION_ACTIONS.CANCEL_APPOINTMENT, appointmentPayload()),
-                },
-              ],
+              buttons: buttons.filter((button) =>
+                isMaiActionVisible(
+                  props.visibleActions,
+                  button.key as (typeof INTERACTION_ACTIONS)[keyof typeof INTERACTION_ACTIONS]
+                )
+              ),
             }),
           ],
         }
