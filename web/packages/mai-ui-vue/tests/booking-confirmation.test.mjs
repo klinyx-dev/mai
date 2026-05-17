@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { buildAppointmentTitle } from "@mai/mai-web-core";
-import { MaiBookingAuthGate } from "../dist/booking/MaiBookingAuthGate.js";
-import { MaiBookingConfirmCard } from "../dist/booking/MaiBookingConfirmCard.js";
+import { MaiBookingAuthGate } from "../dist/features/booking/ui/MaiBookingAuthGate.js";
+import { MaiBookingConfirmCard } from "../dist/features/booking/ui/MaiBookingConfirmCard.js";
 
 const distStyles = readFileSync(
   new URL("../dist/styles.css", import.meta.url),

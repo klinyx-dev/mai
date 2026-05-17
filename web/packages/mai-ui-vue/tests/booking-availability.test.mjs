@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { MaiAvailabilityPicker } from "../dist/booking/MaiAvailabilityPicker.js";
+import { MaiAvailabilityPicker } from "../dist/features/booking/ui/MaiAvailabilityPicker.js";
 import {
   availabilitySlotsForDay,
   availabilitySlotsFromWeeklyLayout,
@@ -10,7 +10,7 @@ import {
   filterAvailabilitySlotsByVisibility,
   isBookableSlotStatus,
   sortAvailabilitySlots,
-} from "../dist/booking/availability.js";
+} from "../dist/features/booking/model/availability.js";
 
 const distStyles = readFileSync(
   new URL("../dist/styles.css", import.meta.url),

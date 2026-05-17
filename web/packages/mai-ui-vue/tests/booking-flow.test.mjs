@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { MaiBookingFlow } from "../dist/MaiBookingFlow.js";
+import { MaiBookingFlow } from "../dist/features/booking/MaiBookingFlow.js";
 
 const distEntry = readFileSync(
   new URL("../dist/index.js", import.meta.url),

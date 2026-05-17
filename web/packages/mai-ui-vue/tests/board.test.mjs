@@ -7,19 +7,19 @@ import {
   createHourTicks,
   formatMinuteLabel,
   normalizeVisibleWindow,
-} from "../dist/board/model/view-model.js";
+} from "../dist/features/board/internal/model/view-model.js";
 import {
   buildNowIndicatorForDate,
   buildNowIndicatorForWeek,
   localIsoDateFromDate,
   minuteOfDayFromDate,
-} from "../dist/board/model/now-indicator.js";
-import { millisecondsUntilNextMinute } from "../dist/board/state/now.js";
+} from "../dist/features/board/internal/model/now-indicator.js";
+import { millisecondsUntilNextMinute } from "../dist/features/board/internal/state/now.js";
 import {
   toAppointmentClickPayload,
   toEmptyCellClickPayload,
   toSlotClickPayload,
-} from "../dist/board/model/interaction.js";
+} from "../dist/features/board/internal/model/interaction.js";
 
 test("defaults to full-day visible window", () => {
   assert.equal(DEFAULT_VISIBLE_START_MINUTE, 0);

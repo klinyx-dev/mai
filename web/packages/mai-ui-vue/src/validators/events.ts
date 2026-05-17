@@ -15,7 +15,7 @@ import {
   isSlotActionPayload,
   isSlotClickPayload,
   isSlotReschedulePayload,
-} from "../board/api/validators.js";
+} from "../features/board/internal/api/validators.js";
 
 export {
   isAppointmentActionPayload,

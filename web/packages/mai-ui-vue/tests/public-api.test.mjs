@@ -16,14 +16,14 @@ const distStyles = readFileSync(
 );
 
 test("exports primary package entry points", () => {
-  assert.match(distEntry, /export \{ MaiBoard \} from "\.\/MaiBoard";/);
+  assert.match(distEntry, /export \{ MaiBoard \} from "\.\/features\/board";/);
   assert.match(
     distEntry,
-    /export \{ MaiBoardInteractive \} from "\.\/MaiBoardInteractive";/
+    /export \{ MaiBoardInteractive \} from "\.\/features\/interactive-board";/
   );
   assert.match(
     distEntry,
-    /export \{ MaiCalendarFilterToolbar \} from "\.\/filters";/
+    /export \{ MaiCalendarFilterToolbar \} from "\.\/features\/calendar-filter";/
   );
   assert.match(distEntry, /export \{ useMai \} from "\.\/integration";/);
   assert.match(

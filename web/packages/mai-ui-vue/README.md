@@ -176,3 +176,13 @@ UI implementation must comply with the repository `DESIGN.md`: monochrome-first,
   - `INTERACTION_ACTIONS`
   - `INTERACTION_SUCCESS_EVENTS`
 - Types: import from `@mai/mai-ui-vue` (single stable type surface)
+
+## Internal Structure
+
+- `src/features/board`: presentational board feature, split into `internal/api`, `internal/model`, `internal/state`, and `internal/ui`.
+- `src/features/interactive-board`: board orchestration plus domain-specific action cards.
+- `src/features/booking`: client booking flow, split into `model`, `state`, and `ui`.
+- `src/features/calendar-filter`: calendar filter UI.
+- `src/shared`: package-internal reusable UI and shared styling foundations.
+
+The root entrypoint remains the supported package API. Internal feature modules live under `src/features`; consumers that use non-root imports must follow the feature-first structure directly.

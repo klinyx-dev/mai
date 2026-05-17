@@ -9,7 +9,7 @@ import {
   buildDeleteAppointmentCommand,
   buildDeleteSlotCommand,
   buildRescheduleSlotCommand,
-} from "../dist/interactive/command-mode.js";
+} from "../dist/features/interactive-board/internal/command-mode.js";
 
 const options = {
   createdBy: "ui-operator",

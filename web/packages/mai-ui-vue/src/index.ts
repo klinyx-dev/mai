@@ -1,16 +1,21 @@
-export { MaiBoard } from "./MaiBoard";
-export { MaiBoardInteractive } from "./MaiBoardInteractive";
-export { MaiBookingFlow, type MaiBookingActionConfig } from "./MaiBookingFlow";
+export { MaiBoard } from "./features/board";
+export { MaiBoardInteractive } from "./features/interactive-board";
+export {
+  MaiBookingFlow,
+  type MaiBookingActionConfig,
+} from "./features/booking/MaiBookingFlow";
 export { MAI_BOOKING_FLOW_EVENTS } from "./types/booking";
 export {
   INTERACTION_ACTIONS,
   INTERACTION_SUCCESS_EVENTS,
   MAI_BOARD_INTERACTIVE_EVENTS,
 } from "./types/interactive";
-export { MaiSlotActionsCard } from "./actions/MaiSlotActionsCard";
-export { MaiAppointmentActionsCard } from "./actions/MaiAppointmentActionsCard";
-export { MaiCreateSlotCard } from "./actions/MaiCreateSlotCard";
-export { MaiCalendarFilterToolbar } from "./filters";
+export {
+  MaiAppointmentActionsCard,
+  MaiCreateSlotCard,
+  MaiSlotActionsCard,
+} from "./features/interactive-board";
+export { MaiCalendarFilterToolbar } from "./features/calendar-filter";
 export {
   MaiAvailabilityPicker,
   MaiBookingAuthGate,
@@ -18,7 +23,7 @@ export {
   MaiCategoryPicker,
   MaiLocationPicker,
   MaiResourcePicker,
-} from "./booking";
+} from "./features/booking";
 export { useMai, type UseMaiOptions } from "./integration";
 export { createNuxtMaiState, type NuxtMaiPluginState } from "./integration";
 export type {

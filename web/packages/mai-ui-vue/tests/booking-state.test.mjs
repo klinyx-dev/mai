@@ -14,7 +14,7 @@ import {
   selectBookingSlot,
   selectCompatibleBookingResource,
   setBookingNotes,
-} from "../dist/booking/state.js";
+} from "../dist/features/booking/state/flow-state.js";
 
 test("location and category selection clear dependent booking state", () => {
   const state = {

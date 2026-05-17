@@ -7,7 +7,7 @@ import {
   computeResizeBottomDraft,
   computeResizeTopDraft,
   minuteOfDayFromPointer,
-} from "../dist/board/model/slot-gesture.js";
+} from "../dist/features/board/internal/model/slot-gesture.js";
 
 const gestureBaseline = {
   gridHeight: 960,

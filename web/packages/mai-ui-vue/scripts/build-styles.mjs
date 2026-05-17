@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const packageRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const entrypoint = path.join(packageRoot, "src/styles/index.css");
 const outputFile = path.join(packageRoot, "dist/styles.css");
-const localImportPattern = /^@import\s+["'](\.\/[^"']+)["'];\s*$/gm;
+const localImportPattern = /^@import\s+["'](\.[^"']+)["'];\s*$/gm;
 
 async function inlineCss(filePath, seen = new Set()) {
   const absolutePath = path.resolve(filePath);

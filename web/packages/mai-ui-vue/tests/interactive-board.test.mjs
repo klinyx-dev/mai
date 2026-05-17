@@ -13,7 +13,7 @@ import {
   withAppointmentSelected,
   withEmptyCellDraft,
   withSlotSelected,
-} from "../dist/interactive/state.js";
+} from "../dist/features/interactive-board/internal/state.js";
 
 test("empty cell click opens create-slot popover", () => {
   const next = withEmptyCellDraft({

@@ -1,0 +1,1 @@
+export { MaiBoard } from "./MaiBoard";

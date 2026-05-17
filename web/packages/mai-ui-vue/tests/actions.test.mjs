@@ -10,7 +10,7 @@ import {
   minuteOfDayFromTimeLabel,
   normalizeSlotMinuteRange,
   timeLabelFromMinuteOfDay,
-} from "../dist/actions/payload.js";
+} from "../dist/features/interactive-board/actions/payload.js";
 
 test("builds slot and appointment action payloads", () => {
   assert.deepEqual(buildSlotActionPayload("slot-9"), { slotId: "slot-9" });

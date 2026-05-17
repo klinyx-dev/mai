@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { MaiCategoryPicker } from "../dist/booking/MaiCategoryPicker.js";
-import { MaiLocationPicker } from "../dist/booking/MaiLocationPicker.js";
-import { MaiResourcePicker } from "../dist/booking/MaiResourcePicker.js";
-import { eligibleResourcesForCategory } from "../dist/booking/options.js";
+import { MaiCategoryPicker } from "../dist/features/booking/ui/MaiCategoryPicker.js";
+import { MaiLocationPicker } from "../dist/features/booking/ui/MaiLocationPicker.js";
+import { MaiResourcePicker } from "../dist/features/booking/ui/MaiResourcePicker.js";
+import { eligibleResourcesForCategory } from "../dist/features/booking/model/options.js";
 
 const distStyles = readFileSync(
   new URL("../dist/styles.css", import.meta.url),
