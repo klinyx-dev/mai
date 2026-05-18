@@ -1,22 +1,21 @@
 # mai
 
-Headless scheduling core in Rust with wasm + web integration.
+Headless scheduling engine in Rust, with wasm output and a web workspace for app integration.
 
-## Repository structure
+## What is in this repo
 - `core/`: Rust scheduling core crate.
-- `web/`: web workspace (`mai-web-core`, `mai-ui-vue`, Nuxt example app).
-- `docs/`: functional/technical specs and adapter usage docs.
+- `web/`: pnpm workspace for TypeScript contracts, wasm adapter, Vue UI, and Nuxt example app.
+- `docs/`: functional/technical specs and supporting docs.
 
-## Prerequisites
+## Quick start
+Prerequisites:
 - Rust stable (`rustup`, `cargo`)
 - Rust target `wasm32-unknown-unknown`
 - `wasm-pack`
 - Node.js 22.x
 - `pnpm` 10.x
 
-## Quick start (local)
 From repository root:
-
 ```bash
 rustup target add wasm32-unknown-unknown
 
@@ -32,15 +31,17 @@ pnpm run example:dev
 
 Open `http://localhost:3000/`.
 
-## Validation commands
-From repository root:
+## Web boundary rule
+- App code must not import `core/pkg/*` directly.
+- App code should use package exports from `web/packages/*` (for example `@mai/mai-wasm-adapter`).
 
+## Main validation
+From repository root:
 ```bash
 ./scripts/verify-local.sh
 ```
 
-Equivalent manual sequence:
-
+Manual equivalent:
 ```bash
 cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
@@ -50,33 +51,8 @@ core/tests/run_generated_package_smoke.sh
 cd web && pnpm run build && pnpm run test
 ```
 
-## Useful docs
-- Dev setup details: [README-dev.md](./README-dev.md)
-- Web workspace guide: [web/README.md](./web/README.md)
+## Developer docs
+- Contributor workflow: [README-dev.md](./README-dev.md)
 - Release process: [docs/release_process.md](./docs/release_process.md)
 - Wasm adapter usage: [docs/wasm_adapter_usage.md](./docs/wasm_adapter_usage.md)
 - Payload examples: [docs/adapter_payload_examples.md](./docs/adapter_payload_examples.md)
-
-## Core engine usage (Rust)
-
-```rust
-use chrono::{NaiveDate, TimeZone, Utc};
-use mai::{ActorId, AddSlotCommand, SchedulerService, SlotId, WeeklyLayoutQuery};
-
-let mut service = SchedulerService::new();
-service.add_slot(AddSlotCommand {
-    slot_id: SlotId::new("slot-1"),
-    start: Utc.with_ymd_and_hms(2026, 5, 4, 9, 0, 0).unwrap(),
-    end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
-    resource_owner_id: ActorId::new("owner-1"),
-    created_by: ActorId::new("admin-1"),
-})?;
-
-let layout = service.get_weekly_layout_checked(
-    WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 5, 7).unwrap())
-)?;
-assert_eq!(layout.week_start, NaiveDate::from_ymd_opt(2026, 5, 4).unwrap());
-# Ok::<(), mai::SchedulerError>(())
-```
-
-Use `get_weekly_layout_checked` for user-provided query inputs; it returns structural errors instead of panicking on invalid visible windows.

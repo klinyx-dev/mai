@@ -1,11 +1,6 @@
-# Dev Setup (Local)
+# mai developer guide
 
-## Prerequisites
-- Rust stable (`rustup`, `cargo`)
-- Rust target `wasm32-unknown-unknown`
-- `wasm-pack`
-- Node.js 22.x
-- `pnpm` 10.x
+Use this file for contributor workflow details. For project overview and first-run setup, start at [`README.md`](./README.md).
 
 ## One-time setup
 ```bash
@@ -15,7 +10,6 @@ cargo install wasm-pack
 
 ## Daily workflow
 From repository root:
-
 ```bash
 cd core
 wasm-pack build --target web --out-dir pkg --out-name mai
@@ -26,15 +20,12 @@ pnpm run build
 pnpm run example:dev
 ```
 
-## Full validation
-From repository root:
-
+## Full local validation
 ```bash
 ./scripts/verify-local.sh
 ```
 
-Equivalent manual sequence:
-
+Manual equivalent:
 ```bash
 cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
@@ -44,19 +35,11 @@ core/tests/run_generated_package_smoke.sh
 cd web && pnpm run build && pnpm run test
 ```
 
-## Quick notes
-- WASM package output is generated under `core/pkg/`.
-- Manual wasm package build command:
-
-```bash
-cd core
-wasm-pack build --target web --out-dir pkg --out-name mai
-```
-
-- Nuxt example runs at `http://localhost:3000/` by default.
+## Notes
+- wasm output is generated under `core/pkg/`.
+- Nuxt example default URL: `http://localhost:3000/`.
 - If port `3000` is busy:
-
-```bash
-cd web
-pnpm --filter @mai/nuxt-app-example dev --host 127.0.0.1 --port 3101
-```
+  ```bash
+  cd web
+  pnpm --filter @mai/nuxt-app-example dev --host 127.0.0.1 --port 3101
+  ```
