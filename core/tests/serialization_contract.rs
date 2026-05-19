@@ -392,6 +392,50 @@ fn wasm_adapter_wrapper_maps_business_error_for_duplicate_slot_id() {
 }
 
 #[test]
+fn wasm_adapter_wrapper_maps_business_error_for_duplicate_appointment_id() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "resource_owner_id":"owner-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let add_appointment_json = r#"{
+        "command":"add_appointment",
+        "payload":{
+            "appointment_id":"appt-9001",
+            "slot_id":"slot-1001",
+            "invitee_ids":["patient-77"],
+            "title":"Follow-up Consultation",
+            "created_by":"staff-3"
+        }
+    }"#;
+    let duplicate_id_json = r#"{
+        "command":"add_appointment",
+        "payload":{
+            "appointment_id":"appt-9001",
+            "slot_id":"slot-1001",
+            "invitee_ids":["patient-88"],
+            "title":"Second Attempt",
+            "created_by":"staff-3"
+        }
+    }"#;
+
+    adapter.execute_command_json(add_slot_json);
+    adapter.execute_command_json(add_appointment_json);
+    let response = adapter.execute_command_json(duplicate_id_json);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "error");
+    assert_eq!(payload["error"]["category"], "business");
+    assert_eq!(payload["error"]["code"], "appointment_id_already_exists");
+}
+
+#[test]
 fn wasm_adapter_wrapper_maps_business_error_for_unauthorized_appointment_cancellation() {
     let mut adapter = WasmSchedulerAdapter::new();
     let add_slot_json = r#"{
@@ -635,6 +679,57 @@ fn wasm_adapter_wrapper_maps_invalid_visible_window_to_structural_error() {
     assert_eq!(payload["status"], "error");
     assert_eq!(payload["error"]["category"], "structural");
     assert_eq!(payload["error"]["code"], "invalid_visible_window");
+}
+
+#[test]
+fn wasm_adapter_wrapper_returns_clipped_slot_nodes_for_visible_window() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let slot_one_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T10:00:00Z",
+            "resource_owner_id":"owner-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let slot_two_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1002",
+            "start":"2026-05-04T11:00:00Z",
+            "end":"2026-05-04T12:00:00Z",
+            "resource_owner_id":"owner-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+    let query_json = r#"{
+        "query":"weekly_layout",
+        "payload":{
+            "anchor_date":"2026-05-07",
+            "visible_start_minute":570,
+            "visible_end_minute":690
+        }
+    }"#;
+
+    adapter.execute_command_json(slot_one_json);
+    adapter.execute_command_json(slot_two_json);
+    let response = adapter.execute_query_json(query_json);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "success");
+    assert_eq!(payload["data"]["slots"].as_array().unwrap().len(), 2);
+    assert_eq!(payload["data"]["slots"][0]["slot_id"], "slot-1001");
+    assert_eq!(payload["data"]["slots"][0]["start_minute"], 570);
+    assert_eq!(payload["data"]["slots"][0]["end_minute"], 600);
+    assert_eq!(payload["data"]["slots"][0]["clipped_start"], true);
+    assert_eq!(payload["data"]["slots"][0]["clipped_end"], false);
+    assert_eq!(payload["data"]["slots"][1]["slot_id"], "slot-1002");
+    assert_eq!(payload["data"]["slots"][1]["start_minute"], 660);
+    assert_eq!(payload["data"]["slots"][1]["end_minute"], 690);
+    assert_eq!(payload["data"]["slots"][1]["clipped_start"], false);
+    assert_eq!(payload["data"]["slots"][1]["clipped_end"], true);
 }
 
 #[test]
