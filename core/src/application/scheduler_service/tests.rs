@@ -230,6 +230,17 @@ fn booked_slot_cannot_be_deleted() {
         result.expect_err("booked slot deletion must fail"),
         SchedulerError::Business(BusinessRuleError::CannotDeleteBookedSlot)
     );
+    assert!(service.state().slots.contains_key(&SlotId::new("slot-1")));
+    assert!(service.state().appointments.contains_key(&AppointmentId::new("appt-1")));
+    assert_eq!(
+        service
+            .state()
+            .slots
+            .get(&SlotId::new("slot-1"))
+            .expect("slot exists")
+            .status,
+        SlotStatus::Booked
+    );
 }
 
 #[test]
@@ -309,6 +320,19 @@ fn rescheduling_slot_rejects_overlap_for_same_resource_owner() {
     assert_eq!(
         result.expect_err("overlapping reschedule should fail"),
         SchedulerError::Business(BusinessRuleError::SlotOverlap)
+    );
+    let slot = service
+        .state()
+        .slots
+        .get(&SlotId::new("slot-1"))
+        .expect("slot exists");
+    assert_eq!(
+        slot.time.start,
+        Utc.with_ymd_and_hms(2026, 1, 5, 9, 0, 0).unwrap()
+    );
+    assert_eq!(
+        slot.time.end,
+        Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap()
     );
 }
 
