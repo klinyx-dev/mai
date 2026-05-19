@@ -159,14 +159,19 @@ fn overlapping_slots_different_resource_owners_are_allowed() {
 }
 
 #[test]
-fn duplicate_slot_id_is_replaced_by_latest_slot_definition() {
+fn duplicate_slot_id_is_rejected_and_keeps_original_slot() {
     let mut service = SchedulerService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
-    service
+    let error = service
         .add_slot(add_slot_command("slot-1", "owner-1", 11, 12))
-        .unwrap();
+        .expect_err("duplicate slot id must fail");
+
+    assert_eq!(
+        error,
+        SchedulerError::Business(mai::BusinessRuleError::SlotIdAlreadyExists)
+    );
 
     let layout = service
         .get_weekly_layout_checked(WeeklyLayoutQuery::new(
@@ -176,12 +181,12 @@ fn duplicate_slot_id_is_replaced_by_latest_slot_definition() {
 
     assert_eq!(layout.slots.len(), 1);
     assert_eq!(layout.slots[0].slot_id, SlotId::new("slot-1"));
-    assert_eq!(layout.slots[0].start_minute, 11 * 60);
-    assert_eq!(layout.slots[0].end_minute, 12 * 60);
+    assert_eq!(layout.slots[0].start_minute, 9 * 60);
+    assert_eq!(layout.slots[0].end_minute, 10 * 60);
 }
 
 #[test]
-fn duplicate_appointment_id_is_replaced_by_latest_appointment_definition() {
+fn duplicate_appointment_id_is_rejected_and_keeps_original_appointment() {
     let mut service = SchedulerService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
@@ -193,9 +198,14 @@ fn duplicate_appointment_id_is_replaced_by_latest_appointment_definition() {
     service
         .add_appointment(add_appointment_command("appt-1", "slot-1"))
         .unwrap();
-    service
+    let error = service
         .add_appointment(add_appointment_command("appt-1", "slot-2"))
-        .unwrap();
+        .expect_err("duplicate appointment id must fail");
+
+    assert_eq!(
+        error,
+        SchedulerError::Business(mai::BusinessRuleError::AppointmentIdAlreadyExists)
+    );
 
     let layout = service
         .get_weekly_layout_checked(WeeklyLayoutQuery::new(
@@ -208,5 +218,5 @@ fn duplicate_appointment_id_is_replaced_by_latest_appointment_definition() {
         layout.appointments[0].appointment_id,
         AppointmentId::new("appt-1")
     );
-    assert_eq!(layout.appointments[0].slot_id, SlotId::new("slot-2"));
+    assert_eq!(layout.appointments[0].slot_id, SlotId::new("slot-1"));
 }

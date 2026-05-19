@@ -75,6 +75,62 @@ fn booking_creates_exactly_one_appointment_and_marks_slot_booked() {
 }
 
 #[test]
+fn duplicate_slot_id_is_rejected_and_state_is_unchanged() {
+    let mut service = SchedulerService::new();
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+
+    let result = service.add_slot(add_slot_cmd("slot-1"));
+
+    assert_eq!(
+        result.expect_err("duplicate slot id must fail"),
+        SchedulerError::Business(BusinessRuleError::SlotIdAlreadyExists)
+    );
+    assert_eq!(service.state().slots.len(), 1);
+    assert_eq!(
+        service
+            .state()
+            .slots
+            .get(&SlotId::new("slot-1"))
+            .expect("slot exists")
+            .time
+            .start,
+        Utc.with_ymd_and_hms(2026, 1, 5, 9, 0, 0).unwrap()
+    );
+}
+
+#[test]
+fn duplicate_appointment_id_is_rejected_and_state_is_unchanged() {
+    let mut service = SchedulerService::new();
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+    service
+        .add_appointment(add_appointment_cmd("appt-1", "slot-1"))
+        .unwrap();
+
+    let result = service.add_appointment(AddAppointmentCommand {
+        appointment_id: AppointmentId::new("appt-1"),
+        slot_id: SlotId::new("slot-1"),
+        invitee_ids: vec![ActorId::new("invitee-2")],
+        title: "Follow-up".to_string(),
+        created_by: ActorId::new("creator-2"),
+    });
+
+    assert_eq!(
+        result.expect_err("duplicate appointment id must fail"),
+        SchedulerError::Business(BusinessRuleError::AppointmentIdAlreadyExists)
+    );
+    assert_eq!(service.state().appointments.len(), 1);
+    assert_eq!(
+        service
+            .state()
+            .appointments
+            .get(&AppointmentId::new("appt-1"))
+            .expect("appointment exists")
+            .title,
+        "Consultation"
+    );
+}
+
+#[test]
 fn deleting_appointment_restores_slot_availability() {
     let mut service = SchedulerService::new();
     service.add_slot(add_slot_cmd("slot-1")).unwrap();

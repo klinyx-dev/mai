@@ -1,4 +1,5 @@
 use crate::application::command_result::CommandResult;
+use crate::application::errors::BusinessRuleError;
 use crate::application::errors::ReferentialError;
 use crate::application::policies::slot_policy::ensure_no_overlap_for_resource_owner;
 use crate::commands::add_slot::AddSlotCommand;
@@ -13,6 +14,10 @@ use super::SchedulerService;
 
 impl SchedulerService {
     pub fn add_slot(&mut self, cmd: AddSlotCommand) -> CommandResult {
+        if self.state.contains_slot(&cmd.slot_id) {
+            return Err(BusinessRuleError::SlotIdAlreadyExists.into());
+        }
+
         self.ensure_actor_exists(
             &cmd.resource_owner_id,
             ReferentialError::ResourceOwnerNotFound,

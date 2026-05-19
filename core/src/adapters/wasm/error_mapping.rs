@@ -62,6 +62,8 @@ fn referential_error_code(error: &ReferentialError) -> &'static str {
 
 fn business_error_code(error: &BusinessRuleError) -> &'static str {
     match error {
+        BusinessRuleError::SlotIdAlreadyExists => "slot_id_already_exists",
+        BusinessRuleError::AppointmentIdAlreadyExists => "appointment_id_already_exists",
         BusinessRuleError::SlotOverlap => "slot_overlap",
         BusinessRuleError::SlotAlreadyBooked => "slot_already_booked",
         BusinessRuleError::SlotCancelled => "slot_cancelled",

@@ -369,6 +369,29 @@ fn wasm_adapter_wrapper_maps_business_error_for_duplicate_booking() {
 }
 
 #[test]
+fn wasm_adapter_wrapper_maps_business_error_for_duplicate_slot_id() {
+    let mut adapter = WasmSchedulerAdapter::new();
+    let add_slot_json = r#"{
+        "command":"add_slot",
+        "payload":{
+            "slot_id":"slot-1001",
+            "start":"2026-05-04T09:00:00Z",
+            "end":"2026-05-04T09:30:00Z",
+            "resource_owner_id":"owner-42",
+            "created_by":"admin-7"
+        }
+    }"#;
+
+    adapter.execute_command_json(add_slot_json);
+    let response = adapter.execute_command_json(add_slot_json);
+    let payload: serde_json::Value = serde_json::from_str(&response).unwrap();
+
+    assert_eq!(payload["status"], "error");
+    assert_eq!(payload["error"]["category"], "business");
+    assert_eq!(payload["error"]["code"], "slot_id_already_exists");
+}
+
+#[test]
 fn wasm_adapter_wrapper_maps_business_error_for_unauthorized_appointment_cancellation() {
     let mut adapter = WasmSchedulerAdapter::new();
     let add_slot_json = r#"{

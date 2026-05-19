@@ -1,4 +1,5 @@
 use crate::application::command_result::CommandResult;
+use crate::application::errors::BusinessRuleError;
 use crate::application::errors::ReferentialError;
 use crate::application::policies::appointment_policy::{
     ensure_actor_can_cancel_appointment, ensure_no_appointment_for_slot,
@@ -17,6 +18,10 @@ use super::SchedulerService;
 
 impl SchedulerService {
     pub fn add_appointment(&mut self, cmd: AddAppointmentCommand) -> CommandResult {
+        if self.state.contains_appointment(&cmd.appointment_id) {
+            return Err(BusinessRuleError::AppointmentIdAlreadyExists.into());
+        }
+
         self.ensure_actor_exists(&cmd.created_by, ReferentialError::CreatorNotFound)?;
         for invitee_id in &cmd.invitee_ids {
             self.ensure_actor_exists(invitee_id, ReferentialError::InviteeNotFound)?;

@@ -33,6 +33,10 @@ pub enum ReferentialError {
 // Errors that occur during the business logic execution
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
 pub enum BusinessRuleError {
+    #[error("slot id already exists")]
+    SlotIdAlreadyExists,
+    #[error("appointment id already exists")]
+    AppointmentIdAlreadyExists,
     #[error("slot overlaps with an existing active slot for the same resource owner")]
     SlotOverlap,
     #[error("slot is already booked")]
