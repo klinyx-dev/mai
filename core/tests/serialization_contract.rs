@@ -1,7 +1,7 @@
 use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
     AddAppointmentCommand, AddSlotCommand, BusinessRuleError, CancelAppointmentCommand,
-    ReferentialError, SchedulerError, WeeklyLayoutQuery,
+    ReferentialError, SchedulerError, StructuralError, WeeklyLayoutQuery,
     adapters::wasm::{
         WasmAdapterError, WasmAddSlotPayload, WasmBindgenAdapter, WasmCancelAppointmentPayload,
         WasmCommandRequest, WasmCommandResponse, WasmDeleteSlotPayload, WasmErrorCategory,
@@ -796,6 +796,79 @@ fn wasm_adapter_error_conversion_is_deterministic_for_referential_errors() {
     assert_eq!(error.category, WasmErrorCategory::Referential);
     assert_eq!(error.code, "creator_not_found");
     assert_eq!(error.message, "creator not found");
+}
+
+#[test]
+fn wasm_adapter_error_conversion_covers_all_structural_codes() {
+    let cases = [
+        (StructuralError::InvalidTimeRange, "invalid_time_range"),
+        (StructuralError::EmptyTitle, "empty_title"),
+        (StructuralError::InvalidVisibleWindow, "invalid_visible_window"),
+    ];
+
+    for (source, code) in cases {
+        let error = WasmAdapterError::from_scheduler_error(SchedulerError::Structural(source));
+        assert_eq!(error.category, WasmErrorCategory::Structural);
+        assert_eq!(error.code, code);
+    }
+}
+
+#[test]
+fn wasm_adapter_error_conversion_covers_all_referential_codes() {
+    let cases = [
+        (ReferentialError::SlotNotFound, "slot_not_found"),
+        (ReferentialError::AppointmentNotFound, "appointment_not_found"),
+        (
+            ReferentialError::ResourceOwnerNotFound,
+            "resource_owner_not_found",
+        ),
+        (ReferentialError::CreatorNotFound, "creator_not_found"),
+        (ReferentialError::InviteeNotFound, "invitee_not_found"),
+        (ReferentialError::UpdaterNotFound, "updater_not_found"),
+        (ReferentialError::CancellerNotFound, "canceller_not_found"),
+    ];
+
+    for (source, code) in cases {
+        let error = WasmAdapterError::from_scheduler_error(SchedulerError::Referential(source));
+        assert_eq!(error.category, WasmErrorCategory::Referential);
+        assert_eq!(error.code, code);
+    }
+}
+
+#[test]
+fn wasm_adapter_error_conversion_covers_all_business_codes() {
+    let cases = [
+        (
+            BusinessRuleError::SlotIdAlreadyExists,
+            "slot_id_already_exists",
+        ),
+        (
+            BusinessRuleError::AppointmentIdAlreadyExists,
+            "appointment_id_already_exists",
+        ),
+        (BusinessRuleError::SlotOverlap, "slot_overlap"),
+        (BusinessRuleError::SlotAlreadyBooked, "slot_already_booked"),
+        (BusinessRuleError::SlotCancelled, "slot_cancelled"),
+        (BusinessRuleError::SlotNotAvailable, "slot_not_available"),
+        (
+            BusinessRuleError::CannotDeleteBookedSlot,
+            "cannot_delete_booked_slot",
+        ),
+        (
+            BusinessRuleError::AppointmentAlreadyExistsForSlot,
+            "appointment_already_exists_for_slot",
+        ),
+        (
+            BusinessRuleError::AppointmentCancelNotAllowed,
+            "appointment_cancel_not_allowed",
+        ),
+    ];
+
+    for (source, code) in cases {
+        let error = WasmAdapterError::from_scheduler_error(SchedulerError::Business(source));
+        assert_eq!(error.category, WasmErrorCategory::Business);
+        assert_eq!(error.code, code);
+    }
 }
 
 #[test]

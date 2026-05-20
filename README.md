@@ -55,4 +55,5 @@ cd web && pnpm run build && pnpm run test
 - Contributor workflow: [README-dev.md](./README-dev.md)
 - Release process: [docs/release_process.md](./docs/release_process.md)
 - Wasm adapter usage: [docs/wasm_adapter_usage.md](./docs/wasm_adapter_usage.md)
+- Adapter error codes: [docs/adapter_error_codes.md](./docs/adapter_error_codes.md)
 - Payload examples: [docs/adapter_payload_examples.md](./docs/adapter_payload_examples.md)

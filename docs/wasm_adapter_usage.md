@@ -258,4 +258,5 @@ if (duplicateBooking.status === "error") {
 ## Source of Truth
 
 - Payload shapes: `docs/adapter_payload_examples.md`
+- Error codes: `docs/adapter_error_codes.md`
 - Contract and wrapper implementation: `core/src/adapters/wasm/mod.rs`
