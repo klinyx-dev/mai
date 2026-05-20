@@ -185,7 +185,21 @@ Minimum guarantees:
 - owner-filter and visible-window semantics are stable,
 - wasm error codes and response envelopes remain deterministic.
 
-## 14. Performance and Non-Goals
+## 14. Advanced Capability Gate (Phase 5+)
+Advanced scheduling capabilities are gated by `docs/advanced_scheduling_spec.md`.
+
+Before implementation:
+- functional and technical spec deltas must be accepted,
+- new command/query envelope contracts must be documented with examples,
+- migration impact must be documented,
+- invariant tests must cover legacy and new behavior side-by-side.
+
+Compatibility constraints:
+- existing command/query payloads remain valid,
+- existing error category and envelope shape remain unchanged,
+- additive variants are preferred over changing existing command/query semantics.
+
+## 15. Performance and Non-Goals
 Near-term priority is correctness and contract stability over optimization.
 
 Out of scope:
@@ -196,10 +210,11 @@ Out of scope:
 - realtime sync/conflict resolution,
 - UI rendering concerns.
 
-## 15. Acceptance Criteria for Technical Spec
+## 16. Acceptance Criteria for Technical Spec
 This spec is satisfied when:
 - implementation preserves the fixed-slot model,
 - core remains headless and deterministic,
 - command/query contracts and errors are stable,
 - adapter boundary is predictable for web consumers,
-- tests enforce key invariants and integration flows.
+- tests enforce key invariants and integration flows,
+- advanced capabilities (when enabled) are additive and backward-compatible by contract.

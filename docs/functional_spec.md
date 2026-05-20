@@ -104,6 +104,9 @@ Implications:
 - Styling / theming
 - Advanced timezone handling (beyond adapter/query boundary normalization)
 
+Phase 5 note:
+- Advanced scheduling capabilities are gated behind `docs/advanced_scheduling_spec.md` and are not part of this near-term fixed-slot scope until explicitly implemented.
+
 ---
 
 ## 4. Functional Requirements
@@ -256,6 +259,13 @@ The flow must preserve the fixed-slot booking model:
 - the slot remains the canonical time and host source
 - the slot status changes from `available` to `booked`
 
+### FR-16: Advanced Scheduling Expansion Gate
+Before adding recurrence, capacity, batch slot operations, blackout periods, or metadata extension fields, the system must:
+- define the capability in `docs/advanced_scheduling_spec.md`,
+- define deterministic rejection behavior,
+- document migration/compatibility impact,
+- preserve fixed-slot behavior for existing commands and queries.
+
 ---
 
 ## 5. Business Rules
@@ -293,6 +303,8 @@ The flow must preserve the fixed-slot booking model:
 24. Appointment filtering is evaluated through the referenced slot resource owner, not appointment creator or invitee
 25. Duplicate slot IDs are rejected; create-slot does not overwrite existing records
 26. Duplicate appointment IDs are rejected; create-appointment does not overwrite existing records
+27. Advanced capabilities must be additive and must not change behavior of existing fixed-slot commands/queries by default
+28. Provider/admin advanced controls must not expand client-facing booking mutation permissions
 
 ---
 
