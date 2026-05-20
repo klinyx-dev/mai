@@ -16,7 +16,10 @@ impl SchedulerService {
             &cmd.resource_owner_id,
             crate::application::ReferentialError::ResourceOwnerNotFound,
         )?;
-        self.ensure_actor_exists(&cmd.created_by, crate::application::ReferentialError::CreatorNotFound)?;
+        self.ensure_actor_exists(
+            &cmd.created_by,
+            crate::application::ReferentialError::CreatorNotFound,
+        )?;
         let blackout = BlackoutWindow {
             blackout_id: cmd.blackout_id,
             resource_owner_id: cmd.resource_owner_id,
@@ -35,7 +38,10 @@ impl SchedulerService {
             &cmd.resource_owner_id,
             crate::application::ReferentialError::ResourceOwnerNotFound,
         )?;
-        self.ensure_actor_exists(&cmd.created_by, crate::application::ReferentialError::CreatorNotFound)?;
+        self.ensure_actor_exists(
+            &cmd.created_by,
+            crate::application::ReferentialError::CreatorNotFound,
+        )?;
         let template = RecurringTemplate {
             template_id: cmd.template_id,
             resource_owner_id: cmd.resource_owner_id,
@@ -97,9 +103,7 @@ impl SchedulerService {
             if day < template.effective_from || day > template.effective_until {
                 continue;
             }
-            let start = day
-                .and_hms_opt(0, 0, 0)
-                .expect("valid")
+            let start = day.and_hms_opt(0, 0, 0).expect("valid")
                 + Duration::minutes(i64::from(template.start_minute));
             let end = day.and_hms_opt(0, 0, 0).expect("valid")
                 + Duration::minutes(i64::from(template.end_minute));

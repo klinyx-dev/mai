@@ -43,7 +43,9 @@ impl WasmSchedulerAdapter {
                 self.service.apply_recurring_templates(cmd.into())
             }
             WasmCommandRequest::AddSlotsBatch(cmd) => self.service.add_slots_batch(cmd.into()),
-            WasmCommandRequest::AddBlackoutWindow(cmd) => self.service.add_blackout_window(cmd.into()),
+            WasmCommandRequest::AddBlackoutWindow(cmd) => {
+                self.service.add_blackout_window(cmd.into())
+            }
         };
 
         match result {

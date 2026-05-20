@@ -16,8 +16,8 @@ pub use commands::{
     CancelSlotCommand, DeleteAppointmentCommand, DeleteSlotCommand, RescheduleSlotCommand,
 };
 pub use domain::{
-    ActorId, ActorRef, Appointment, AppointmentId, BlackoutWindow, RecurringTemplate, Slot,
-    SlotId, SlotStatus, TimeRange, TimeRangeError, WeekRange, WeekRangeError,
+    ActorId, ActorRef, Appointment, AppointmentId, BlackoutWindow, RecurringTemplate, Slot, SlotId,
+    SlotStatus, TimeRange, TimeRangeError, WeekRange, WeekRangeError,
 };
 pub use layout::{
     AppointmentLayoutNode, BlackoutLayoutNode, CalendarOwnerFilter, SlotLayoutNode, WeeklyLayout,

@@ -1,8 +1,7 @@
 use crate::application::command_result::CommandResult;
 use crate::layout::weekly_layout::{
     project_appointment_layout_nodes_resolved, project_blackout_layout_nodes_resolved,
-    project_slot_layout_nodes_resolved,
-    resolve_weekly_layout_query,
+    project_slot_layout_nodes_resolved, resolve_weekly_layout_query,
 };
 use crate::layout::{WeeklyLayout, WeeklyLayoutQuery};
 

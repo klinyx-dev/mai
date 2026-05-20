@@ -1,6 +1,6 @@
-pub mod blackout_window;
 pub mod actor;
 pub mod appointment;
+pub mod blackout_window;
 pub mod enums;
 pub mod ids;
 pub mod recurring_template;

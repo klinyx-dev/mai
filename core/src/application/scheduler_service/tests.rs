@@ -763,7 +763,10 @@ fn capacity_two_allows_two_appointments_then_rejects_third() {
             created_by: ActorId::new("creator-2"),
         })
         .expect_err("third appointment should exceed capacity");
-    assert_eq!(err, SchedulerError::Business(BusinessRuleError::SlotAlreadyBooked));
+    assert_eq!(
+        err,
+        SchedulerError::Business(BusinessRuleError::SlotAlreadyBooked)
+    );
 }
 
 #[test]
@@ -779,5 +782,8 @@ fn add_slot_rejects_zero_capacity() {
             capacity: 0,
         })
         .expect_err("zero capacity should fail");
-    assert_eq!(err, SchedulerError::Structural(StructuralError::InvalidCapacity));
+    assert_eq!(
+        err,
+        SchedulerError::Structural(StructuralError::InvalidCapacity)
+    );
 }

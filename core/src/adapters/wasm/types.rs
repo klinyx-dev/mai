@@ -29,7 +29,10 @@ pub struct WasmAddSlotPayload {
     pub end: chrono::DateTime<chrono::Utc>,
     pub resource_owner_id: ActorId,
     pub created_by: ActorId,
-    #[serde(default = "default_capacity", skip_serializing_if = "is_default_capacity")]
+    #[serde(
+        default = "default_capacity",
+        skip_serializing_if = "is_default_capacity"
+    )]
     pub capacity: u16,
 }
 

@@ -855,7 +855,10 @@ fn wasm_adapter_error_conversion_covers_all_structural_codes() {
             StructuralError::InvalidRecurrenceRule,
             "invalid_recurrence_rule",
         ),
-        (StructuralError::InvalidBatchPayload, "invalid_batch_payload"),
+        (
+            StructuralError::InvalidBatchPayload,
+            "invalid_batch_payload",
+        ),
         (StructuralError::InvalidCapacity, "invalid_capacity"),
     ];
 

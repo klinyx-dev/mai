@@ -16,7 +16,9 @@ pub fn validate_slot_appointment_invariants(state: &ScheduleState) -> Result<(),
             return Err(ReferentialError::SlotNotFound.into());
         }
 
-        *per_slot_counts.entry(appointment.slot_id.clone()).or_insert(0) += 1;
+        *per_slot_counts
+            .entry(appointment.slot_id.clone())
+            .or_insert(0) += 1;
     }
 
     for (slot_id, count) in per_slot_counts {
