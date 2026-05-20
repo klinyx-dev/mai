@@ -1,8 +1,8 @@
 # Adapter Error Codes Reference
 
-This document defines adapter-level error codes returned by wasm JSON envelopes.
+This document defines stable wasm adapter error codes.
 
-Error envelope shape:
+Error envelope:
 
 ```json
 {
@@ -15,51 +15,52 @@ Error envelope shape:
 }
 ```
 
-Consumer rule:
-- branch on `error.code` (stable contract),
-- use `error.message` for display/logging only.
+Consumer contract:
+- branch on `error.code` and `error.category`,
+- treat `error.message` as display/logging text.
 
-## Structural Errors
+## Structural
 
-| Category | Code | Source Error | Typical Cause | Caller Action |
+| Category | Code | Cause | User Meaning | Example |
 |---|---|---|---|---|
-| `structural` | `invalid_time_range` | `StructuralError::InvalidTimeRange` | `start >= end` in slot/reschedule command | Fix input time bounds and retry |
-| `structural` | `empty_title` | `StructuralError::EmptyTitle` | Appointment title is blank/whitespace | Provide non-empty title and retry |
-| `structural` | `invalid_visible_window` | `StructuralError::InvalidVisibleWindow` | Invalid weekly layout window (`start/end` out of range or `start >= end`) | Correct query window fields and retry |
+| `structural` | `invalid_time_range` | `start >= end` | Provided time bounds are invalid | `{"status":"error","error":{"category":"structural","code":"invalid_time_range"}}` |
+| `structural` | `empty_title` | Blank appointment title | Booking title is required | `{"status":"error","error":{"category":"structural","code":"empty_title"}}` |
+| `structural` | `invalid_visible_window` | Invalid query window bounds | Visible-hour window is invalid | `{"status":"error","error":{"category":"structural","code":"invalid_visible_window"}}` |
 
-## Referential Errors
+## Referential
 
-| Category | Code | Source Error | Typical Cause | Caller Action |
+| Category | Code | Cause | User Meaning | Example |
 |---|---|---|---|---|
-| `referential` | `slot_not_found` | `ReferentialError::SlotNotFound` | Command/query references unknown slot | Refresh state and use valid slot ID |
-| `referential` | `appointment_not_found` | `ReferentialError::AppointmentNotFound` | Command references unknown appointment | Refresh state and use valid appointment ID |
-| `referential` | `resource_owner_not_found` | `ReferentialError::ResourceOwnerNotFound` | Actor lookup enabled and owner is unknown | Resolve a valid owner before retry |
-| `referential` | `creator_not_found` | `ReferentialError::CreatorNotFound` | Actor lookup enabled and creator is unknown | Resolve a valid creator before retry |
-| `referential` | `invitee_not_found` | `ReferentialError::InviteeNotFound` | Actor lookup enabled and one or more invitees are unknown | Resolve valid invitee IDs before retry |
-| `referential` | `updater_not_found` | `ReferentialError::UpdaterNotFound` | Actor lookup enabled and updater is unknown | Resolve a valid updater before retry |
-| `referential` | `canceller_not_found` | `ReferentialError::CancellerNotFound` | Actor lookup enabled and canceller is unknown | Resolve a valid canceller before retry |
+| `referential` | `slot_not_found` | Unknown slot reference | Slot does not exist | `{"status":"error","error":{"category":"referential","code":"slot_not_found"}}` |
+| `referential` | `appointment_not_found` | Unknown appointment reference | Appointment does not exist | `{"status":"error","error":{"category":"referential","code":"appointment_not_found"}}` |
+| `referential` | `resource_owner_not_found` | Owner lookup failed | Owner ID is unknown | `{"status":"error","error":{"category":"referential","code":"resource_owner_not_found"}}` |
+| `referential` | `creator_not_found` | Creator lookup failed | Creator ID is unknown | `{"status":"error","error":{"category":"referential","code":"creator_not_found"}}` |
+| `referential` | `invitee_not_found` | Invitee lookup failed | Invitee ID is unknown | `{"status":"error","error":{"category":"referential","code":"invitee_not_found"}}` |
+| `referential` | `updater_not_found` | Updater lookup failed | Updater ID is unknown | `{"status":"error","error":{"category":"referential","code":"updater_not_found"}}` |
+| `referential` | `canceller_not_found` | Canceller lookup failed | Canceller ID is unknown | `{"status":"error","error":{"category":"referential","code":"canceller_not_found"}}` |
 
-## Business Errors
+## Business
 
-| Category | Code | Source Error | Typical Cause | Caller Action |
+| Category | Code | Cause | User Meaning | Example |
 |---|---|---|---|---|
-| `business` | `slot_id_already_exists` | `BusinessRuleError::SlotIdAlreadyExists` | `add_slot` uses an existing `slot_id` | Generate/use a new slot ID |
-| `business` | `appointment_id_already_exists` | `BusinessRuleError::AppointmentIdAlreadyExists` | `add_appointment` uses an existing `appointment_id` | Generate/use a new appointment ID |
-| `business` | `slot_overlap` | `BusinessRuleError::SlotOverlap` | New/rescheduled slot overlaps same owner active slot | Choose non-overlapping slot range |
-| `business` | `slot_already_booked` | `BusinessRuleError::SlotAlreadyBooked` | Booking attempt targets already booked slot | Refresh availability and choose another slot |
-| `business` | `slot_cancelled` | `BusinessRuleError::SlotCancelled` | Booking attempt targets cancelled slot | Refresh availability and choose another slot |
-| `business` | `slot_not_available` | `BusinessRuleError::SlotNotAvailable` | Mutation requires available slot but current status is not available | Refresh state and choose valid operation |
-| `business` | `cannot_delete_booked_slot` | `BusinessRuleError::CannotDeleteBookedSlot` | Deleting a booked slot | Unbook/cancel appointment first |
-| `business` | `appointment_already_exists_for_slot` | `BusinessRuleError::AppointmentAlreadyExistsForSlot` | Booking attempt for a slot that already has active appointment | Refresh availability and choose another slot |
-| `business` | `appointment_cancel_not_allowed` | `BusinessRuleError::AppointmentCancelNotAllowed` | Canceller is not resource owner, invitee, or creator | Use an authorized actor context |
+| `business` | `slot_id_already_exists` | Duplicate slot ID | Slot ID is already in use | `{"status":"error","error":{"category":"business","code":"slot_id_already_exists"}}` |
+| `business` | `appointment_id_already_exists` | Duplicate appointment ID | Appointment ID is already in use | `{"status":"error","error":{"category":"business","code":"appointment_id_already_exists"}}` |
+| `business` | `slot_overlap` | Overlap with active slot for same owner | Slot conflicts with existing availability | `{"status":"error","error":{"category":"business","code":"slot_overlap"}}` |
+| `business` | `slot_already_booked` | Booking on booked slot | Slot is already booked | `{"status":"error","error":{"category":"business","code":"slot_already_booked"}}` |
+| `business` | `slot_cancelled` | Booking on cancelled slot | Slot is cancelled | `{"status":"error","error":{"category":"business","code":"slot_cancelled"}}` |
+| `business` | `slot_not_available` | Mutation requires available slot | Slot is not available for requested action | `{"status":"error","error":{"category":"business","code":"slot_not_available"}}` |
+| `business` | `cannot_delete_booked_slot` | Delete attempted on booked slot | Unbook first before deleting | `{"status":"error","error":{"category":"business","code":"cannot_delete_booked_slot"}}` |
+| `business` | `appointment_already_exists_for_slot` | Existing appointment linked to slot | Slot already has an appointment | `{"status":"error","error":{"category":"business","code":"appointment_already_exists_for_slot"}}` |
+| `business` | `appointment_cancel_not_allowed` | Unauthorized canceller | Actor cannot cancel this appointment | `{"status":"error","error":{"category":"business","code":"appointment_cancel_not_allowed"}}` |
 
-## Contract Errors
+## Contract
 
-| Category | Code | Source | Typical Cause | Caller Action |
+| Category | Code | Cause | User Meaning | Example |
 |---|---|---|---|---|
-| `contract` | `invalid_json` | Adapter boundary parse failure | Malformed command/query JSON string | Fix envelope JSON and retry |
-| `contract` | `invalid_timezone` | Adapter timezone normalization | Unsupported/invalid timezone identifier | Send a valid IANA timezone or omit field |
+| `contract` | `invalid_json` | Request parse failure | JSON request envelope is malformed | `{"status":"error","error":{"category":"contract","code":"invalid_json"}}` |
+| `contract` | `invalid_timezone` | Unsupported timezone identifier | `timezone` field is invalid | `{"status":"error","error":{"category":"contract","code":"invalid_timezone"}}` |
 
-## Notes
-- These codes are mapped in `core/src/adapters/wasm/error_mapping.rs`.
-- Serialization/contract coverage lives in `core/tests/serialization_contract.rs`.
+## Mapping and Tests
+
+- Mapping source: `core/src/adapters/wasm/error_mapping.rs`
+- Contract tests: `core/tests/serialization_contract.rs`

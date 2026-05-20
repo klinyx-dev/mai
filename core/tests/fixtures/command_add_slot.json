@@ -1,0 +1,10 @@
+{
+  "command": "add_slot",
+  "payload": {
+    "slot_id": "slot-1001",
+    "start": "2026-05-04T09:00:00Z",
+    "end": "2026-05-04T09:30:00Z",
+    "resource_owner_id": "owner-42",
+    "created_by": "admin-7"
+  }
+}

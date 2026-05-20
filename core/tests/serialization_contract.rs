@@ -10,6 +10,12 @@ use mai::{
         parse_query_request, render_command_response, render_query_response,
     },
 };
+use serde_json::Value;
+
+fn fixture_json(path: &str) -> Value {
+    let content = std::fs::read_to_string(path).expect("fixture must be readable");
+    serde_json::from_str(&content).expect("fixture must be valid json")
+}
 
 #[test]
 fn add_slot_command_serializes_as_adapter_friendly_json() {
@@ -803,7 +809,10 @@ fn wasm_adapter_error_conversion_covers_all_structural_codes() {
     let cases = [
         (StructuralError::InvalidTimeRange, "invalid_time_range"),
         (StructuralError::EmptyTitle, "empty_title"),
-        (StructuralError::InvalidVisibleWindow, "invalid_visible_window"),
+        (
+            StructuralError::InvalidVisibleWindow,
+            "invalid_visible_window",
+        ),
     ];
 
     for (source, code) in cases {
@@ -817,7 +826,10 @@ fn wasm_adapter_error_conversion_covers_all_structural_codes() {
 fn wasm_adapter_error_conversion_covers_all_referential_codes() {
     let cases = [
         (ReferentialError::SlotNotFound, "slot_not_found"),
-        (ReferentialError::AppointmentNotFound, "appointment_not_found"),
+        (
+            ReferentialError::AppointmentNotFound,
+            "appointment_not_found",
+        ),
         (
             ReferentialError::ResourceOwnerNotFound,
             "resource_owner_not_found",
@@ -911,4 +923,61 @@ fn wasm_bindgen_wrapper_public_signature_stays_json_only() {
         WasmBindgenAdapter::execute_command_json;
     let _query_api: fn(&WasmBindgenAdapter, &str) -> String =
         WasmBindgenAdapter::execute_query_json;
+}
+
+#[test]
+fn wasm_command_fixture_matches_add_slot_envelope_shape() {
+    let request = WasmCommandRequest::AddSlot(WasmAddSlotPayload {
+        slot_id: "slot-1001".into(),
+        start: Utc.with_ymd_and_hms(2026, 5, 4, 9, 0, 0).unwrap(),
+        end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
+        resource_owner_id: "owner-42".into(),
+        created_by: "admin-7".into(),
+    });
+
+    let actual = serde_json::to_value(request).unwrap();
+    let expected = fixture_json("tests/fixtures/command_add_slot.json");
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn wasm_query_fixture_matches_weekly_layout_filtered_envelope_shape() {
+    let request = WasmQueryRequest::WeeklyLayout(WasmWeeklyLayoutQuery {
+        anchor_date: NaiveDate::from_ymd_opt(2026, 5, 7).unwrap(),
+        view_filter: Some(WasmViewFilter {
+            mode: WasmViewFilterMode::Owners,
+            ids: vec!["owner-42".to_string()],
+        }),
+        visible_start_minute: Some(540),
+        visible_end_minute: Some(1020),
+        timezone: None,
+    });
+
+    let actual = serde_json::to_value(request).unwrap();
+    let expected = fixture_json("tests/fixtures/query_weekly_layout_filtered.json");
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn wasm_response_fixture_matches_success_applied_shape() {
+    let response = WasmCommandResponse::Success {
+        data: WasmMutationSuccess::Applied,
+    };
+
+    let actual = serde_json::to_value(response).unwrap();
+    let expected = fixture_json("tests/fixtures/response_success_applied.json");
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn wasm_response_fixture_matches_business_error_shape() {
+    let response = WasmCommandResponse::Error {
+        error: WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+            BusinessRuleError::SlotAlreadyBooked,
+        )),
+    };
+
+    let actual = serde_json::to_value(response).unwrap();
+    let expected = fixture_json("tests/fixtures/response_error_slot_already_booked.json");
+    assert_eq!(actual, expected);
 }

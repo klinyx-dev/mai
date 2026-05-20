@@ -1,15 +1,56 @@
 # Adapter Payload Examples
 
-These examples show the stable JSON-string contract for the WASM adapter boundary.
+These examples define the stable wasm adapter JSON contract.
 
-For an end-to-end integration flow (init, mutate, query, and error handling), see `docs/wasm_adapter_usage.md`.
+For integration usage, see `docs/wasm_adapter_usage.md`.
 
-The boundary is envelope-based:
-- mutations use `{"command": "...", "payload": ...}`
-- queries use `{"query": "...", "payload": ...}`
-- all responses use `{"status": "success", "data": ...}` or `{"status": "error", "error": ...}`
+## Envelope Shapes
 
-## Command Request: Add Slot (`WasmCommandRequest`)
+Command request:
+
+```json
+{
+  "command": "<command_name>",
+  "payload": {}
+}
+```
+
+Query request:
+
+```json
+{
+  "query": "<query_name>",
+  "payload": {}
+}
+```
+
+Success response:
+
+```json
+{
+  "status": "success",
+  "data": {}
+}
+```
+
+Error response:
+
+```json
+{
+  "status": "error",
+  "error": {
+    "category": "structural",
+    "code": "invalid_time_range",
+    "message": "start must be before end"
+  }
+}
+```
+
+## Commands
+
+### `add_slot`
+
+Request:
 
 ```json
 {
@@ -24,7 +65,60 @@ The boundary is envelope-based:
 }
 ```
 
-## Command Request: Add Appointment (`WasmCommandRequest`)
+Success:
+
+```json
+{
+  "status": "success",
+  "data": "applied"
+}
+```
+
+### `delete_slot`
+
+Request:
+
+```json
+{
+  "command": "delete_slot",
+  "payload": {
+    "slot_id": "slot-1001"
+  }
+}
+```
+
+### `cancel_slot`
+
+Request:
+
+```json
+{
+  "command": "cancel_slot",
+  "payload": {
+    "slot_id": "slot-1001"
+  }
+}
+```
+
+### `reschedule_slot`
+
+Request:
+
+```json
+{
+  "command": "reschedule_slot",
+  "payload": {
+    "slot_id": "slot-1001",
+    "new_start": "2026-05-04T10:00:00Z",
+    "new_end": "2026-05-04T10:30:00Z",
+    "updated_by": "admin-7"
+  }
+}
+```
+
+### `add_appointment`
+
+Request:
 
 ```json
 {
@@ -39,7 +133,38 @@ The boundary is envelope-based:
 }
 ```
 
-## Query Request: Weekly Layout (`WasmQueryRequest`)
+### `cancel_appointment`
+
+Request:
+
+```json
+{
+  "command": "cancel_appointment",
+  "payload": {
+    "appointment_id": "appt-9001",
+    "cancelled_by": "patient-77"
+  }
+}
+```
+
+### `delete_appointment`
+
+Request:
+
+```json
+{
+  "command": "delete_appointment",
+  "payload": {
+    "appointment_id": "appt-9001"
+  }
+}
+```
+
+## Queries
+
+### `weekly_layout` (basic)
+
+Request:
 
 ```json
 {
@@ -50,7 +175,9 @@ The boundary is envelope-based:
 }
 ```
 
-## Query Request: Weekly Layout with Optional Timezone
+### `weekly_layout` (timezone)
+
+Request:
 
 ```json
 {
@@ -62,31 +189,59 @@ The boundary is envelope-based:
 }
 ```
 
-## Query Request: Weekly Layout with TM10 Filters
+### `weekly_layout` (owner filter + visible window)
+
+Request:
 
 ```json
 {
   "query": "weekly_layout",
   "payload": {
     "anchor_date": "2026-05-07",
-    "timezone": "Europe/Paris",
-    "resource_owner_id": "owner-42",
+    "view_filter": {
+      "mode": "owners",
+      "ids": ["owner-42"]
+    },
     "visible_start_minute": 540,
     "visible_end_minute": 1020
   }
 }
 ```
 
-## Mutation Success Response (`WasmCommandResponse`)
+### `weekly_layout` (`none` filter)
+
+Request:
 
 ```json
 {
-  "status": "success",
-  "data": "applied"
+  "query": "weekly_layout",
+  "payload": {
+    "anchor_date": "2026-05-07",
+    "view_filter": {
+      "mode": "none"
+    }
+  }
 }
 ```
 
-## Query Success Response (`WasmQueryResponse`)
+### `weekly_layout` (`group` filter)
+
+Request:
+
+```json
+{
+  "query": "weekly_layout",
+  "payload": {
+    "anchor_date": "2026-05-07",
+    "view_filter": {
+      "mode": "group",
+      "ids": ["group-a"]
+    }
+  }
+}
+```
+
+Success:
 
 ```json
 {
@@ -119,7 +274,9 @@ The boundary is envelope-based:
 }
 ```
 
-## Error Response (`WasmResponse<_, WasmAdapterError>`)
+## Error Examples
+
+Business:
 
 ```json
 {
@@ -132,20 +289,33 @@ The boundary is envelope-based:
 }
 ```
 
-## Referential Error Response Example (actor lookup enabled)
+Referential:
 
 ```json
 {
   "status": "error",
   "error": {
     "category": "referential",
-    "code": "creator_not_found",
-    "message": "creator not found"
+    "code": "slot_not_found",
+    "message": "slot not found"
   }
 }
 ```
 
-## Contract Error Response (invalid JSON)
+Structural:
+
+```json
+{
+  "status": "error",
+  "error": {
+    "category": "structural",
+    "code": "invalid_visible_window",
+    "message": "invalid visible window"
+  }
+}
+```
+
+Contract (`invalid_json`):
 
 ```json
 {
@@ -158,7 +328,7 @@ The boundary is envelope-based:
 }
 ```
 
-## Contract Error Response (invalid timezone, TM8 Task 3)
+Contract (`invalid_timezone`):
 
 ```json
 {

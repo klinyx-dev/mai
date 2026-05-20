@@ -38,6 +38,8 @@ test("exports primary package entry points", () => {
     distTypes,
     /export \{ createNuxtMaiState, type NuxtMaiPluginState \} from "\.\/integration";/
   );
+  assert.doesNotMatch(distEntry, /core\/pkg/i);
+  assert.doesNotMatch(distEntry, /WasmBindgenAdapter/i);
 });
 
 test("exports interactive constants", () => {

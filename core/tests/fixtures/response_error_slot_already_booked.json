@@ -1,0 +1,8 @@
+{
+  "status": "error",
+  "error": {
+    "category": "business",
+    "code": "slot_already_booked",
+    "message": "slot is already booked"
+  }
+}

@@ -38,6 +38,9 @@ cd web && pnpm run build && pnpm run test
 ## Notes
 - wasm output is generated under `core/pkg/`.
 - Nuxt example default URL: `http://localhost:3000/`.
+- Public API inventory: `docs/public_api_inventory.md`
+- API compatibility policy: `docs/api_compatibility.md`
+- Compatibility matrix: `docs/compatibility_matrix.md`
 - If port `3000` is busy:
   ```bash
   cd web

@@ -54,6 +54,9 @@ cd web && pnpm run build && pnpm run test
 ## Developer docs
 - Contributor workflow: [README-dev.md](./README-dev.md)
 - Release process: [docs/release_process.md](./docs/release_process.md)
+- API compatibility: [docs/api_compatibility.md](./docs/api_compatibility.md)
+- Public API inventory: [docs/public_api_inventory.md](./docs/public_api_inventory.md)
+- Compatibility matrix: [docs/compatibility_matrix.md](./docs/compatibility_matrix.md)
 - Wasm adapter usage: [docs/wasm_adapter_usage.md](./docs/wasm_adapter_usage.md)
 - Adapter error codes: [docs/adapter_error_codes.md](./docs/adapter_error_codes.md)
 - Payload examples: [docs/adapter_payload_examples.md](./docs/adapter_payload_examples.md)

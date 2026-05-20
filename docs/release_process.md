@@ -2,6 +2,12 @@
 
 This project releases from `main`.
 
+Compatibility policy references:
+- `docs/public_api_inventory.md`
+- `docs/api_compatibility.md`
+- `docs/compatibility_matrix.md`
+- `docs/migration_guide_template.md`
+
 ## Branch and tag policy
 - Merge the release PR into `main` first.
 - Create version tags from commits already on `main`.
@@ -22,9 +28,16 @@ This covers:
 
 Also verify:
 - `CHANGELOG.md` has the new version entry.
+- API docs are current when public contract changed:
+  - `docs/adapter_payload_examples.md`
+  - `docs/adapter_error_codes.md`
+  - `docs/public_api_inventory.md`
 - GitHub Actions CI is green on `main`:
   - `rust-quality`
   - `wasm-package-smoke`
+
+For breaking releases:
+- include migration notes using `docs/migration_guide_template.md`.
 
 ## Tag and publish
 From a clean local `main`:

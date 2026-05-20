@@ -231,7 +231,12 @@ fn booked_slot_cannot_be_deleted() {
         SchedulerError::Business(BusinessRuleError::CannotDeleteBookedSlot)
     );
     assert!(service.state().slots.contains_key(&SlotId::new("slot-1")));
-    assert!(service.state().appointments.contains_key(&AppointmentId::new("appt-1")));
+    assert!(
+        service
+            .state()
+            .appointments
+            .contains_key(&AppointmentId::new("appt-1"))
+    );
     assert_eq!(
         service
             .state()
