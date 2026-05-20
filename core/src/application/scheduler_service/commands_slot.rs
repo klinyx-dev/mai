@@ -23,16 +23,20 @@ impl SchedulerService {
             ReferentialError::ResourceOwnerNotFound,
         )?;
         self.ensure_actor_exists(&cmd.created_by, ReferentialError::CreatorNotFound)?;
+        if cmd.capacity == 0 {
+            return Err(crate::application::errors::StructuralError::InvalidCapacity.into());
+        }
 
         let time = Slot::rebuilt_time_range(cmd.start, cmd.end)?;
         if self.is_slot_blocked_by_blackout(&cmd.resource_owner_id, time.start, time.end) {
             return Err(BusinessRuleError::SlotInBlackoutWindow.into());
         }
-        let slot = Slot::new(
+        let slot = Slot::new_with_capacity(
             cmd.slot_id.clone(),
             time,
             cmd.resource_owner_id,
             cmd.created_by,
+            cmd.capacity,
         );
 
         ensure_no_overlap_for_resource_owner(&self.state, &slot)?;
@@ -70,11 +74,12 @@ impl SchedulerService {
             return Err(BusinessRuleError::SlotInBlackoutWindow.into());
         }
 
-        let candidate = Slot::with_status(
+        let candidate = Slot::with_status_and_capacity(
             slot.id.clone(),
             time.clone(),
             slot.resource_owner_id.clone(),
             slot.created_by.clone(),
+            slot.capacity,
             slot.status,
         );
         ensure_no_overlap_for_resource_owner(&self.state, &candidate)?;

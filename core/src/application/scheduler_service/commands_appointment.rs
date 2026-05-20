@@ -3,6 +3,7 @@ use crate::application::errors::BusinessRuleError;
 use crate::application::errors::ReferentialError;
 use crate::application::policies::appointment_policy::{
     ensure_actor_can_cancel_appointment, ensure_no_appointment_for_slot,
+    ensure_slot_capacity_available,
 };
 use crate::commands::add_appointment::AddAppointmentCommand;
 use crate::commands::cancel_appointment::CancelAppointmentCommand;
@@ -30,7 +31,11 @@ impl SchedulerService {
         ensure_title_not_empty(&cmd.title)?;
         let slot = ensure_slot_exists(&self.state, &cmd.slot_id)?;
         ensure_slot_is_available(slot)?;
-        ensure_no_appointment_for_slot(&self.state, &cmd.slot_id)?;
+        if slot.capacity == 1 {
+            ensure_no_appointment_for_slot(&self.state, &cmd.slot_id)?;
+        } else {
+            ensure_slot_capacity_available(&self.state, slot)?;
+        }
 
         let appointment = Appointment::new(
             cmd.appointment_id.clone(),
@@ -40,12 +45,26 @@ impl SchedulerService {
             cmd.created_by,
         );
 
+        let appointment_count = self
+            .state
+            .appointments_iter()
+            .filter(|appointment| appointment.slot_id == cmd.slot_id)
+            .count();
+        let capacity = self
+            .state
+            .slot(&cmd.slot_id)
+            .ok_or(ReferentialError::SlotNotFound)?
+            .capacity;
         {
             let slot = self
                 .state
                 .slot_mut(&cmd.slot_id)
                 .ok_or(ReferentialError::SlotNotFound)?;
-            slot.book()?;
+            if appointment_count + 1 >= usize::from(capacity) {
+                slot.book()?;
+            } else {
+                slot.make_available();
+            }
         }
 
         self.state
@@ -66,11 +85,25 @@ impl SchedulerService {
 
         self.state.remove_appointment(&cmd.appointment_id);
 
+        let remaining = self
+            .state
+            .appointments_iter()
+            .filter(|appointment| appointment.slot_id == slot_id)
+            .count();
+        let capacity = self
+            .state
+            .slot(&slot_id)
+            .ok_or(ReferentialError::SlotNotFound)?
+            .capacity;
         let slot = self
             .state
             .slot_mut(&slot_id)
             .ok_or(ReferentialError::SlotNotFound)?;
-        slot.make_available();
+        if remaining >= usize::from(capacity) {
+            slot.book()?;
+        } else {
+            slot.make_available();
+        }
 
         validate_slot_appointment_invariants(&self.state)?;
         Ok(())
@@ -84,11 +117,25 @@ impl SchedulerService {
 
         self.state.remove_appointment(&cmd.appointment_id);
 
+        let remaining = self
+            .state
+            .appointments_iter()
+            .filter(|appointment| appointment.slot_id == slot_id)
+            .count();
+        let capacity = self
+            .state
+            .slot(&slot_id)
+            .ok_or(ReferentialError::SlotNotFound)?
+            .capacity;
         let slot = self
             .state
             .slot_mut(&slot_id)
             .ok_or(ReferentialError::SlotNotFound)?;
-        slot.make_available();
+        if remaining >= usize::from(capacity) {
+            slot.book()?;
+        } else {
+            slot.make_available();
+        }
 
         validate_slot_appointment_invariants(&self.state)?;
         Ok(())

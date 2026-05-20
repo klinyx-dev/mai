@@ -1,11 +1,11 @@
 use crate::application::errors::{BusinessRuleError, ReferentialError, SchedulerError};
 use crate::state::schedule_state::ScheduleState;
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 // Validate that each appointment has a corresponding slot in the schedule state
 pub fn validate_slot_appointment_invariants(state: &ScheduleState) -> Result<(), SchedulerError> {
     let appointment_ids = state.appointment_ids_sorted();
-    let mut seen_slot_ids = HashSet::new();
+    let mut per_slot_counts: HashMap<_, usize> = HashMap::new();
 
     for id in appointment_ids {
         let appointment = state
@@ -16,8 +16,13 @@ pub fn validate_slot_appointment_invariants(state: &ScheduleState) -> Result<(),
             return Err(ReferentialError::SlotNotFound.into());
         }
 
-        if !seen_slot_ids.insert(appointment.slot_id.clone()) {
-            return Err(BusinessRuleError::AppointmentAlreadyExistsForSlot.into());
+        *per_slot_counts.entry(appointment.slot_id.clone()).or_insert(0) += 1;
+    }
+
+    for (slot_id, count) in per_slot_counts {
+        let slot = state.slot(&slot_id).ok_or(ReferentialError::SlotNotFound)?;
+        if count > usize::from(slot.capacity) {
+            return Err(BusinessRuleError::CapacityExceeded.into());
         }
     }
 
@@ -70,9 +75,10 @@ mod tests {
     }
 
     #[test]
-    fn fails_when_multiple_appointments_share_same_slot() {
+    fn fails_when_appointments_exceed_slot_capacity() {
         let mut state = ScheduleState::new();
-        let slot = make_slot("slot-1");
+        let mut slot = make_slot("slot-1");
+        slot.capacity = 1;
         state.slots.insert(slot.id.clone(), slot);
 
         state.appointments.insert(
@@ -98,8 +104,8 @@ mod tests {
 
         let result = validate_slot_appointment_invariants(&state);
         assert_eq!(
-            result.expect_err("duplicate slot booking must fail"),
-            SchedulerError::Business(BusinessRuleError::AppointmentAlreadyExistsForSlot)
+            result.expect_err("capacity exceed must fail"),
+            SchedulerError::Business(BusinessRuleError::CapacityExceeded)
         );
     }
 }

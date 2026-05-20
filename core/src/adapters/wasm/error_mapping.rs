@@ -47,6 +47,7 @@ fn structural_error_code(error: &StructuralError) -> &'static str {
         StructuralError::InvalidVisibleWindow => "invalid_visible_window",
         StructuralError::InvalidRecurrenceRule => "invalid_recurrence_rule",
         StructuralError::InvalidBatchPayload => "invalid_batch_payload",
+        StructuralError::InvalidCapacity => "invalid_capacity",
     }
 }
 
@@ -76,5 +77,6 @@ fn business_error_code(error: &BusinessRuleError) -> &'static str {
         BusinessRuleError::SlotInBlackoutWindow => "slot_in_blackout_window",
         BusinessRuleError::BatchConflictDetected => "batch_conflict_detected",
         BusinessRuleError::RecurringTemplateOverlap => "recurring_template_overlap",
+        BusinessRuleError::CapacityExceeded => "capacity_exceeded",
     }
 }

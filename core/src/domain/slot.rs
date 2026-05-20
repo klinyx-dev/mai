@@ -11,7 +11,13 @@ pub struct Slot {
     pub time: TimeRange,
     pub resource_owner_id: ActorId,
     pub created_by: ActorId,
+    #[serde(default = "default_slot_capacity")]
+    pub capacity: u16,
     pub status: SlotStatus,
+}
+
+const fn default_slot_capacity() -> u16 {
+    1
 }
 
 impl Slot {
@@ -26,6 +32,24 @@ impl Slot {
             time,
             resource_owner_id,
             created_by,
+            capacity: default_slot_capacity(),
+            status: SlotStatus::Available,
+        }
+    }
+
+    pub fn new_with_capacity(
+        id: SlotId,
+        time: TimeRange,
+        resource_owner_id: ActorId,
+        created_by: ActorId,
+        capacity: u16,
+    ) -> Self {
+        Self {
+            id,
+            time,
+            resource_owner_id,
+            created_by,
+            capacity,
             status: SlotStatus::Available,
         }
     }
@@ -42,6 +66,25 @@ impl Slot {
             time,
             resource_owner_id,
             created_by,
+            capacity: default_slot_capacity(),
+            status,
+        }
+    }
+
+    pub fn with_status_and_capacity(
+        id: SlotId,
+        time: TimeRange,
+        resource_owner_id: ActorId,
+        created_by: ActorId,
+        capacity: u16,
+        status: SlotStatus,
+    ) -> Self {
+        Self {
+            id,
+            time,
+            resource_owner_id,
+            created_by,
+            capacity,
             status,
         }
     }

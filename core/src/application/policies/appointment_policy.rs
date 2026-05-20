@@ -19,6 +19,20 @@ pub fn ensure_no_appointment_for_slot(
     Ok(())
 }
 
+pub fn ensure_slot_capacity_available(
+    state: &ScheduleState,
+    slot: &Slot,
+) -> Result<(), BusinessRuleError> {
+    let current = state
+        .appointments_iter()
+        .filter(|appointment| appointment.slot_id == slot.id)
+        .count();
+    if current >= usize::from(slot.capacity) {
+        return Err(BusinessRuleError::CapacityExceeded);
+    }
+    Ok(())
+}
+
 // Verify if the actor can cancel the appointment
 // Returns an error if the actor is NOT allowed to cancel the appointment
 pub fn ensure_actor_can_cancel_appointment(

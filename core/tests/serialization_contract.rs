@@ -26,6 +26,7 @@ fn add_slot_command_serializes_as_adapter_friendly_json() {
         end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
         resource_owner_id: "owner-42".into(),
         created_by: "admin-7".into(),
+        capacity: 1,
     };
 
     let json = serde_json::to_value(&command).unwrap();
@@ -98,6 +99,7 @@ fn wasm_command_request_uses_tagged_envelope() {
         end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
         resource_owner_id: "owner-42".into(),
         created_by: "admin-7".into(),
+        capacity: 1,
     });
 
     let json = serde_json::to_value(&request).unwrap();
@@ -153,6 +155,7 @@ fn wasm_add_slots_batch_request_uses_tagged_envelope() {
             end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
             resource_owner_id: "owner-42".into(),
             created_by: "admin-7".into(),
+            capacity: 1,
         }],
     });
     let json = serde_json::to_value(&request).unwrap();
@@ -851,6 +854,7 @@ fn wasm_adapter_error_conversion_covers_all_structural_codes() {
             "invalid_recurrence_rule",
         ),
         (StructuralError::InvalidBatchPayload, "invalid_batch_payload"),
+        (StructuralError::InvalidCapacity, "invalid_capacity"),
     ];
 
     for (source, code) in cases {
@@ -924,6 +928,7 @@ fn wasm_adapter_error_conversion_covers_all_business_codes() {
             BusinessRuleError::RecurringTemplateOverlap,
             "recurring_template_overlap",
         ),
+        (BusinessRuleError::CapacityExceeded, "capacity_exceeded"),
     ];
 
     for (source, code) in cases {
@@ -983,6 +988,7 @@ fn wasm_command_fixture_matches_add_slot_envelope_shape() {
         end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
         resource_owner_id: "owner-42".into(),
         created_by: "admin-7".into(),
+        capacity: 1,
     });
 
     let actual = serde_json::to_value(request).unwrap();

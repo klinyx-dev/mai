@@ -17,6 +17,7 @@ fn add_slot_command(
         end: Utc.with_ymd_and_hms(2026, 1, 5, end_hour, 0, 0).unwrap(),
         resource_owner_id: ActorId::new(resource_owner_id),
         created_by: ActorId::new("creator-1"),
+        capacity: 1,
     }
 }
 
@@ -119,6 +120,7 @@ fn overlapping_slots_same_resource_owner_are_rejected() {
             end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
             resource_owner_id: ActorId::new("owner-1"),
             created_by: ActorId::new("creator-1"),
+            capacity: 1,
         })
         .expect_err("same-resource-owner overlap must fail");
 

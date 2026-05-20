@@ -77,6 +77,7 @@ export interface AddSlotCommandPayload {
   end: string;
   resource_owner_id: string;
   created_by: string;
+  capacity?: number;
 }
 
 export interface DeleteSlotCommandPayload {

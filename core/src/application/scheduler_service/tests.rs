@@ -44,6 +44,7 @@ fn add_slot_cmd(slot_id: &str) -> AddSlotCommand {
         end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
         resource_owner_id: ActorId::new("owner-1"),
         created_by: ActorId::new("creator-1"),
+        capacity: 1,
     }
 }
 
@@ -263,6 +264,7 @@ fn deleting_available_slot_removes_it_by_id() {
             end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
             resource_owner_id: ActorId::new("owner-1"),
             created_by: ActorId::new("creator-1"),
+            capacity: 1,
         })
         .unwrap();
 
@@ -316,6 +318,7 @@ fn rescheduling_slot_rejects_overlap_for_same_resource_owner() {
             end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
             resource_owner_id: ActorId::new("owner-1"),
             created_by: ActorId::new("creator-1"),
+            capacity: 1,
         })
         .unwrap();
 
@@ -452,6 +455,7 @@ fn rejects_overlapping_slots_for_same_resource_owner() {
         end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap(),
         resource_owner_id: ActorId::new("owner-1"),
         created_by: ActorId::new("creator-2"),
+        capacity: 1,
     });
 
     assert_eq!(
@@ -612,6 +616,7 @@ fn actor_validation_is_skipped_when_lookup_is_not_configured() {
         end: Utc.with_ymd_and_hms(2026, 1, 5, 14, 0, 0).unwrap(),
         resource_owner_id: ActorId::new("missing-owner"),
         created_by: ActorId::new("missing-creator"),
+        capacity: 1,
     });
 
     assert!(
@@ -714,4 +719,65 @@ fn blackout_window_blocks_add_slot() {
         result.expect_err("blackout should reject slot"),
         SchedulerError::Business(BusinessRuleError::SlotInBlackoutWindow)
     );
+}
+
+#[test]
+fn capacity_two_allows_two_appointments_then_rejects_third() {
+    let mut service = SchedulerService::new();
+    service
+        .add_slot(AddSlotCommand {
+            slot_id: SlotId::new("slot-cap"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 9, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
+            resource_owner_id: ActorId::new("owner-1"),
+            created_by: ActorId::new("creator-1"),
+            capacity: 2,
+        })
+        .unwrap();
+
+    service
+        .add_appointment(AddAppointmentCommand {
+            appointment_id: AppointmentId::new("appt-1"),
+            slot_id: SlotId::new("slot-cap"),
+            invitee_ids: vec![ActorId::new("invitee-1")],
+            title: "A".to_string(),
+            created_by: ActorId::new("creator-2"),
+        })
+        .unwrap();
+    service
+        .add_appointment(AddAppointmentCommand {
+            appointment_id: AppointmentId::new("appt-2"),
+            slot_id: SlotId::new("slot-cap"),
+            invitee_ids: vec![ActorId::new("invitee-2")],
+            title: "B".to_string(),
+            created_by: ActorId::new("creator-2"),
+        })
+        .unwrap();
+
+    let err = service
+        .add_appointment(AddAppointmentCommand {
+            appointment_id: AppointmentId::new("appt-3"),
+            slot_id: SlotId::new("slot-cap"),
+            invitee_ids: vec![ActorId::new("invitee-3")],
+            title: "C".to_string(),
+            created_by: ActorId::new("creator-2"),
+        })
+        .expect_err("third appointment should exceed capacity");
+    assert_eq!(err, SchedulerError::Business(BusinessRuleError::SlotAlreadyBooked));
+}
+
+#[test]
+fn add_slot_rejects_zero_capacity() {
+    let mut service = SchedulerService::new();
+    let err = service
+        .add_slot(AddSlotCommand {
+            slot_id: SlotId::new("slot-zero"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 9, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 10, 0, 0).unwrap(),
+            resource_owner_id: ActorId::new("owner-1"),
+            created_by: ActorId::new("creator-1"),
+            capacity: 0,
+        })
+        .expect_err("zero capacity should fail");
+    assert_eq!(err, SchedulerError::Structural(StructuralError::InvalidCapacity));
 }

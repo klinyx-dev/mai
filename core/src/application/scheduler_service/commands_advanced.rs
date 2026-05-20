@@ -109,6 +109,7 @@ impl SchedulerService {
                 end: Utc.from_utc_datetime(&end),
                 resource_owner_id: template.resource_owner_id.clone(),
                 created_by: cmd.created_by.clone(),
+                capacity: 1,
             };
             generated.push(add_cmd);
         }

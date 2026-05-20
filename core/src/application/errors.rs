@@ -14,6 +14,8 @@ pub enum StructuralError {
     InvalidRecurrenceRule,
     #[error("invalid batch payload")]
     InvalidBatchPayload,
+    #[error("invalid capacity")]
+    InvalidCapacity,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
@@ -61,6 +63,8 @@ pub enum BusinessRuleError {
     BatchConflictDetected,
     #[error("recurring template overlap")]
     RecurringTemplateOverlap,
+    #[error("capacity exceeded")]
+    CapacityExceeded,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]

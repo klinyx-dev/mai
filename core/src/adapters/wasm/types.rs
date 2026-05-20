@@ -29,6 +29,16 @@ pub struct WasmAddSlotPayload {
     pub end: chrono::DateTime<chrono::Utc>,
     pub resource_owner_id: ActorId,
     pub created_by: ActorId,
+    #[serde(default = "default_capacity", skip_serializing_if = "is_default_capacity")]
+    pub capacity: u16,
+}
+
+const fn default_capacity() -> u16 {
+    1
+}
+
+const fn is_default_capacity(value: &u16) -> bool {
+    *value == 1
 }
 
 impl From<WasmAddSlotPayload> for AddSlotCommand {
@@ -39,6 +49,7 @@ impl From<WasmAddSlotPayload> for AddSlotCommand {
             end: value.end,
             resource_owner_id: value.resource_owner_id,
             created_by: value.created_by,
+            capacity: value.capacity,
         }
     }
 }
