@@ -133,6 +133,7 @@ System must:
   - start < end
   - resource owner and created_by are valid opaque actor references
   - no overlap with other active slots for the same resource owner
+  - `slot_id` must be unique; duplicate `slot_id` is rejected deterministically
 
 ### FR-5: Delete Slot
 System must:
@@ -151,6 +152,7 @@ Phase 1 rule:
 System must:
 - Accept (slot_id, invitees, title, created_by)
 - Validate:
+  - `appointment_id` must be unique; duplicate `appointment_id` is rejected deterministically
   - slot exists
   - slot status = `available`
   - slot is not cancelled
@@ -289,6 +291,8 @@ The flow must preserve the fixed-slot booking model:
 22. Client-facing appointment title is derived from user display name plus selected consultation reason
 23. Calendar filter mode `owners` with an empty owner list yields no slot or appointment nodes
 24. Appointment filtering is evaluated through the referenced slot resource owner, not appointment creator or invitee
+25. Duplicate slot IDs are rejected; create-slot does not overwrite existing records
+26. Duplicate appointment IDs are rejected; create-appointment does not overwrite existing records
 
 ---
 

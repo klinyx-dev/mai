@@ -1,1275 +1,205 @@
 # Technical Specification (Near-Term)
 
-# 1. Objective
-
-Build a cross-platform scheduling core for a weekly scheduling use case, implemented in Rust first, with deterministic business logic and layout computation that can later be consumed by the Web, mobile or backend systems
-
-This core is not a UI library
-
-This is a domain + layout engine that:
-- stores and validates scheduling entities
-- executes commands
-- enforces business rules
-- computes semantic weekly layout data
-- exposes a stable API for adapters
-
-Phase 1 is intentionally limited to a fixed-slot booking model:
-- one slot = one bookable unit
-- no partial booking
-- no slot splitting
-- one slot can have at most one active appointment
-
-This technical spec is derived from the current functional requirements and business rules in the functional spec
-
-## 2. Architectural Principles
-
-### 2.1 Rust-first core
-The core must be implemented in Rust from the beginning
-
-Reason:
-- Business logic is deterministic and portable
-- Layout calculation is pure computation
-- Future reuse across WASM / server / native is straightforward
-- Avoid maintaining a TypeScript-first core that later needs re-porting
-
-### 2.2 Headless Architecture
-The core must not know anything about:
-- DOM
-- CSS
-- Rendering frameworks
-- Browser layout primitives
-- pixel-based UI behavior
-
-The core returns semantic data only
-
-### 2.3 Pure core + Explicit state transitions
-Business logic should be expressed through:
-- Pure data models
-- Explicit commands
-- Deterministic validation
-- Explicit state transitions
-
-Avoid hidden side effects
-
-### 2.4 Stable adapter boundary
-The Rust core should expose a narrow API boundary so that:
-- WASM adapter can call it from web apps
-- Backend services can call it directly in Rust
-- Future native/mobile bindings remain possible
-
-### 2.5 Deterministic behavior 
-Given the same input state and command, the result must always be identical:
-- Same validation result
-- Same state mutation result
-- Same layout output ordering
-
-No implicit clock access inside domain logic
-No random ordering
-No platform-dependent behavior
-
-## 3. High-level Model Structure
-
-```rust
-core/
-├── domain/
-│   ├── ids.rs
-│   ├── actor.rs
-│   ├── slot.rs
-│   ├── appointment.rs
-│   ├── time_range.rs
-│   ├── week.rs
-│   └── enums.rs
-├── commands/
-│   ├── add_slot.rs
-│   ├── delete_slot.rs
-│   ├── cancel_slot.rs
-│   ├── add_appointment.rs
-│   ├── cancel_appointment.rs
-│   └── delete_appointment.rs
-├── validation/
-│   ├── mod.rs
-│   ├── slot_validation.rs
-│   ├── appointment_validation.rs
-│   └── invariants.rs
-├── state/
-│   ├── schedule_state.rs
-│   ├── repository_view.rs
-│   └── reducers.rs
-├── layout/
-│   ├── weekly_layout.rs
-│   ├── weekly_layout/
-│   │   ├── query.rs
-│   │   ├── position.rs
-│   │   ├── projection.rs
-│   │   └── tests.rs
-│   ├── overlap.rs
-│   ├── clipping.rs
-│   └── output.rs
-├── application/
-│   ├── scheduler_service.rs
-│   ├── command_result.rs
-│   └── errors.rs
-├── adapters/
-│   └── wasm/   // later phase
-└── lib.rs
-```
-
-This separation matters:
-- **domain**: core entities and value objects
-- **commands**: input contracts for mutations
-- **validation**: business rule enforcement
-- **state**: canonical in-memory schedule representation
-- **layout**: weekly semantic layout computation
-- **application**: orchestration layer for commands and queries
-- **adapters**: platform bindings, not core logic
-
-## 4. Core Domain Model
-
-### 4.1 IDs
-Use strongly typed IDs instead of raw strings throughout the core
-
-Example:
-
-```rust
-pub struct SlotId(String)
-pub struct AppointmentId(String)
-pub struct ActorId(String)
-```
-
-Requirements:
-- opaque types
-- equality/hash support
-- serializable/deserializable
-- no business meaning embedded in ID format
-
-The core should accept IDs as provided values, not generate them implicitly unless deprecated helper is added later 
-
-### 4.2 Actor model
-At Phase 1, actors only need identity, not a full profile model
-
-```rust
-pub struct ActorRef {
-    pub id: ActorId,
-}
-```
-
-The system distinguishes these roles logically:
-- slot resource owner
-- slot creator
-- appointment creator
-- appointment invitee
-- appointment host (derived)
-
-These roles must remain separate at the model level even if they share the same underlying ID type
-
-### 4.3 Time range
-Use an explicit value object:
-
-```rust
-pub struct TimeRange {
-    pub start: DateTime<Utc>,
-    pub end: DateTime<Utc>
-}
-```
-
-Rules:
-- start < end
-- immutable once created
-- shared by validation and layout
-
-Why:
-- avoids duplicated start/end checks across entities
-- centralizes overlap logic
-
-### 4.4 Slot
-```rust
-pub enum SlotStatus {
-    Available,
-    Booked,
-    Cancelled,
-}
-
-pub struct Slot {
-    pub id: SlotId,
-    pub time: TimeRange,
-    pub resource_owner_id: ActorId,
-    pub created_by: ActorId,
-    pub status: SlotStatus,
-}
-```
-
-Constraints from the functional spec:
-- slot is the canonical time source
-- slot is owned by the resource owner
-- creator may differ from resource owner
-- slot is not partially consumable
-- status is explicit and persistent
-
-### 4.5 Appointment
-
-```rust
-pub struct Appointment {
-    pub id: AppointmentId,
-    pub slot_id: SlotId,
-    pub invitee_ids: Vec<ActorId>,
-    pub title: String,
-    pub created_by: ActorId,
-}
-```
-
-Derived data:
-- host is not stored directly
-- host = slot.resource_owner_id
-
-Reason:
-- Avoids duplication
-- Avoids drift between appointment host and slot owner
-- Preserves slot as source of truth
-
-### 4.6 Week Range
-```rust
-pub struct WeekRange {
-    pub start: NaiveDate,
-    pub end: NaiveDate, // exclusive
-}
-```
-
-## 5. Canonical State Model
-
-### 5.1 Schedule State
-The core needs a canonical in-memory representation:
-
-```rust
-pub struct ScheduleState {
-    pub slots: HashMap<SlotId, Slot>,
-    pub appointments: HashMap<AppointmentId, Appointment>,
-}
-```
-
-This is the minimal state for Phase 1
-
-### 5.2 Derived relationship
-Do not duplicate relationship maps as canonical state unless profiling later proves necessary
-
-Derive when needed:
-- appointment by slot
-- slots by resource owner
-- visible items by week
-
-Reason:
-- Phase 1 prioritizes correctness and simplicity over premature indexing
-
-### 5.3 Repository abstraction
-The core should not depend on a database
-
-But it should be possible to integrate with storage later
-
-Recommended approach:
-
-- keep the domain/application layer repository-agnostic
-- optionally define traits for persistence later
-- Phase 1 can operate entirely on in-memory state
-
-Example:
-```rust
-pub trait ScheduleRepository {
-    fn load_state(&self) -> ScheduleState;
-    fn save_state(&mut self, state: &ScheduleState);
-}
-```
-
-This trait is optional in the first implementation.
-A plain in-memory application service is sufficient initially.
-
-## 6. Command Model
-
-Commands should be explicit input DTOs
-
-### 6.1 Add slot
-```rust
-pub struct AddSlotCommand {
-    pub slot_id: SlotId,
-    pub start: DateTime<Utc>,
-    pub end: DateTime<Utc>,
-    pub resource_owner_id: ActorId,
-    pub created_by: ActorId,
-}
-```
-
-### 6.2 Delete slot
-```rust
-pub struct DeleteSlotCommand {
-    pub slot_id: SlotId,
-}
-```
-
-### 6.3 Cancel slot
-```rust
-pub struct CancelSlotCommand {
-    pub slot_id: SlotId,
-}
-```
-
-### 6.4 Add appointment
-```rust
-pub struct AddAppointmentCommand {
-    pub appointment_id: AppointmentId,
-    pub slot_id: SlotId,
-    pub invitee_ids: Vec<ActorId>,
-    pub title: String,
-    pub created_by: ActorId,
-}
-```
-
-### 6.5 Delete appointment
-```rust
-pub struct DeleteAppointmentCommand {
-    pub appointment_id: AppointmentId,
-}
-```
-
-### 6.6 Cancel appointment
-```rust
-pub struct CancelAppointmentCommand {
-    pub appointment_id: AppointmentId,
-    pub cancelled_by: ActorId,
-}
-```
-
-### 6.7 Reschedule slot
-```rust
-pub struct RescheduleSlotCommand {
-    pub slot_id: SlotId,
-    pub new_start: DateTime<Utc>,
-    pub new_end: DateTime<Utc>,
-    pub updated_by: ActorId,
-}
-```
-
-All mutation entrypoints should use these command structs rather than loose parameters
-
-## 7. Validation Design
-Validation must be centralized and deterministic
-
-### 7.1 Validation layers
-Split validation into three categories:
-
-#### Structural validation
-Checks shape and required fields:
-- start exists
-- end exists
-- start < end
-- IDs are present
-- title length constraints if any
-
-#### Referential validation
-Checks referenced entities:
-- slot exists
-- appointment exists
-- creator exists if actor registry is available
-- resource owner exists if actor registry is available
-
-#### Business invariant validation
-Checks scheduling rules:
-- no overlapping active slots for same resource owner
-- slot must be available before booking
-- booked slot cannot be deleted
-- cancelled slot cannot be booked
-- one slot can have at most one appointment
-
-This structure prevents rule sprawl
-
-### 7.2 Overlap rule
-The functional spec requires:
-- slots cannot overlap for the same resource owner
-
-Technical interpretation:
-- apply overlap checks against slots with status Available or Booked
-- ignore Cancelled slots for conflict purposes unless business later decides historical cancelled slots should still block time
-
-Near-term recommendation:
-- Cancelled slots do not participate in overlap blocking
-- they are historical records, not active supply
-
-### 7.3 Error model
-Use typed errors, not raw strings.
-
-Example:
-```rust
-pub enum SchedulerError {
-    SlotNotFound,
-    AppointmentNotFound,
-    InvalidTimeRange,
-    SlotOverlap,
-    SlotAlreadyBooked,
-    SlotCancelled,
-    SlotNotAvailable,
-    CannotDeleteBookedSlot,
-    AppointmentAlreadyExistsForSlot,
-    AppointmentCancelNotAllowed,
-    InvariantViolation(String),
-}
-```
-
-This is critical for:
-- WASM boundary mapping
-- frontend error handling
-- reliable tests
-
-## 8. State Transition Rules
-State transitions must be explicit and enforced in one place
-
-### 8.1 Slot lifecycle
-```
-Available -> Booked
-Available -> Cancelled
-Booked -> Available   (when appointment deleted)
-Booked -> Cancelled   (not allowed in Phase 1)
-Cancelled -> anything (not allowed in Phase 1)
-```
-
-This directly matches the current business rules in the functional spec
-
-### 8.2 Booking flow
-When adding an appointment:
-1. Verify slot exists
-2. Verify slot status = `Available`
-3. Verify no appointment already references slot
-4. Create appointment
-5. Update slot status to `Booked`
-
-This must be atomic at application-layer level
-
-This must never be a persisted intermediate state where:
-- appointment exists but slot still available
-- slot booked but appointment missing
-
-### 8.3 Unbooking flow
-When deleting an appointment:
-1. Verify appointment exists
-2. Load referenced slot
-3. Delete appointment
-4. Update slot status to `Available`
-
-Also atomic
-
-When cancelling an appointment:
-1. Verify appointment exists
-2. Verify canceller is one of:
-   - slot resource owner
-   - appointment invitee
-   - appointment creator
-3. Delete appointment
-4. Update slot status to `Available`
-
-### 8.4 Delete slot flow
-Deleting a slot is allowed only when:
-- slot exists
-- slot status is not Booked
-
-Recommended near-term handling:
-- hard delete from state
-
-Alternative later:
-- soft delete / archived status
-
-Phase 1 does not need archival semantics
-
-## 9. Application Service Layer
-Use one façade service to orchestrate command execution and queries
-
-```rust
-pub struct SchedulerService {
-    state: ScheduleState,
-}
-```
-
-Example API:
-```rust
-impl SchedulerService {
-    pub fn add_slot(&mut self, cmd: AddSlotCommand) -> Result<(), SchedulerError>;
-    pub fn delete_slot(&mut self, cmd: DeleteSlotCommand) -> Result<(), SchedulerError>;
-    pub fn cancel_slot(&mut self, cmd: CancelSlotCommand) -> Result<(), SchedulerError>;
-    pub fn add_appointment(&mut self, cmd: AddAppointmentCommand) -> Result<(), SchedulerError>;
-    pub fn cancel_appointment(&mut self, cmd: CancelAppointmentCommand) -> Result<(), SchedulerError>;
-    pub fn delete_appointment(&mut self, cmd: DeleteAppointmentCommand) -> Result<(), SchedulerError>;
-
-    pub fn get_weekly_layout(&self, query: WeeklyLayoutQuery) -> WeeklyLayout;
-    pub fn get_weekly_layout_checked(&self, query: WeeklyLayoutQuery) -> Result<WeeklyLayout, SchedulerError>;
-}
-```
-
-Reason:
-- one stable boundary for adapters
-- easy WASM export target
-- keeps domain operations centralized
-
-## 10. Weekly Layout Engine
-
-### 10.1 Role of layout engine
-The layout engine converts schedule state into semantic weekly view data.
-
-- It does not render UI
-- It does not compute pixels
-- It does not know CSS or screen width
-
-This is explicitly required by the functional spec, which says layout output must exclude UI-specific and pixel-based data
-
-### 10.2 Input query
-```rust
-pub enum CalendarOwnerFilter {
-    All,
-    None,
-    Owners(Vec<ActorId>),
-}
-
-pub struct WeeklyLayoutQuery {
-    pub anchor_date: NaiveDate,
-    pub owner_filter: CalendarOwnerFilter,
-    pub visible_start_minute: Option<u16>,
-    pub visible_end_minute: Option<u16>,
-}
-```
-
-Core query contract now supports optional scope/window controls while preserving `anchor_date` as the canonical week anchor.
-
-Current shipped boundary behavior (TM8 completed on 2026-04-21):
-- adapter query payload accepts optional `timezone` metadata
-- adapter normalizes `anchor_date + timezone` to an effective UTC week anchor before calling core layout
-- domain/layout modules stay timezone-rule-free
-
-Query rules:
-- `owner_filter = All` preserves existing unfiltered projection behavior
-- `owner_filter = None` yields no slot and no appointment nodes
-- `owner_filter = Owners(ids)` includes only nodes whose slot `resource_owner_id` is in `ids`
-- an empty owner list must be normalized deterministically to `CalendarOwnerFilter::None`
-- appointment filtering must always be evaluated through the referenced slot owner
-- owner groups, specialties, or doctor cohorts are resolved at adapter/application boundary to owner IDs before building `WeeklyLayoutQuery`
-- when visible window bounds are present, projection applies deterministic clipping/filtering to that window
-- invalid window bounds are rejected deterministically at the query boundary:
-  - `visible_start_minute` and `visible_end_minute` must be within `0..=1440`
-  - `visible_start_minute < visible_end_minute`
-- omitted optional window fields preserve current behavior
-
-### 10.3 Output shape
-```rust
-pub struct WeeklyLayout {
-    pub week_start: NaiveDate,
-    pub week_end: NaiveDate,
-    pub slots: Vec<SlotLayoutNode>,
-    pub appointments: Vec<AppointmentLayoutNode>,
-}
-```
-
-#### Slot layout node
-```rust
-pub struct SlotLayoutNode {
-    pub slot_id: SlotId,
-    pub day_index: u8,
-    pub start_minute: u16,
-    pub end_minute: u16,
-    pub clipped_start: bool,
-    pub clipped_end: bool,
-}
-```
-
-#### Appointment layout node
-```rust
-pub struct AppointmentLayoutNode {
-    pub appointment_id: AppointmentId,
-    pub slot_id: SlotId,
-    pub day_index: u8,
-    pub start_minute: u16,
-    pub end_minute: u16,
-    pub clipped_start: bool,
-    pub clipped_end: bool,
-}
-```
-
-Optional if overlap presentation is needed:
-
-```rust
-pub struct OverlapInfo {
-    pub group_id: u32,
-    pub column_index: u16,
-    pub column_count: u16,
-}
-```
-
-But for current functional scope, overlap grouping is not essential for slots if overlapping slots are already forbidden per resource owner. It only becomes relevant if the UI shows multiple resource owners together in a single day column
-
-### 10.4 Why minute offsets
-Use:
-- `day_index 0..6`
-- `start_minute`, `end_minute` from local day start
-
-This gives the UI enough semantic positioning data without hardcoding pixels
-
-### 10.5 Visible data filtering
-Layout query rules:
-- include only slots in visible week where status = `Available`
-- exclude Booked and Cancelled slots from slot node output
-- include appointments whose referenced slot falls within visible week
-- appointments with invalid/missing slot references are excluded by invariant assumptions
-
-This follows FR-2 and FR-3 in the functional spec
-
-### 10.6 Deterministic ordering
-Sort output deterministically:
-- day index
-- start time
-- end time
-- ID
-
-This prevents platform-specific ordering drift.
-
-## 11. Time Handling Strategy
-
-### 11.1 Internal standard
-Use UTC internally for persisted timestamps
-
-Reason:
-- deterministic comparisons
-- avoids DST ambiguity in core state logic
-- easier cross-platform serialization
-
-### 11.2 Near-term simplification
-The functional spec excludes advanced timezone handling
-
-Therefore:
-- store slot/appointment times in UTC
-- weekly query may assume a single consumer timezone at adapter level
-- do not build full timezone conversion rules into Phase 1 core
-
-### 11.3 Boundary rule
-Timezone conversion should happen at adapter/application boundary when constructing layout queries or displaying dates.
-
-The core should not depend on browser locale APIs.
-
-## 12. Serialization and Interop
-
-### 12.1 Serde
-
-All public DTOs and result structs should derive:
-- Serialize
-- Deserialize
-
-Reason:
-- easy JSON exchange
-- easy WASM interop
-- persistence support later
-
-### 12.2 WASM adapter boundary (current baseline)
-The adapter boundary is JSON-string based and envelope-driven.
-
-Requests:
-- command envelope: `{"command":"<name>","payload":{...}}`
-- query envelope: `{"query":"<name>","payload":{...}}`
-- TM8 Task 1 contract extension:
-  - `weekly_layout` payload accepts optional `timezone` (IANA TZ ID string)
-  - `anchor_date`-only payload remains valid for backward compatibility
-
-Responses:
-- success: `{"status":"success","data":...}`
-- error: `{"status":"error","error":{...}}`
-
-Error payload must use adapter-safe shape:
-
-```rust
-pub struct WasmAdapterError {
-    pub category: WasmErrorCategory, // structural | referential | business | contract
-    pub code: String,                // machine-readable snake_case code
-    pub message: String,             // human-readable message
-}
-```
-
-Malformed JSON at the boundary must map to:
-- `category = contract`
-- `code = invalid_json`
-
-This keeps adapter behavior parseable and deterministic for JS/TS consumers.
-
-### 12.3 WASM export layer
-The adapter wrapper should be exposed through `wasm-bindgen` without changing core business logic.
-
-Export requirements:
-- Export a constructible adapter state wrapper around `WasmSchedulerAdapter`.
-- Export mutation and query entrypoints that accept `&str` JSON and return JSON `String`.
-- Preserve the existing JSON envelope contract exactly (no shape drift).
-- Do not duplicate validation or state-transition rules in exported functions.
-- Keep wasm-specific code confined to adapter module boundaries.
-
-Verification requirements:
-- Rust tests for adapter wrapper behavior remain green.
-- Add a web-consumer smoke example/test that calls exported methods and asserts response shape.
-
-### 12.4 WASM package consumption layer (completed)
-This step makes the adapter straightforward to consume from JS tooling.
-
-Goals:
-- Build a distributable wasm package shape for web consumers.
-- Verify the generated package can be initialized and imported from JS.
-- Keep the runtime contract unchanged from the current JSON envelope boundary.
-
-Requirements:
-- Define one supported packaging tool/command for near-term consumption:
-  - `wasm-pack build --target web --out-dir pkg --out-name mai`
-- Treat generated `pkg/` output as the package contract for docs/smoke checks:
-  - `pkg/mai.js` (ES module glue with default `init`)
-  - `pkg/mai_bg.wasm` (WASM binary)
-  - `pkg/mai.d.ts` (TypeScript declarations)
-  - `pkg/package.json` (generated package metadata)
-- Verify consumer import pattern around generated package output (`init` + exported class):
-  - `import init, { WasmBindgenAdapter } from "./pkg/mai.js"`
-  - `await init()`
-- Add a package-level smoke path that proves a JS consumer can:
-  - initialize the wasm module
-  - construct `WasmBindgenAdapter`
-  - issue at least one command and one query
-  - parse success/error envelopes
-- Keep packaging concerns in adapter/build layers, not in domain/application modules.
-
-Non-goals:
-- No UI rendering layer.
-- No change to request/response JSON shapes.
-- No new business rules.
-
-### 12.5 Web runtime package boundary (Phase 1 contract)
-For production-safe web consumption, app code must not import generated wasm artifacts (`core/pkg/*`) directly.
-
-Package responsibilities:
-- `@mai/mai-web-core`:
-  runtime-agnostic TS contracts and JSON client helpers only.
-- `@mai/mai-wasm-adapter` (new package boundary):
-  owns wasm-bindgen bootstrap and concrete adapter instantiation.
-- app/example:
-  composes dependencies through package APIs and owns app state only.
-
-Runtime adapter contract (TS):
-```ts
-import type { JsonAdapter } from "@mai/mai-web-core";
-
-export interface WasmAdapterFactoryOptions {
-  wasmModulePath?: string;
-}
-
-export function createWasmAdapter(
-  options?: WasmAdapterFactoryOptions
-): Promise<JsonAdapter>;
-```
-
-Contract rules:
-- `createWasmAdapter()` must initialize wasm and return a `JsonAdapter`-compatible instance.
-- initialization must be idempotent for repeated calls in the same runtime.
-- bootstrap/runtime failures must surface as stable JS `Error` values with deterministic messages.
-- app code should only consume package exports; no deep relative imports to generated wasm files.
-- app mutation calls should use centralized command/query constants plus typed envelope builders from `@mai/mai-web-core` to reduce string drift and enforce payload shape at compile time.
-
-Migration-safe usage example:
-```ts
-import { createWasmAdapter } from "@mai/mai-wasm-adapter";
-import { createNuxtMaiState } from "@mai/mai-ui-vue";
-
-const adapter = await createWasmAdapter();
-const state = createNuxtMaiState(adapter);
-```
-
-Typed command helper usage example:
-```ts
-import { COMMANDS, createCommandEnvelope } from "@mai/mai-web-core";
-
-const command = createCommandEnvelope(COMMANDS.CANCEL_APPOINTMENT, {
-  appointment_id: "appt-1",
-  cancelled_by: "ui-operator",
-});
-
-const response = executeCommand(adapter, command);
-```
-
-Current implementation status (completed on 2026-04-22):
-- `@mai/mai-wasm-adapter` package added and consumed by Nuxt example.
-- app-level direct `core/pkg` imports removed from `examples/nuxt-app` source.
-- boundary regression smoke script added at `web/scripts/check-package-boundaries.mjs`.
-
-TM11 UI boundary decision (recorded on 2026-04-22):
-- day/time header rendering remains in TS/JS UI package (`@mai/mai-ui-vue`), not in Rust core.
-- Rust core continues to expose semantic layout data only.
-
-TM11 Phase 1 UI contract (current baseline):
-- `MaiBoard` adds optional timeline/view props:
-  - `visibleStartMinute?: number` (default `0`)
-  - `visibleEndMinute?: number` (default `1440`)
-  - `timeLabelFormat?: "24h" | "12h"` (default `"24h"`)
-  - `emptyStateText?: string`
-- `MaiBoard` interaction events:
-  - `navigate-week` (`-1 | 0 | 1`)
-  - `slot-click`
-  - `appointment-click`
-  - `empty-cell-click`
-
-TM11 Phase 6 completion status (2026-04-22):
-- `@mai/mai-ui-vue` includes deterministic tests for:
-  - full-day timeline defaults/window normalization,
-  - time label formatting modes (`24h`/`12h`),
-  - interaction payload mapping for slot/appointment/empty-cell events.
-- Nuxt example app consumes UI interaction events and demonstrates payload handling.
-- workspace `pnpm run test` includes `@mai/mai-ui-vue` tests in the baseline verification chain.
-
-TM14 Phase 1 contract (planned on 2026-04-23):
-- add `MaiBoardInteractive` as the recommended application-facing wrapper in `@mai/mai-ui-vue`.
-- keep `MaiBoard` as a lower-level board primitive that remains reusable for custom orchestration.
-- `MaiBoardInteractive` ownership:
-  - controls selection/draft interaction state (`selectedSlot`, `selectedAppointment`, `pendingSlotDraft`),
-  - renders interaction cards/popovers (`MaiCreateSlotCard`, `MaiSlotActionsCard`, `MaiAppointmentActionsCard`),
-  - runs provided action handlers and emits deterministic outcome events.
-- `MaiBoardInteractive` emitted outcome events:
-  - `slot-created`
-  - `slot-booked`
-  - `slot-cancelled`
-  - `slot-deleted`
-  - `appointment-cancelled`
-  - `appointment-deleted`
-  - `interaction-error` (`{ action, message }`)
-
-Contract-level intent:
-- App consumers should be able to ship an interactive weekly board without manually wiring local popover/action state in page components.
-- Interaction orchestration lives in `@mai/mai-ui-vue`; business mutations still execute through injected callbacks and the existing web-core command contract.
-
-TM14 implementation status (completed on 2026-04-23):
-- `MaiBoardInteractive` added in `@mai/mai-ui-vue` as the recommended app-facing wrapper.
-- Wrapper supports:
-  - callback action mode (`createSlot` / `bookSlot` / `cancelSlot` / `deleteSlot` / `cancelAppointment` / `deleteAppointment`)
-  - adapter-driven action mode via `mutateCommand`, internally using `COMMANDS + createCommandEnvelope`.
-- Selection/popover orchestration is centralized in UI package interaction state utilities.
-- Interaction tests cover:
-  - empty-cell -> create-slot overlay
-  - slot -> slot-actions overlay
-  - appointment -> appointment-actions overlay
-  - success path emits expected event and clears selection
-  - error path emits deterministic `interaction-error`
-- Nuxt example migrated to thin consumer integration with `MaiBoardInteractive`.
-
-TM15 runtime stability note (completed on 2026-04-23):
-- Nuxt example dev startup hardened to reduce stale-manifest startup failures (`#app-manifest` resolution errors).
-- Workspace dev entrypoint now performs scoped cache reset before booting the example runtime.
-- Nuxt dependency drift is constrained by pinning `nuxt` in example app and overriding `@nuxt/cli` version in web workspace.
-- Interactive wrapper adapter-mode command mapping is covered by dedicated UI package tests for all supported mutation routes.
-
-TM16 UI interaction contract update (planned on 2026-04-23):
-- Empty-cell create-slot behavior:
-  - first click on empty cell opens create-slot card,
-  - second click on the same empty cell closes create-slot card,
-  - click on a different empty cell keeps card open and updates draft anchor.
-- `MaiCreateSlotCard` editing contract:
-  - supports explicit editable start/end time inputs (minute precision),
-  - emitted create-slot payload is recomputed from edited time range deterministically,
-  - invalid range (`start >= end`) is normalized at UI boundary before emit.
-
-TM16 implementation status (completed on 2026-04-23):
-- Empty-cell repeated-click toggle is implemented in interaction state orchestration:
-  - same cell second click closes create-slot card,
-  - different cell click retargets active draft.
-- Create-slot card now exposes editable `start` and `end` time fields.
-- Create-slot payload generation now supports explicit range input and deterministic normalization helpers at UI boundary.
-- UI tests cover:
-  - empty-cell toggle/retarget behavior,
-  - create-slot time parse/format helpers,
-  - deterministic invalid-range normalization and payload generation.
-
-TM17 UI interaction contract update (completed on 2026-04-23):
-- `MaiBoard` now emits `reschedule-slot` payloads for slot drag/resize gestures:
-  - payload shape: `{ slotId, dayIndex, startMinute, endMinute }`.
-- `MaiBoardInteractive` now supports slot-reschedule mutation in both modes:
-  - callback mode: `rescheduleSlot(payload)`,
-  - adapter mode: maps to `COMMANDS.RESCHEDULE_SLOT` command envelope.
-- `MaiBoardInteractive` emits `slot-rescheduled` on successful drop/resize completion.
-
-TM17 implementation status (completed on 2026-04-23):
-- Slot chips in `@mai/mai-ui-vue` support:
-  - drag-to-move (vertical time + horizontal day),
-  - resize-from-top,
-  - resize-from-bottom.
-- Gesture policy is deterministic:
-  - 15-minute snapping,
-  - clamp to day bounds (`0..=1440`),
-  - minimum span preserved on resize.
-- UI test coverage includes:
-  - drag/resize gesture math,
-  - command envelope mapping for `reschedule_slot`.
-
-### 12.6 Client-facing clinic booking component contract
-
-The client-facing booking surface is an app/UI package concern. It must reuse the existing scheduling core, WASM adapter boundary, and web-core typed command/query helpers. It must not add clinic, specialty, doctor, or authentication concepts to Rust domain/layout modules in Phase 1.
-
-Recommended public component:
-- `MaiBookingFlow` in `@mai/mai-ui-vue`.
-
-Flow:
-1. User starts from a clinic page/context supplied by the consuming app.
-2. User selects a consultation specialty/reason.
-3. User optionally selects a doctor; no doctor filter is the default.
-4. User chooses one available slot from a one-week availability view.
-5. User signs in or signs up if no invitee identity is available.
-6. User confirms the booking.
-7. The component immediately requeries availability after successful booking.
-
-Boundary responsibilities:
-- consuming app owns clinic metadata, specialty/reason metadata, doctor metadata, and authentication.
-- consuming app supplies or resolves the authenticated `inviteeId`, user display name, and appointment ID.
-- UI package owns booking flow state, component composition, event emission, and deterministic command/query envelope creation.
-- Rust core owns slot availability validation and appointment creation invariants only.
-
-Availability behavior:
-- when a doctor is selected, query/filter availability for that doctor's resource owner ID through the current weekly query host filter boundary (`assignee_id` in the implemented adapter/web-core contract, corresponding to resource owner semantics in the product language).
-- when no doctor is selected, the consuming app must provide specialty-scoped availability across eligible doctors. Phase 1 may do this by querying a specialty-scoped state, merging per-doctor weekly layouts, or passing already-filtered layout data to the component.
-- the component shows one week at a time and supports previous/next week navigation.
-
-Booking behavior:
-- booking uses `COMMANDS.ADD_APPOINTMENT` with `createCommandEnvelope` from `@mai/mai-web-core`.
-- a single authenticated `inviteeId` maps into the existing `invitee_ids` command payload.
-- appointment title is computed deterministically from user display name plus selected reason.
-- booking confirmation must not run until specialty/reason, slot, appointment ID, invitee ID, and creator identity are available.
-- after successful booking, the component must requery availability before presenting the final confirmed state.
-
-Suggested grouped prop shape:
-
-```ts
-export interface MaiBookingFlowProps {
-  clinic: {
-    clinicId: string;
-    name?: string;
-  };
-  specialties: Array<{
-    specialtyId: string;
-    label: string;
-    reasonLabel?: string;
-  }>;
-  doctors?: Array<{
-    doctorId: string;
-    displayName: string;
-    specialtyIds: string[];
-    resourceOwnerId: string;
-  }>;
-  view: {
-    anchorDate: string;
-    timezone?: string;
-    visibleStartMinute?: number;
-    visibleEndMinute?: number;
-    timeLabelFormat?: "24h" | "12h";
-  };
-  actor: {
-    inviteeId?: string;
-    userDisplayName?: string;
-    createdBy?: string;
-  };
-  booking?: {
-    selectedSpecialtyId?: string;
-    selectedDoctorId?: string;
-    createAppointmentId?: () => string;
-  };
-  actions?: {
-    queryLayout?: (query: BookingAvailabilityQuery) => Promise<WeeklyLayout>;
-    bookSlot?: (payload: BookSlotPayload) => Promise<void>;
-    requestAuth?: () => Promise<{
-      inviteeId: string;
-      userDisplayName: string;
-    }>;
-    mutateCommand?: (envelope: CommandEnvelope) => Promise<CommandResponse>;
-  };
-}
-```
-
-Expected events:
-- `navigate-week` (`-1 | 0 | 1`)
-- `specialty-selected`
-- `doctor-selected`
-- `slot-selected`
-- `auth-required`
-- `auth-completed`
-- `booking-submitted`
-- `booking-confirmed`
-- `availability-refreshed`
-- `booking-error` (`{ action, message }`)
-
-Design requirements:
-- all client-facing booking UI must follow `DESIGN.md`.
-- use design tokens/CSS variables before inventing values.
-- keep the UI monochrome-first, precise, calm, and medical-utility oriented.
-- use compact controls, visible hover/focus states, subtle borders, and tabular time labels.
-- do not use gradients, decorative graphics, random accent colors, glassmorphism, emoji, or heavy shadows.
-- validate implementation against the `DESIGN.md` component acceptance checklist before shipping.
-
-Testing expectations:
-- state tests for specialty selection, optional doctor selection, auth required/completed, submit, refresh, success, and error flows.
-- component tests for required specialty, default no-doctor mode, doctor-scoped mode, week navigation, slot selection, auth gate, deterministic title generation, and post-booking availability refresh.
-- public API tests ensuring the component and types are exported through package entrypoints.
-- Nuxt example build and workspace boundary check must remain green.
-
-## 13. Testing Strategy
-
-### 13.1 Unit tests
-Each domain rule should have direct unit coverage.
-
-Minimum cases:
-- valid slot creation
-- invalid slot time range
-- slot overlap rejection
-- slot delete rejection when booked
-- booking available slot
-- booking cancelled slot rejected
-- booking already booked slot rejected
-- deleting appointment restores slot availability
-- appointment cannot exist without slot
-
-### 13.2 Reducer/application tests
-Test command sequences against full state.
-
-Examples:
-- add slot -> add appointment -> delete appointment
-- add slot -> cancel slot -> add appointment rejected
-- add two overlapping slots same resource owner rejected
-- add overlapping slots different resource owners allowed
-
-### 13.3 Layout tests
-Verify:
-- correct week filtering
-- correct day index computation
-- correct minute offsets
-- correct exclusion of booked/cancelled slots
-- correct resource owner-scoped filtering when query filter is present
-- correct visible-hour window clipping/filter behavior
-- deterministic ordering
-- clipping flags for items spanning outside visible week if that case is later allowed
-- deterministic rejection for invalid query window bounds
-
-### 13.4 Property tests
-Useful for overlap logic and ordering stability.
-
-Candidates:
-- overlap symmetry
-- no false negatives on interval conflict
-- sort order deterministic under shuffled input
-
-### 13.5 Snapshot tests
-Good for weekly layout output DTOs, especially when used by UI consumers.
-
-## 14. Performance Expectations
-Phase 1 does not require aggressive optimization
-
-Expected scale:
-- weekly scheduling
-- moderate number of slots and appointments
-- single-user or small practice view sizes
-
-Therefore:
-- correctness first
-- simple in-memory filtering/sorting is acceptable
-- avoid premature interval trees or complex indexing
-
-Only optimize after profiling
-
-## 15. Public API Design Guidelines
-
-### 15.1 Keep API small
-Near-term public API should expose only:
-- state mutation commands
-- weekly layout query
-- optional raw read/query methods
-
-### 15.2 No leaking internal invariants
-Consumers should not mutate slots/appointments directly
-
-Bad:
-```rust
-service.state.slots.insert(...)
-```
-
-Good:
-```rust
-service.add_slot(cmd)
-```
-
-### 15.3 Explicit result types
-Every mutation returns:
-- success
-- typed error
-
-No silent no-op behavior
-
-## 16. Recommended Crates
-Near-term Rust dependencies:
-- chrono for datetime handling
-- serde for serialization
-- thiserror for typed errors
-- uuid only if core later generates IDs
-- wasm-bindgen only in adapter crate/module, not deep in core
-- proptest for property testing
-
-Avoid heavy framework dependencies
-
-## 17. Non-Goals
-Phase 1 technical non-goals:
-- recurrence engine
-- partial slot consumption
-- split/merge slot logic
-- drag/drop interaction logic
-- persistence engine abstraction with full DB support
-- permissions/ACL system
-- multi-resource optimization
-- real-time sync/conflict resolution
-- pixel layout engine
-- theming/styling concerns
-
-These are intentionally excluded because they are not required by the current functional scope
-
-## 18. Milestone-Oriented Implementation Plan
-
-### TM1: Domain foundation
-Deliver:
-- typed IDs
-- TimeRange
-- Slot
-- Appointment
-- enums
-- error model
-
-### TM2: State and commands
-Deliver:
-- ScheduleState
-- command DTOs
-- SchedulerService
-- add/delete/cancel slot
-- add/cancel/delete appointment
-
-### TM3: Validation layer
-Deliver:
-- overlap validation
-- referential validation
-- state transition enforcement
-- invariant tests
-
-### TM4: Weekly layout engine
-Deliver:
-- week range calculation
-- filtering
-- day index / minute offsets
-- semantic node output
-- deterministic ordering tests
-
-### TM5: Serialization boundary
-Deliver:
-- serde DTOs
-- stable request/response structs
-- adapter-friendly API contracts
-
-### TM6: WASM adapter
-Deliver:
-- web-consumable exports
-- JS/TS integration contract
-- example usage from frontend
-
-Near-term sequencing:
-- TM6a: adapter contract + state wrapper + adapter-safe error mapping (completed)
-- TM6b: `wasm-bindgen` exports over existing JSON adapter wrapper (completed)
-- TM6c: package/build verification for real JS consumption (completed on 2026-04-20)
-- TM7: actor lookup boundary + optional actor-reference validation (completed on 2026-04-20)
-- TM8: timezone-aware weekly query boundary normalization (completed on 2026-04-21)
-- TM9: release readiness and local tooling parity for wasm package smoke (completed on 2026-04-21)
-- TM10: core weekly query filters and visible-hour window behavior (completed on 2026-04-21)
-
-### TM7: Actor boundary and validation collaborator
-Deliver:
-- an application-layer actor lookup collaborator trait
-- optional resource owner/creator existence checks behind that collaborator
-- deterministic actor-reference validation errors mapped through existing error envelopes
-- no persistence or registry coupling introduced in domain/layout modules
-
-### TM8: Timezone boundary normalization for weekly queries
-Deliver:
-- timezone-aware weekly query payload at adapter boundary
-- deterministic normalization from boundary timezone input to UTC-effective week anchor
-- stable error mapping for invalid timezone input
-- no timezone conversion rules added inside domain/layout modules
-
-### TM10: Core weekly query filters and visible-hour window
-Deliver:
-- optional `resource_owner_id` filtering in core weekly projection
-- optional visible window bounds in core weekly query
-- deterministic clipping/filtering behavior for windowed queries
-- deterministic structural validation for invalid window bounds
-- no UI/pixel semantics introduced in core
-
-## 19. Locked Technical Decisions (Accepted 2026-04-20)
-These decisions are fixed for the near-term implementation and release baseline.
-
-### 19.1 Slot status naming
-Standardize status terminology to:
-- Available
-- Booked
-- Cancelled
-
-`Active` is treated as descriptive language only, not a status value.
-
-### 19.2 ID ownership
-IDs are generated outside the core and passed into commands/DTOs.
-
-Rationale:
-- keeps core deterministic
-- avoids hidden ID generation side effects
-
-### 19.3 Actor existence validation
-Actor IDs are accepted as opaque references in Phase 1.
-
-Near-term rule:
-- no actor registry validation inside the core
-- if needed later, introduce a collaborator trait at adapter/application boundary
-
-### 19.4 Cancelled slot retention
-Cancelled slots remain in canonical state by default.
-
-Near-term rule:
-- exclude cancelled slots from availability/layout
-- allow archival or purge in higher layers outside core invariants
-
-## 20. Acceptance Criteria for the Technical Spec
-The implementation satisfies this technical spec when:
-- A Rust crate exposes typed domain models and command APIs
-- Slot and appointment invariants are enforced centrally
-- Booking/unbooking correctly updates slot status
-- Weekly layout returns semantic nodes only, with no UI-specific values
-- Output is deterministic for the same input
-- Core logic is platform-agnostic
-- The codebase is ready for a WASM adapter without rewriting business logic
-
-## 21. Recommended Final Position
-For this project, the correct near-term architecture is:
-- Rust as the single source of truth for core business logic
-- Headless scheduling engine
-- fixed-slot model
-- explicit state transitions
-- semantic weekly layout output
-- WASM adapter later, not TypeScript core first
-
-Anything else creates unnecessary rework
-
-## 22. Core Layer Dependency Contract
-
-The core architecture is enforced by layer responsibility and dependency direction:
-
-- `domain`: entities and value objects only; no adapter/platform knowledge
-- `application`: orchestrates commands/queries and state mutation
-- `state`: controlled storage surface for slots/appointments
-- `layout`: semantic projections only
-- `adapters`: transport/wire/platform boundary
-
-Dependency direction is inward:
+## 1. Purpose
+Define the technical contract for `mai`: a headless Rust scheduling engine that powers weekly availability and booking flows across wasm/web and other future adapters.
+
+This document explains:
+- the core mental model,
+- module boundaries,
+- command/query contracts,
+- invariants and error behavior,
+- adapter boundary expectations.
+
+For user-facing behavior requirements, see `docs/functional_spec.md`.
+
+## 2. Product Mental Model
+`mai` models a fixed-slot scheduling system:
+- one slot is one bookable unit,
+- one slot can have at most one active appointment,
+- appointment time/host are derived from the referenced slot,
+- layout output is semantic, not visual.
+
+The core is deterministic:
+- same input state + same command/query => same result,
+- no random ordering,
+- no implicit wall-clock behavior in business rules.
+
+## 3. Architecture Boundaries
+Core dependency direction is inward:
 - `adapters -> application -> domain/state/layout`
 
-Forbidden dependency examples:
-- `domain -> adapters`
-- `layout -> adapters`
-- `domain -> application`
+### 3.1 Layer roles
+- `domain`: entities and value objects (`Slot`, `Appointment`, typed IDs, time/week primitives).
+- `state`: canonical in-memory schedule state.
+- `application`: command/query orchestration and policy enforcement.
+- `layout`: weekly semantic projection.
+- `adapters`: transport/platform boundary (wasm/json entrypoints).
 
-Public API strategy:
-- expose stable service, command/query contracts, and layout outputs
-- keep internal validation/state/helper modules non-primary and constrained
+### 3.2 Forbidden coupling
+- no `domain -> adapters`,
+- no `layout -> adapters`,
+- no DOM/CSS/framework concerns in core layers.
+
+## 4. Core Data Model
+
+### 4.1 Typed IDs
+Core IDs are strong types:
+- `SlotId`,
+- `AppointmentId`,
+- `ActorId`.
+
+IDs are external inputs (not generated by core by default).
+
+### 4.2 Domain entities
+- `Slot`:
+  - `id`, `time`, `resource_owner_id`, `created_by`, `status`.
+- `Appointment`:
+  - `id`, `slot_id`, `invitee_ids`, `title`, `created_by`.
+
+Host is derived at read time from `slot.resource_owner_id`.
+
+### 4.3 Time primitives
+- `TimeRange` requires `start < end`.
+- `WeekRange` uses `[start, end)` semantics.
+- Internal timestamps are UTC.
+
+## 5. Canonical State
+Canonical state is minimal and explicit:
+- `slots: HashMap<SlotId, Slot>`
+- `appointments: HashMap<AppointmentId, Appointment>`
+
+Derived indexes remain computed unless profiling proves they are needed.
+
+## 6. Command and Query Contract
+
+### 6.1 Commands
+Mutations are explicit command DTOs:
+- `AddSlotCommand`
+- `DeleteSlotCommand`
+- `CancelSlotCommand`
+- `RescheduleSlotCommand`
+- `AddAppointmentCommand`
+- `DeleteAppointmentCommand`
+- `CancelAppointmentCommand`
+
+### 6.2 Query
+Weekly projection query:
+- `WeeklyLayoutQuery { anchor_date, owner_filter, visible_start_minute?, visible_end_minute? }`
+- owner filter supports `all`, `none`, `owners(ids)`.
+- visible window bounds are minute offsets in `0..=1440`.
+
+### 6.3 Duplicate ID contract
+Create commands reject duplicates deterministically:
+- `add_slot` rejects existing `slot_id`,
+- `add_appointment` rejects existing `appointment_id`.
+
+Create commands do not overwrite existing records.
+
+## 7. Validation and Error Model
+Validation layers:
+1. Structural: shape/range checks (`start < end`, visible window bounds, non-empty title).
+2. Referential: referenced entity/actor checks where configured.
+3. Business: overlap, availability, booking, cancellation authorization, state transition rules.
+
+Errors are typed:
+- `StructuralError`
+- `ReferentialError`
+- `BusinessRuleError`
+- wrapped by `SchedulerError`.
+
+Error behavior is deterministic and adapter-safe.
+
+## 8. State Transition Rules
+Near-term slot lifecycle:
+- `Available -> Booked` on appointment creation.
+- `Available -> Cancelled` on slot cancellation.
+- `Booked -> Available` on appointment delete/cancel.
+
+Disallowed in near-term:
+- cancelling booked slots,
+- booking cancelled slots,
+- deleting booked slots.
+
+Command handling must be atomic: rejected commands leave state unchanged.
+
+## 9. Weekly Layout Contract
+Layout output is semantic:
+- `WeeklyLayout { week_start, week_end, slots, appointments }`
+- node fields include `day_index`, `start_minute`, `end_minute`, `clipped_start`, `clipped_end`.
+
+Rules:
+- slot nodes include available slots only,
+- appointments project from referenced slot time,
+- owner filtering is evaluated through slot owner,
+- window clipping/filtering is deterministic,
+- output ordering is deterministic.
+
+## 10. Timezone Boundary Strategy
+Core domain/layout stays timezone-rule-free.
+
+Adapter boundary may accept optional timezone metadata to normalize query anchor date before calling core.
+
+Invalid timezone input is rejected with deterministic contract errors at adapter boundary.
+
+## 11. Adapter and Interop Contract
+
+### 11.1 Serialization
+Public DTOs are serde-serializable/deserializable.
+
+### 11.2 Wasm boundary
+JSON envelope contract:
+- command: `{"command":"<name>","payload":{...}}`
+- query: `{"query":"<name>","payload":{...}}`
+
+Response envelope:
+- success: `{"status":"success","data":...}`
+- error: `{"status":"error","error":{ category, code, message }}`
+
+Error categories:
+- `structural`
+- `referential`
+- `business`
+- `contract`
+
+## 12. Public Service Surface
+Application entrypoint:
+- `SchedulerService` as the stable command/query facade.
+
+Near-term public focus:
+- command methods for slot/appointment lifecycle,
+- weekly layout query (`checked` variant for structural validation),
+- typed result errors.
+
+## 13. Testing Strategy
+Test mix:
+- domain unit tests for value objects and status transitions,
+- application tests for command flows and rejection atomicity,
+- layout tests for filtering/clipping/ordering,
+- integration tests for end-to-end booking flows,
+- serialization and wasm boundary contract tests.
+
+Minimum guarantees:
+- overlap and availability invariants hold,
+- duplicate create IDs are rejected deterministically,
+- authorized cancellation paths behave correctly,
+- owner-filter and visible-window semantics are stable,
+- wasm error codes and response envelopes remain deterministic.
+
+## 14. Performance and Non-Goals
+Near-term priority is correctness and contract stability over optimization.
+
+Out of scope:
+- recurrence,
+- partial slot consumption,
+- persistence/DB architecture,
+- ACL/permissions system,
+- realtime sync/conflict resolution,
+- UI rendering concerns.
+
+## 15. Acceptance Criteria for Technical Spec
+This spec is satisfied when:
+- implementation preserves the fixed-slot model,
+- core remains headless and deterministic,
+- command/query contracts and errors are stable,
+- adapter boundary is predictable for web consumers,
+- tests enforce key invariants and integration flows.
