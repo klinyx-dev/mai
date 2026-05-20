@@ -36,12 +36,33 @@ Use this template for any release with breaking changes.
 - Commands:
 - Queries:
 - Errors:
+- Legacy envelope compatibility retained (Yes/No):
+- If `No`, list each changed field/semantic and reason:
 
 ## Behavior Changes
 
 - Default behavior changes:
 - Validation changes:
 - UI event/prop changes:
+- Legacy fixed-slot behavior changed (Yes/No):
+- If `Yes`, include rollback-safe transition strategy:
+
+## Compatibility Matrix (Required)
+
+Fill this table for every advanced scheduling release:
+
+| Contract Surface | Legacy behavior (unchanged) | New additive behavior | Breaking behavior |
+|---|---|---|---|
+| Rust commands/queries |  |  |  |
+| wasm JSON command/query payloads |  |  |  |
+| wasm error envelope/category/code |  |  |  |
+| `@mai/mai-web-core` exports |  |  |  |
+| `@mai/mai-wasm-adapter` exports |  |  |  |
+| `@mai/mai-ui-vue` props/emits/events |  |  |  |
+
+Rules:
+- Leave breaking behavior empty unless this is a major release.
+- If any breaking behavior exists, include a concrete before/after example in this guide.
 
 ## Test and Verification Steps
 

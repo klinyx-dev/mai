@@ -39,6 +39,28 @@ Also verify:
 For breaking releases:
 - include migration notes using `docs/migration_guide_template.md`.
 
+## Phase 5 advanced scheduling release gate
+
+For any release introducing advanced scheduling capabilities (recurrence, batch slot ops, capacity, blackout periods, metadata):
+
+1. Confirm scope is covered by:
+   - `docs/advanced_scheduling_spec.md`
+   - `docs/functional_spec.md`
+   - `docs/technical_spec.md`
+2. Publish an explicit compatibility map in the release notes:
+   - unchanged legacy contracts,
+   - new additive contracts,
+   - intentionally breaking contracts (major only).
+3. Verify public payload/error docs include new contracts without silently changing legacy envelopes:
+   - `docs/adapter_payload_examples.md`
+   - `docs/adapter_error_codes.md`
+4. Verify tests cover both:
+   - legacy fixed-slot behavior,
+   - new advanced-capability behavior.
+5. If any existing envelope field semantics changed, require:
+   - major version bump,
+   - migration guide sections for Rust, wasm JSON, TypeScript exports, and Vue events/props.
+
 ## Tag and publish
 From a clean local `main`:
 
