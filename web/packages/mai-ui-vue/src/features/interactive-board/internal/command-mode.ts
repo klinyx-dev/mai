@@ -5,6 +5,7 @@ import {
 } from "@mai/mai-web-core";
 import type {
   AppointmentActionEventPayload,
+  CreateBlackoutActionEventPayload,
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
   SlotRescheduleActionEventPayload,
@@ -29,6 +30,20 @@ export function buildAddSlotCommand(
     start: payload.startIso,
     end: payload.endIso,
     resource_owner_id: payload.resourceOwnerId,
+    created_by: payload.createdBy,
+    capacity: payload.capacity ?? 1,
+  });
+}
+
+export function buildAddBlackoutWindowCommand(
+  payload: CreateBlackoutActionEventPayload
+): AnyCommandEnvelope {
+  return createCommandEnvelope(COMMANDS.ADD_BLACKOUT_WINDOW, {
+    blackout_id: payload.blackoutId,
+    resource_owner_id: payload.resourceOwnerId,
+    start: payload.startIso,
+    end: payload.endIso,
+    reason: payload.reason,
     created_by: payload.createdBy,
   });
 }

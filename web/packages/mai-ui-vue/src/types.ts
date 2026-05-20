@@ -9,6 +9,7 @@ export type {
 } from "./types/board";
 export type {
   AppointmentActionEventPayload,
+  CreateBlackoutActionEventPayload,
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
   SlotRescheduleActionEventPayload,
@@ -26,6 +27,7 @@ export type {
   MaiCalendarFilterOwnerOption,
   MaiViewFilterOption,
   MaiBoardInteractiveViewConfig,
+  MaiBlackoutCreatedEventPayload,
   MaiInteractionAction,
   MaiInteractionErrorPayload,
   MaiInteractionSuccessEvent,

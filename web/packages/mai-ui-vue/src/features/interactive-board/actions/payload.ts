@@ -1,5 +1,6 @@
 import type {
   AppointmentActionEventPayload,
+  CreateBlackoutActionEventPayload,
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
 } from "../../../types";
@@ -103,6 +104,18 @@ interface CreateSlotPayloadRangeInput {
   resourceOwnerId: string;
   createdBy: string;
   slotId?: string;
+  capacity?: number;
+}
+
+interface CreateBlackoutPayloadRangeInput {
+  weekStartIso: string;
+  dayIndex: number;
+  startMinute: number;
+  endMinute: number;
+  resourceOwnerId: string;
+  createdBy: string;
+  reason: string;
+  blackoutId?: string;
 }
 
 export function buildCreateSlotPayloadFromRange(
@@ -121,6 +134,7 @@ export function buildCreateSlotPayloadFromRange(
     endIso: isoFromDate(end),
     resourceOwnerId: input.resourceOwnerId,
     createdBy: input.createdBy,
+    ...(typeof input.capacity === "number" ? { capacity: input.capacity } : {}),
   };
 }
 
@@ -137,4 +151,24 @@ export function buildCreateSlotPayload(
     createdBy: input.createdBy,
     slotId: input.slotId,
   });
+}
+
+export function buildCreateBlackoutPayloadFromRange(
+  input: CreateBlackoutPayloadRangeInput
+): CreateBlackoutActionEventPayload {
+  const { startMinute, endMinute } = normalizeSlotMinuteRange(
+    input.startMinute,
+    input.endMinute
+  );
+  const start = dateFromWeekPoint(input.weekStartIso, input.dayIndex, startMinute);
+  const end = dateFromWeekPoint(input.weekStartIso, input.dayIndex, endMinute);
+
+  return {
+    blackoutId: input.blackoutId ?? `blackout-${Date.now()}`,
+    startIso: isoFromDate(start),
+    endIso: isoFromDate(end),
+    resourceOwnerId: input.resourceOwnerId,
+    reason: input.reason.trim() || "Unavailable",
+    createdBy: input.createdBy,
+  };
 }

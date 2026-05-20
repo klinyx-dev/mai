@@ -1,5 +1,6 @@
 import type {
   AppointmentActionEventPayload,
+  CreateBlackoutActionEventPayload,
   AppointmentClickEventPayload,
   CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
@@ -117,11 +118,34 @@ export function isCreateSlotPayload(value: unknown): value is CreateSlotActionEv
     return false;
   }
   const payload = value as Record<string, unknown>;
+  const hasValidCapacity =
+    payload.capacity === undefined ||
+    (typeof payload.capacity === "number" &&
+      Number.isInteger(payload.capacity) &&
+      payload.capacity >= 1);
   return (
     typeof payload.slotId === "string" &&
     typeof payload.startIso === "string" &&
     typeof payload.endIso === "string" &&
     typeof payload.resourceOwnerId === "string" &&
+    typeof payload.createdBy === "string" &&
+    hasValidCapacity
+  );
+}
+
+export function isCreateBlackoutPayload(
+  value: unknown
+): value is CreateBlackoutActionEventPayload {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const payload = value as Record<string, unknown>;
+  return (
+    typeof payload.blackoutId === "string" &&
+    typeof payload.startIso === "string" &&
+    typeof payload.endIso === "string" &&
+    typeof payload.resourceOwnerId === "string" &&
+    typeof payload.reason === "string" &&
     typeof payload.createdBy === "string"
   );
 }

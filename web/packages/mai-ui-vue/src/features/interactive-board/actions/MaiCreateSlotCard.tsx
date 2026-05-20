@@ -1,5 +1,6 @@
 import { defineComponent, h, ref, watch, type PropType } from "vue";
 import type {
+  CreateBlackoutActionEventPayload,
   CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
 } from "../../../types";
@@ -11,6 +12,7 @@ import {
 } from "../../../shared/ui/action-card/MaiActionCard";
 import {
   buildCreateSlotPayloadFromRange,
+  buildCreateBlackoutPayloadFromRange,
   clampSlotDurationMinutes,
   minuteOfDayFromTimeLabel,
   timeLabelFromMinuteOfDay,
@@ -45,6 +47,11 @@ export const MaiCreateSlotCard = defineComponent({
       required: false,
       default: false,
     },
+    enableBlackout: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   emits: {
     [INTERACTION_ACTIONS.CREATE_SLOT]: (payload: CreateSlotActionEventPayload) =>
@@ -53,11 +60,20 @@ export const MaiCreateSlotCard = defineComponent({
       typeof payload.endIso === "string" &&
       typeof payload.resourceOwnerId === "string" &&
       typeof payload.createdBy === "string",
+    [INTERACTION_ACTIONS.CREATE_BLACKOUT]: (payload: CreateBlackoutActionEventPayload) =>
+      typeof payload.blackoutId === "string" &&
+      typeof payload.startIso === "string" &&
+      typeof payload.endIso === "string" &&
+      typeof payload.resourceOwnerId === "string" &&
+      typeof payload.reason === "string" &&
+      typeof payload.createdBy === "string",
     close: () => true,
   },
   setup(props, { emit }) {
     const startTimeLabel = ref("00:00");
     const endTimeLabel = ref("00:00");
+    const capacity = ref(1);
+    const blackoutReason = ref("Unavailable");
 
     function resetDraftTimeFields() {
       const safeDuration = clampSlotDurationMinutes(props.defaultDurationMinutes);
@@ -104,6 +120,30 @@ export const MaiCreateSlotCard = defineComponent({
         endMinute: parsedEndMinute ?? fallbackEnd,
         resourceOwnerId: props.resourceOwnerId,
         createdBy: props.createdBy,
+        capacity: Math.max(1, Math.round(capacity.value || 1)),
+      });
+    };
+
+    const createBlackoutPayload = () => {
+      const parsedStartMinute = minuteOfDayFromTimeLabel(startTimeLabel.value);
+      const parsedEndMinute = minuteOfDayFromTimeLabel(endTimeLabel.value);
+      const fallbackDuration = clampSlotDurationMinutes(props.defaultDurationMinutes);
+      const fallbackStart =
+        typeof props.draft.startMinute === "number"
+          ? props.draft.startMinute
+          : props.draft.minuteOfDay;
+      const fallbackEnd =
+        typeof props.draft.endMinute === "number"
+          ? props.draft.endMinute
+          : fallbackStart + fallbackDuration;
+      return buildCreateBlackoutPayloadFromRange({
+        weekStartIso: props.weekStartIso,
+        dayIndex: props.draft.dayIndex,
+        startMinute: parsedStartMinute ?? fallbackStart,
+        endMinute: parsedEndMinute ?? fallbackEnd,
+        resourceOwnerId: props.resourceOwnerId,
+        reason: blackoutReason.value,
+        createdBy: props.createdBy,
       });
     };
 
@@ -145,6 +185,33 @@ export const MaiCreateSlotCard = defineComponent({
                   }}
                 />
               </label>
+              <label class="mai-action-field">
+                <span class="mai-action-field__label">Capacity</span>
+                <input
+                  class="mai-action-input"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={capacity.value}
+                  onInput={(event) => {
+                    const next = Number((event.target as HTMLInputElement).value);
+                    capacity.value = Number.isFinite(next) ? Math.max(1, Math.round(next)) : 1;
+                  }}
+                />
+              </label>
+              {props.enableBlackout ? (
+                <label class="mai-action-field">
+                  <span class="mai-action-field__label">Blackout Reason</span>
+                  <input
+                    class="mai-action-input"
+                    type="text"
+                    value={blackoutReason.value}
+                    onInput={(event) => {
+                      blackoutReason.value = (event.target as HTMLInputElement).value;
+                    }}
+                  />
+                </label>
+              ) : null}
             </div>,
             h(MaiActionButtons, {
               buttons: [
@@ -155,6 +222,20 @@ export const MaiCreateSlotCard = defineComponent({
                   disabled: props.busy,
                   onClick: () => emit(INTERACTION_ACTIONS.CREATE_SLOT, createPayload()),
                 },
+                ...(props.enableBlackout
+                  ? [
+                      {
+                        key: INTERACTION_ACTIONS.CREATE_BLACKOUT,
+                        label: "Create Blackout",
+                        disabled: props.busy,
+                        onClick: () =>
+                          emit(
+                            INTERACTION_ACTIONS.CREATE_BLACKOUT,
+                            createBlackoutPayload()
+                          ),
+                      },
+                    ]
+                  : []),
               ],
             }),
           ],

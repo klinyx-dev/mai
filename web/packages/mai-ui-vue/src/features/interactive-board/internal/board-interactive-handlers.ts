@@ -12,6 +12,7 @@ import {
 import type {
   AppointmentActionEventPayload,
   AppointmentClickEventPayload,
+  CreateBlackoutActionEventPayload,
   CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
   SlotActionEventPayload,
@@ -32,6 +33,7 @@ export const BOARD_EVENT_KEYS = {
 
 export const CREATE_SLOT_CARD_EVENT_KEYS = {
   CREATE_SLOT: "onCreate-slot",
+  CREATE_BLACKOUT: "onCreate-blackout",
 } as const;
 
 export const SLOT_ACTIONS_CARD_EVENT_KEYS = {
@@ -96,6 +98,7 @@ export function createCreateSlotCardListeners(params: {
     successEvent: MaiInteractionSuccessEvent
   ) => Promise<void>;
   createSlotHandler: ((payload: CreateSlotActionEventPayload) => boolean | Promise<boolean>) | null;
+  createBlackoutHandler: ((payload: CreateBlackoutActionEventPayload) => boolean | Promise<boolean>) | null;
 }) {
   return {
     [CREATE_SLOT_CARD_EVENT_KEYS.CREATE_SLOT]: (payload: CreateSlotActionEventPayload) =>
@@ -104,6 +107,15 @@ export function createCreateSlotCardListeners(params: {
         payload,
         params.createSlotHandler,
         INTERACTION_SUCCESS_EVENTS.SLOT_CREATED
+      ),
+    [CREATE_SLOT_CARD_EVENT_KEYS.CREATE_BLACKOUT]: (
+      payload: CreateBlackoutActionEventPayload
+    ) =>
+      params.runAction(
+        INTERACTION_ACTIONS.CREATE_BLACKOUT,
+        payload,
+        params.createBlackoutHandler,
+        INTERACTION_SUCCESS_EVENTS.BLACKOUT_CREATED
       ),
   };
 }

@@ -1,5 +1,6 @@
 import { computed, type ComputedRef } from "vue";
 import {
+  buildAddBlackoutWindowCommand,
   buildAddAppointmentCommand,
   buildAddSlotCommand,
   buildCancelAppointmentCommand,
@@ -12,6 +13,7 @@ import {
 import { startOfWeekIso } from "../../board/internal/model/view-model";
 import type {
   AppointmentActionEventPayload,
+  CreateBlackoutActionEventPayload,
   CreateSlotActionEventPayload,
   MaiActionRunner,
   SlotActionEventPayload,
@@ -141,6 +143,20 @@ export function buildCreateSlotHandler(args: {
       args.actions.value?.createSlot ??
       (args.mutate.value
         ? async (payload) => args.mutate.value!(buildAddSlotCommand(payload))
+        : null)
+  );
+}
+
+export function buildCreateBlackoutHandler(args: {
+  actions: ComputedRef<PartialActionConfig | null>;
+  mutate: ComputedRef<MaiActionRunner<AnyCommandEnvelope> | null>;
+}): ComputedRef<MaiActionRunner<CreateBlackoutActionEventPayload> | null> {
+  return computed(
+    () =>
+      args.actions.value?.createBlackout ??
+      (args.mutate.value
+        ? async (payload) =>
+            args.mutate.value!(buildAddBlackoutWindowCommand(payload))
         : null)
   );
 }

@@ -3,6 +3,7 @@ import type { PropType } from "vue";
 import type {
   AppointmentActionEventPayload,
   AppointmentClickEventPayload,
+  CreateBlackoutActionEventPayload,
   CreateSlotActionEventPayload,
   EmptyCellClickEventPayload,
   MaiBoardInteractiveActionConfig,
@@ -22,6 +23,7 @@ import {
   isAppointmentActionPayload,
   isAppointmentClickPayload,
   isCreateSlotPayload,
+  isCreateBlackoutPayload,
   isEmptyCellClickPayload,
   isMaiInteractionErrorPayload,
   isMaiViewFilter,
@@ -101,6 +103,9 @@ export const maiBoardInteractiveEmits = {
     isEmptyCellClickPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_CREATED]: (payload: CreateSlotActionEventPayload) =>
     isCreateSlotPayload(payload),
+  [MAI_BOARD_INTERACTIVE_EVENTS.BLACKOUT_CREATED]: (
+    payload: CreateBlackoutActionEventPayload
+  ) => isCreateBlackoutPayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_RESCHEDULED]: (payload: SlotRescheduleActionEventPayload) =>
     isSlotReschedulePayload(payload),
   [MAI_BOARD_INTERACTIVE_EVENTS.SLOT_BOOKED]: (payload: SlotActionEventPayload) =>

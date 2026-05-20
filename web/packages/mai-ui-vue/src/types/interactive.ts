@@ -1,5 +1,6 @@
 import type {
   AppointmentActionEventPayload,
+  CreateBlackoutActionEventPayload,
   CreateSlotActionEventPayload,
   SlotActionEventPayload,
   SlotRescheduleActionEventPayload,
@@ -13,6 +14,7 @@ import type { TimeLabelFormat } from "./board";
 
 export const INTERACTION_ACTIONS = {
   CREATE_SLOT: "create-slot",
+  CREATE_BLACKOUT: "create-blackout",
   RESCHEDULE_SLOT: "reschedule-slot",
   BOOK_SLOT: "book-slot",
   CANCEL_SLOT: "cancel-slot",
@@ -23,6 +25,7 @@ export const INTERACTION_ACTIONS = {
 
 export const INTERACTION_SUCCESS_EVENTS = {
   SLOT_CREATED: "slot-created",
+  BLACKOUT_CREATED: "blackout-created",
   SLOT_RESCHEDULED: "slot-rescheduled",
   SLOT_BOOKED: "slot-booked",
   SLOT_CANCELLED: "slot-cancelled",
@@ -37,6 +40,7 @@ export const MAI_BOARD_INTERACTIVE_EVENTS = {
   APPOINTMENT_CLICK: "appointment-click",
   EMPTY_CELL_CLICK: "empty-cell-click",
   SLOT_CREATED: INTERACTION_SUCCESS_EVENTS.SLOT_CREATED,
+  BLACKOUT_CREATED: INTERACTION_SUCCESS_EVENTS.BLACKOUT_CREATED,
   SLOT_RESCHEDULED: INTERACTION_SUCCESS_EVENTS.SLOT_RESCHEDULED,
   SLOT_BOOKED: INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED,
   SLOT_CANCELLED: INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED,
@@ -68,6 +72,9 @@ export interface MaiInteractionErrorPayload {
 }
 
 export interface MaiSlotCreatedEventPayload extends CreateSlotActionEventPayload {}
+
+export interface MaiBlackoutCreatedEventPayload
+  extends CreateBlackoutActionEventPayload {}
 
 export interface MaiSlotChangedEventPayload extends SlotActionEventPayload {}
 
@@ -116,6 +123,7 @@ export interface MaiBoardInteractiveActorConfig {
 
 export interface MaiBoardInteractiveActionConfig {
   createSlot: MaiActionRunner<CreateSlotActionEventPayload> | null;
+  createBlackout: MaiActionRunner<CreateBlackoutActionEventPayload> | null;
   bookSlot: MaiActionRunner<SlotActionEventPayload> | null;
   rescheduleSlot: MaiActionRunner<SlotRescheduleActionEventPayload> | null;
   cancelSlot: MaiActionRunner<SlotActionEventPayload> | null;

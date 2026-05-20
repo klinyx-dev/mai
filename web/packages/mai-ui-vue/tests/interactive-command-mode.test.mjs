@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildAddBlackoutWindowCommand,
   buildAddAppointmentCommand,
   buildAddSlotCommand,
   buildCancelAppointmentCommand,
@@ -37,6 +38,30 @@ test("maps create-slot payload to add_slot command envelope", () => {
       start: "2026-05-07T09:00:00Z",
       end: "2026-05-07T09:30:00Z",
       resource_owner_id: "owner-42",
+      created_by: "ui-operator",
+      capacity: 1,
+    },
+  });
+});
+
+test("maps create-blackout payload to add_blackout_window command envelope", () => {
+  const command = buildAddBlackoutWindowCommand({
+    blackoutId: "blackout-1",
+    startIso: "2026-05-07T11:00:00Z",
+    endIso: "2026-05-07T12:00:00Z",
+    resourceOwnerId: "owner-42",
+    reason: "Unavailable",
+    createdBy: "ui-operator",
+  });
+
+  assert.deepEqual(command, {
+    command: "add_blackout_window",
+    payload: {
+      blackout_id: "blackout-1",
+      resource_owner_id: "owner-42",
+      start: "2026-05-07T11:00:00Z",
+      end: "2026-05-07T12:00:00Z",
+      reason: "Unavailable",
       created_by: "ui-operator",
     },
   });

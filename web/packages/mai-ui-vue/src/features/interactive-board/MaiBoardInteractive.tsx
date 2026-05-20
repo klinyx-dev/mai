@@ -23,6 +23,7 @@ import {
   buildCancelAppointmentHandler,
   buildCancelSlotHandler,
   buildCommandModeOptions,
+  buildCreateBlackoutHandler,
   buildCreateSlotHandler,
   buildDeleteAppointmentHandler,
   buildDeleteSlotHandler,
@@ -81,6 +82,10 @@ export const MaiBoardInteractive = defineComponent({
     });
 
     const createSlotHandler = buildCreateSlotHandler({
+      actions: resolvedActions,
+      mutate: resolvedMutateCommand,
+    });
+    const createBlackoutHandler = buildCreateBlackoutHandler({
       actions: resolvedActions,
       mutate: resolvedMutateCommand,
     });
@@ -179,6 +184,7 @@ export const MaiBoardInteractive = defineComponent({
       createCreateSlotCardListeners({
         runAction,
         createSlotHandler: createSlotHandler.value,
+        createBlackoutHandler: createBlackoutHandler.value,
       })
     );
 
@@ -231,6 +237,9 @@ export const MaiBoardInteractive = defineComponent({
               resourceOwnerId={resolvedActor.value.resourceOwnerId}
               createdBy={resolvedActor.value.createdBy}
               defaultDurationMinutes={resolvedActor.value.defaultSlotDurationMinutes}
+              enableBlackout={
+                props.mode === "provider-admin" || props.mode === "debug-admin"
+              }
               busy={actionBusy.value}
               onClose={clearSelection}
               {...createSlotCardListeners.value}
