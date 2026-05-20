@@ -299,6 +299,20 @@ export const MaiDayColumn = defineComponent({
           {typeof props.nowIndicatorTopPercent === "number" ? (
             <MaiNowIndicator topPercent={props.nowIndicatorTopPercent} />
           ) : null}
+          {props.column.blackoutWindows.map((window) => {
+            const position = computePosition(window.startMinute, window.endMinute);
+            if (!position) {
+              return null;
+            }
+            return (
+              <div
+                class="mai-board__blackout-window"
+                style={{ top: `${position.top}%`, height: `${position.height}%` }}
+                aria-hidden="true"
+                key={`blackout-${window.id}`}
+              ></div>
+            );
+          })}
           {props.column.events.map((event) => {
             const position = computePosition(event.startMinute, event.endMinute);
             if (!position) {

@@ -16,6 +16,7 @@ import {
   createHourTicks,
   formatMinuteLabel,
   mapCalendarEvents,
+  mapBlackoutWindows,
   normalizeVisibleWindow,
   startOfWeekIso,
   weekRangeLabel,
@@ -54,7 +55,10 @@ export function useMaiBoardController(props: MaiBoardProps, emit: MaiBoardEmit) 
   );
 
   const calendarEvents = computed(() => mapCalendarEvents(props.layout));
-  const dayColumns = computed(() => buildDayColumns(weekStartIso.value, calendarEvents.value));
+  const blackoutWindows = computed(() => mapBlackoutWindows(props.layout));
+  const dayColumns = computed(() =>
+    buildDayColumns(weekStartIso.value, calendarEvents.value, blackoutWindows.value)
+  );
   const nowIndicator = computed(() =>
     buildNowIndicatorForWeek({
       weekStartIso: weekStartIso.value,

@@ -31,3 +31,9 @@ test("ui smoke: responsive rules include mobile control wrapping", () => {
   assert.match(boardCss, /\.mai-board__navigation/);
   assert.match(boardCss, /\.mai-booking-week-label/);
 });
+
+test("ui smoke: blackout windows render as non-interactive overlays", () => {
+  assert.match(boardBundle, /mai-board__blackout-window/);
+  assert.match(boardCss, /\.mai-board__blackout-window/);
+  assert.match(boardCss, /pointer-events:\s*none/);
+});

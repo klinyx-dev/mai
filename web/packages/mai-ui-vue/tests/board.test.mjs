@@ -6,6 +6,7 @@ import {
   DEFAULT_VISIBLE_START_MINUTE,
   createHourTicks,
   formatMinuteLabel,
+  mapBlackoutWindows,
   normalizeVisibleWindow,
 } from "../dist/features/board/internal/model/view-model.js";
 import {
@@ -240,4 +241,32 @@ test("computes empty-cell payload from drag range", () => {
       height: 500,
     },
   });
+});
+
+test("maps blackout windows and groups them by day", () => {
+  const layout = {
+    week_start: "2026-05-04",
+    week_end: "2026-05-11",
+    slots: [],
+    appointments: [],
+    blackout_windows: [
+      {
+        blackout_id: "bo-1",
+        day_index: 2,
+        start_minute: 540,
+        end_minute: 600,
+        clipped_start: false,
+        clipped_end: false,
+      },
+    ],
+  };
+
+  assert.deepEqual(mapBlackoutWindows(layout), [
+    {
+      id: "bo-1",
+      dayIndex: 2,
+      startMinute: 540,
+      endMinute: 600,
+    },
+  ]);
 });

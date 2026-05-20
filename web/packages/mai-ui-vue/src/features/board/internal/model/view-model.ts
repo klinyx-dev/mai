@@ -30,6 +30,12 @@ export interface DayColumn {
   dateLabel: string;
   isToday: boolean;
   events: CalendarEvent[];
+  blackoutWindows: {
+    id: string;
+    dayIndex: number;
+    startMinute: number;
+    endMinute: number;
+  }[];
 }
 
 function minuteLabel24h(totalMinutes: number): string {
@@ -179,7 +185,23 @@ export function mapCalendarEvents(layout: WeeklyLayout | null): CalendarEvent[] 
   return [...slots, ...appointments];
 }
 
-export function buildDayColumns(weekStartIso: string, events: CalendarEvent[]): DayColumn[] {
+export function mapBlackoutWindows(layout: WeeklyLayout | null): DayColumn["blackoutWindows"] {
+  if (!layout?.blackout_windows) {
+    return [];
+  }
+  return layout.blackout_windows.map((window) => ({
+    id: window.blackout_id,
+    dayIndex: window.day_index,
+    startMinute: window.start_minute,
+    endMinute: window.end_minute,
+  }));
+}
+
+export function buildDayColumns(
+  weekStartIso: string,
+  events: CalendarEvent[],
+  blackoutWindows: DayColumn["blackoutWindows"] = []
+): DayColumn[] {
   const dayDates = DAY_LABELS.map((_, dayIndex) => addDaysIso(weekStartIso, dayIndex));
   const todayIso = todayIsoUtc();
   return DAY_LABELS.map((_, dayIndex) => ({
@@ -189,6 +211,9 @@ export function buildDayColumns(weekStartIso: string, events: CalendarEvent[]): 
     isToday: dayDates[dayIndex] === todayIso,
     events: events
       .filter((event) => event.dayIndex === dayIndex)
+      .sort((a, b) => a.startMinute - b.startMinute || a.endMinute - b.endMinute),
+    blackoutWindows: blackoutWindows
+      .filter((window) => window.dayIndex === dayIndex)
       .sort((a, b) => a.startMinute - b.startMinute || a.endMinute - b.endMinute),
   }));
 }
