@@ -1,14 +1,16 @@
 use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
-    AddAppointmentCommand, AddSlotCommand, BusinessRuleError, CancelAppointmentCommand,
-    ReferentialError, SchedulerError, StructuralError, WeeklyLayoutQuery,
+    AddAppointmentCommand, AddSlotCommand, BlackoutLayoutNode, BusinessRuleError,
+    CancelAppointmentCommand, ReferentialError, SchedulerError, StructuralError, WeeklyLayout,
+    WeeklyLayoutQuery,
     adapters::wasm::{
-        WasmAdapterError, WasmAddRecurringTemplatePayload, WasmAddSlotPayload,
-        WasmAddSlotsBatchPayload, WasmBindgenAdapter, WasmCancelAppointmentPayload,
-        WasmCommandRequest, WasmCommandResponse, WasmDeleteSlotPayload, WasmErrorCategory,
-        WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse, WasmSchedulerAdapter,
-        WasmViewFilter, WasmViewFilterMode, WasmWeeklyLayoutQuery, parse_command_request,
-        parse_query_request, render_command_response, render_query_response,
+        WasmAdapterError, WasmAddBlackoutWindowPayload, WasmAddRecurringTemplatePayload,
+        WasmAddSlotPayload, WasmAddSlotsBatchPayload, WasmBindgenAdapter,
+        WasmCancelAppointmentPayload, WasmCommandRequest, WasmCommandResponse,
+        WasmDeleteSlotPayload, WasmErrorCategory, WasmMutationSuccess, WasmQueryRequest,
+        WasmQueryResponse, WasmSchedulerAdapter, WasmViewFilter, WasmViewFilterMode,
+        WasmWeeklyLayoutQuery, parse_command_request, parse_query_request, render_command_response,
+        render_query_response,
     },
 };
 use serde_json::Value;
@@ -1035,5 +1037,45 @@ fn wasm_response_fixture_matches_business_error_shape() {
 
     let actual = serde_json::to_value(response).unwrap();
     let expected = fixture_json("tests/fixtures/response_error_slot_already_booked.json");
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn wasm_command_fixture_matches_add_blackout_window_envelope_shape() {
+    let request = WasmCommandRequest::AddBlackoutWindow(WasmAddBlackoutWindowPayload {
+        blackout_id: "blackout-1001".to_string(),
+        resource_owner_id: "owner-42".into(),
+        start: Utc.with_ymd_and_hms(2026, 5, 4, 12, 0, 0).unwrap(),
+        end: Utc.with_ymd_and_hms(2026, 5, 4, 13, 30, 0).unwrap(),
+        reason: "Lunch break".to_string(),
+        created_by: "admin-7".into(),
+    });
+
+    let actual = serde_json::to_value(request).unwrap();
+    let expected = fixture_json("tests/fixtures/command_add_blackout_window.json");
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn wasm_query_response_fixture_matches_weekly_layout_with_blackouts_shape() {
+    let response = WasmQueryResponse::Success {
+        data: WeeklyLayout {
+            week_start: NaiveDate::from_ymd_opt(2026, 5, 4).unwrap(),
+            week_end: NaiveDate::from_ymd_opt(2026, 5, 11).unwrap(),
+            slots: vec![],
+            appointments: vec![],
+            blackout_windows: vec![BlackoutLayoutNode {
+                blackout_id: "blackout-1001".to_string(),
+                day_index: 0,
+                start_minute: 720,
+                end_minute: 810,
+                clipped_start: false,
+                clipped_end: false,
+            }],
+        },
+    };
+
+    let actual = serde_json::to_value(response).unwrap();
+    let expected = fixture_json("tests/fixtures/response_query_weekly_layout_with_blackouts.json");
     assert_eq!(actual, expected);
 }

@@ -20,6 +20,7 @@ pub use domain::{
     SlotId, SlotStatus, TimeRange, TimeRangeError, WeekRange, WeekRangeError,
 };
 pub use layout::{
-    AppointmentLayoutNode, CalendarOwnerFilter, SlotLayoutNode, WeeklyLayout, WeeklyLayoutQuery,
+    AppointmentLayoutNode, BlackoutLayoutNode, CalendarOwnerFilter, SlotLayoutNode, WeeklyLayout,
+    WeeklyLayoutQuery,
 };
 pub use state::ScheduleState;

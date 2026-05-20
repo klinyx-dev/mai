@@ -60,7 +60,8 @@ Request:
     "start": "2026-05-04T09:00:00Z",
     "end": "2026-05-04T09:30:00Z",
     "resource_owner_id": "owner-42",
-    "created_by": "admin-7"
+    "created_by": "admin-7",
+    "capacity": 2
   }
 }
 ```
@@ -269,6 +270,16 @@ Success:
         "clipped_start": false,
         "clipped_end": false
       }
+    ],
+    "blackout_windows": [
+      {
+        "blackout_id": "blackout-1001",
+        "day_index": 0,
+        "start_minute": 720,
+        "end_minute": 810,
+        "clipped_start": false,
+        "clipped_end": false
+      }
     ]
   }
 }
@@ -341,12 +352,11 @@ Contract (`invalid_timezone`):
 }
 ```
 
-## Phase 5 Planned Additive Payloads (Draft, Not Implemented)
+## Phase 5 Additive Payloads (Implemented)
 
-These payloads are contract design drafts for Phase 5 (`docs/advanced_scheduling_spec.md`).
-They are not accepted by the current runtime yet and must be released as additive commands/queries.
+These payload families are now accepted by runtime and versioned as additive contracts.
 
-### `add_recurring_template` (draft)
+### `add_recurring_template`
 
 ```json
 {
@@ -364,7 +374,7 @@ They are not accepted by the current runtime yet and must be released as additiv
 }
 ```
 
-### `apply_recurring_templates` (draft)
+### `apply_recurring_templates`
 
 ```json
 {
@@ -378,7 +388,7 @@ They are not accepted by the current runtime yet and must be released as additiv
 }
 ```
 
-### `add_slots_batch` (draft)
+### `add_slots_batch`
 
 ```json
 {
@@ -391,22 +401,27 @@ They are not accepted by the current runtime yet and must be released as additiv
         "start": "2026-06-02T09:00:00Z",
         "end": "2026-06-02T09:30:00Z",
         "resource_owner_id": "owner-42",
-        "created_by": "admin-7"
+        "created_by": "admin-7",
+        "capacity": 1
       }
     ]
   }
 }
 ```
+### `add_blackout_window`
 
-### `weekly_layout` with blackout/capacity projection (draft fields)
+Request:
 
 ```json
 {
-  "query": "weekly_layout",
+  "command": "add_blackout_window",
   "payload": {
-    "anchor_date": "2026-06-04",
-    "include_capacity": true,
-    "include_blackout_windows": true
+    "blackout_id": "blackout-1001",
+    "resource_owner_id": "owner-42",
+    "start": "2026-05-04T12:00:00Z",
+    "end": "2026-05-04T13:30:00Z",
+    "reason": "Lunch break",
+    "created_by": "admin-7"
   }
 }
 ```

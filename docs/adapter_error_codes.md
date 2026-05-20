@@ -26,6 +26,9 @@ Consumer contract:
 | `structural` | `invalid_time_range` | `start >= end` | Provided time bounds are invalid | `{"status":"error","error":{"category":"structural","code":"invalid_time_range"}}` |
 | `structural` | `empty_title` | Blank appointment title | Booking title is required | `{"status":"error","error":{"category":"structural","code":"empty_title"}}` |
 | `structural` | `invalid_visible_window` | Invalid query window bounds | Visible-hour window is invalid | `{"status":"error","error":{"category":"structural","code":"invalid_visible_window"}}` |
+| `structural` | `invalid_capacity` | Slot capacity is less than 1 | Capacity value is invalid | `{"status":"error","error":{"category":"structural","code":"invalid_capacity"}}` |
+| `structural` | `invalid_recurrence_rule` | Recurrence template fields are invalid | Recurrence rule must be corrected | `{"status":"error","error":{"category":"structural","code":"invalid_recurrence_rule"}}` |
+| `structural` | `invalid_batch_payload` | Batch payload is empty or malformed | Batch request is invalid | `{"status":"error","error":{"category":"structural","code":"invalid_batch_payload"}}` |
 
 ## Referential
 
@@ -52,6 +55,10 @@ Consumer contract:
 | `business` | `cannot_delete_booked_slot` | Delete attempted on booked slot | Unbook first before deleting | `{"status":"error","error":{"category":"business","code":"cannot_delete_booked_slot"}}` |
 | `business` | `appointment_already_exists_for_slot` | Existing appointment linked to slot | Slot already has an appointment | `{"status":"error","error":{"category":"business","code":"appointment_already_exists_for_slot"}}` |
 | `business` | `appointment_cancel_not_allowed` | Unauthorized canceller | Actor cannot cancel this appointment | `{"status":"error","error":{"category":"business","code":"appointment_cancel_not_allowed"}}` |
+| `business` | `capacity_exceeded` | Appointment count reached slot capacity | No remaining capacity on selected slot | `{"status":"error","error":{"category":"business","code":"capacity_exceeded"}}` |
+| `business` | `slot_in_blackout_window` | Slot time intersects a blackout window | Time is unavailable due to blackout | `{"status":"error","error":{"category":"business","code":"slot_in_blackout_window"}}` |
+| `business` | `batch_conflict_detected` | Atomic batch includes conflicting operation | Batch could not be applied atomically | `{"status":"error","error":{"category":"business","code":"batch_conflict_detected"}}` |
+| `business` | `recurring_template_overlap` | Generated recurring slots conflict | Template expansion conflicts with existing slots | `{"status":"error","error":{"category":"business","code":"recurring_template_overlap"}}` |
 
 ## Contract
 
@@ -65,27 +72,5 @@ Consumer contract:
 - Mapping source: `core/src/adapters/wasm/error_mapping.rs`
 - Contract tests: `core/tests/serialization_contract.rs`
 
-## Phase 5 Planned Additive Error Codes (Draft, Not Implemented)
-
-These codes are reserved draft candidates for advanced scheduling capabilities and are not emitted yet.
-
-### Structural (draft)
-
-| Category | Code | Cause | User Meaning |
-|---|---|---|---|
-| `structural` | `invalid_capacity` | Capacity is below minimum or exceeds allowed max | Requested capacity value is invalid |
-| `structural` | `invalid_recurrence_rule` | Recurrence template fields are malformed | Recurrence rule must be corrected |
-| `structural` | `invalid_batch_payload` | Batch payload contains invalid item shape | One or more batch items are invalid |
-
-### Business (draft)
-
-| Category | Code | Cause | User Meaning |
-|---|---|---|---|
-| `business` | `batch_conflict_detected` | At least one batch item conflicts under atomic mode | Batch could not be applied safely |
-| `business` | `capacity_exceeded` | Booking would exceed slot capacity | No remaining capacity on selected slot |
-| `business` | `slot_in_blackout_window` | Slot is blocked by blackout/closure policy | Time is unavailable due to closure |
-| `business` | `recurring_template_overlap` | Template generates conflicting slots | Template conflicts with existing availability |
-
-Release rule:
-- Draft codes become public only after runtime mapping and tests are added.
-- Once released, category/code semantics are stable under the same compatibility rules as existing codes.
+Phase 5 note:
+- These additive codes are now active runtime contracts.

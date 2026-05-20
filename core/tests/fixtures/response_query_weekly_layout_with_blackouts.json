@@ -1,0 +1,19 @@
+{
+  "status": "success",
+  "data": {
+    "week_start": "2026-05-04",
+    "week_end": "2026-05-11",
+    "slots": [],
+    "appointments": [],
+    "blackout_windows": [
+      {
+        "blackout_id": "blackout-1001",
+        "day_index": 0,
+        "start_minute": 720,
+        "end_minute": 810,
+        "clipped_start": false,
+        "clipped_end": false
+      }
+    ]
+  }
+}
