@@ -64,3 +64,28 @@ Consumer contract:
 
 - Mapping source: `core/src/adapters/wasm/error_mapping.rs`
 - Contract tests: `core/tests/serialization_contract.rs`
+
+## Phase 5 Planned Additive Error Codes (Draft, Not Implemented)
+
+These codes are reserved draft candidates for advanced scheduling capabilities and are not emitted yet.
+
+### Structural (draft)
+
+| Category | Code | Cause | User Meaning |
+|---|---|---|---|
+| `structural` | `invalid_capacity` | Capacity is below minimum or exceeds allowed max | Requested capacity value is invalid |
+| `structural` | `invalid_recurrence_rule` | Recurrence template fields are malformed | Recurrence rule must be corrected |
+| `structural` | `invalid_batch_payload` | Batch payload contains invalid item shape | One or more batch items are invalid |
+
+### Business (draft)
+
+| Category | Code | Cause | User Meaning |
+|---|---|---|---|
+| `business` | `batch_conflict_detected` | At least one batch item conflicts under atomic mode | Batch could not be applied safely |
+| `business` | `capacity_exceeded` | Booking would exceed slot capacity | No remaining capacity on selected slot |
+| `business` | `slot_in_blackout_window` | Slot is blocked by blackout/closure policy | Time is unavailable due to closure |
+| `business` | `recurring_template_overlap` | Template generates conflicting slots | Template conflicts with existing availability |
+
+Release rule:
+- Draft codes become public only after runtime mapping and tests are added.
+- Once released, category/code semantics are stable under the same compatibility rules as existing codes.

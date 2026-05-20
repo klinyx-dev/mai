@@ -340,3 +340,73 @@ Contract (`invalid_timezone`):
   }
 }
 ```
+
+## Phase 5 Planned Additive Payloads (Draft, Not Implemented)
+
+These payloads are contract design drafts for Phase 5 (`docs/advanced_scheduling_spec.md`).
+They are not accepted by the current runtime yet and must be released as additive commands/queries.
+
+### `add_recurring_template` (draft)
+
+```json
+{
+  "command": "add_recurring_template",
+  "payload": {
+    "template_id": "tmpl-1001",
+    "resource_owner_id": "owner-42",
+    "weekday": 1,
+    "start_minute": 540,
+    "end_minute": 600,
+    "effective_from": "2026-06-01",
+    "effective_until": "2026-12-31",
+    "created_by": "admin-7"
+  }
+}
+```
+
+### `apply_recurring_templates` (draft)
+
+```json
+{
+  "command": "apply_recurring_templates",
+  "payload": {
+    "week_start": "2026-06-01",
+    "owner_ids": ["owner-42"],
+    "dry_run": false,
+    "created_by": "admin-7"
+  }
+}
+```
+
+### `add_slots_batch` (draft)
+
+```json
+{
+  "command": "add_slots_batch",
+  "payload": {
+    "mode": "atomic",
+    "slots": [
+      {
+        "slot_id": "slot-2001",
+        "start": "2026-06-02T09:00:00Z",
+        "end": "2026-06-02T09:30:00Z",
+        "resource_owner_id": "owner-42",
+        "created_by": "admin-7"
+      }
+    ]
+  }
+}
+```
+
+### `weekly_layout` with blackout/capacity projection (draft fields)
+
+```json
+{
+  "query": "weekly_layout",
+  "payload": {
+    "anchor_date": "2026-06-04",
+    "include_capacity": true,
+    "include_blackout_windows": true
+  }
+}
+```
