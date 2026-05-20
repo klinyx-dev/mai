@@ -1,5 +1,6 @@
 export type {
   AppointmentLayoutNode,
+  BlackoutLayoutNode,
   AnyCommandEnvelope,
   AddAppointmentCommandPayload,
   AddBlackoutWindowCommandPayload,

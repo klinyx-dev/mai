@@ -5,6 +5,7 @@ use super::{
     project_slot_layout_nodes, week_range_from_anchor,
 };
 use crate::domain::appointment::Appointment;
+use crate::domain::blackout_window::BlackoutWindow;
 use crate::domain::enums::SlotStatus;
 use crate::domain::ids::{ActorId, AppointmentId, SlotId};
 use crate::domain::slot::Slot;
@@ -895,6 +896,48 @@ fn owner_filter_deduplicates_owner_ids_deterministically() {
         filter,
         CalendarOwnerFilter::Owners(vec![ActorId::new("owner-1"), ActorId::new("owner-2")])
     );
+}
+
+#[test]
+fn projects_blackout_windows_with_visible_window_and_owner_filter() {
+    let mut state = ScheduleState::new();
+    state.blackout_windows.insert(
+        "bo-1".to_string(),
+        BlackoutWindow {
+            blackout_id: "bo-1".to_string(),
+            resource_owner_id: ActorId::new("owner-1"),
+            start: Utc.with_ymd_and_hms(2026, 1, 7, 9, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 7, 11, 0, 0).unwrap(),
+            reason: "holiday".to_string(),
+            created_by: ActorId::new("creator-1"),
+        },
+    );
+    state.blackout_windows.insert(
+        "bo-2".to_string(),
+        BlackoutWindow {
+            blackout_id: "bo-2".to_string(),
+            resource_owner_id: ActorId::new("owner-2"),
+            start: Utc.with_ymd_and_hms(2026, 1, 7, 10, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 7, 12, 0, 0).unwrap(),
+            reason: "holiday".to_string(),
+            created_by: ActorId::new("creator-1"),
+        },
+    );
+
+    let mut query = WeeklyLayoutQuery::new(NaiveDate::from_ymd_opt(2026, 1, 8).unwrap());
+    query.owner_filter = CalendarOwnerFilter::from_owner_ids(vec![ActorId::new("owner-1")]);
+    query.visible_start_minute = Some(9 * 60 + 30);
+    query.visible_end_minute = Some(10 * 60 + 30);
+
+    let layout = crate::SchedulerService::from_state(state)
+        .get_weekly_layout_checked(query)
+        .unwrap();
+    assert_eq!(layout.blackout_windows.len(), 1);
+    assert_eq!(layout.blackout_windows[0].blackout_id, "bo-1");
+    assert_eq!(layout.blackout_windows[0].start_minute, 9 * 60 + 30);
+    assert_eq!(layout.blackout_windows[0].end_minute, 10 * 60 + 30);
+    assert!(layout.blackout_windows[0].clipped_start);
+    assert!(layout.blackout_windows[0].clipped_end);
 }
 
 fn slot(

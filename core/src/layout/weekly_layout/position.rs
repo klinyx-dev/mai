@@ -1,6 +1,7 @@
 use chrono::{DateTime, Duration, Utc};
 
 use crate::domain::slot::Slot;
+use crate::domain::time_range::TimeRange;
 use crate::domain::week::WeekRange;
 use crate::layout::clipping::clip_time_range_to_week;
 
@@ -15,7 +16,14 @@ pub(super) struct SlotLayoutPosition {
 
 // Calculate the layout position of a slot within a week
 pub(super) fn slot_layout_position(slot: &Slot, week: &WeekRange) -> Option<SlotLayoutPosition> {
-    let week_clipped = clip_time_range_to_week(&slot.time, week)?;
+    time_range_layout_position(&slot.time, week)
+}
+
+pub(super) fn time_range_layout_position(
+    time_range: &TimeRange,
+    week: &WeekRange,
+) -> Option<SlotLayoutPosition> {
+    let week_clipped = clip_time_range_to_week(time_range, week)?;
     let day = week_clipped.start.date_naive();
     let day_start = day.and_hms_opt(0, 0, 0)?.and_utc();
     let day_end = day_start + Duration::days(1);

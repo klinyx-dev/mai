@@ -1,6 +1,7 @@
 use crate::application::command_result::CommandResult;
 use crate::layout::weekly_layout::{
-    project_appointment_layout_nodes_resolved, project_slot_layout_nodes_resolved,
+    project_appointment_layout_nodes_resolved, project_blackout_layout_nodes_resolved,
+    project_slot_layout_nodes_resolved,
     resolve_weekly_layout_query,
 };
 use crate::layout::{WeeklyLayout, WeeklyLayoutQuery};
@@ -23,12 +24,14 @@ impl SchedulerService {
         let resolved_query = resolve_weekly_layout_query(query)?;
         let slots = project_slot_layout_nodes_resolved(&self.state, &resolved_query);
         let appointments = project_appointment_layout_nodes_resolved(&self.state, &resolved_query);
+        let blackout_windows = project_blackout_layout_nodes_resolved(&self.state, &resolved_query);
 
         Ok(WeeklyLayout {
             week_start: resolved_query.week.start,
             week_end: resolved_query.week.end,
             slots,
             appointments,
+            blackout_windows,
         })
     }
 }

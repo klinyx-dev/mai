@@ -1,9 +1,10 @@
 use crate::domain::enums::SlotStatus;
 use crate::domain::slot::Slot;
-use crate::layout::output::{AppointmentLayoutNode, SlotLayoutNode};
+use crate::domain::time_range::TimeRange;
+use crate::layout::output::{AppointmentLayoutNode, BlackoutLayoutNode, SlotLayoutNode};
 use crate::state::schedule_state::ScheduleState;
 
-use super::position::slot_layout_position;
+use super::position::{slot_layout_position, time_range_layout_position};
 use super::query::{ResolvedWeeklyLayoutQuery, WeeklyLayoutQuery, resolve_weekly_layout_query};
 
 pub fn project_slot_layout_nodes(
@@ -99,6 +100,61 @@ pub fn project_appointment_layout_nodes_resolved(
                 right.start_minute,
                 right.end_minute,
                 right.appointment_id.as_str(),
+            ))
+    });
+
+    nodes
+}
+
+pub fn project_blackout_layout_nodes(
+    state: &ScheduleState,
+    query: &WeeklyLayoutQuery,
+) -> Vec<BlackoutLayoutNode> {
+    let resolved = resolve_weekly_layout_query(query.clone())
+        .expect("projection requires validated weekly layout query");
+    project_blackout_layout_nodes_resolved(state, &resolved)
+}
+
+pub fn project_blackout_layout_nodes_resolved(
+    state: &ScheduleState,
+    query: &ResolvedWeeklyLayoutQuery,
+) -> Vec<BlackoutLayoutNode> {
+    let mut nodes = state
+        .blackout_windows_iter()
+        .filter(|window| query.owner_filter.matches_owner(&window.resource_owner_id))
+        .filter_map(|window| {
+            let time = TimeRange::new(window.start, window.end).ok()?;
+            let position = time_range_layout_position(&time, &query.week)?;
+            let clipped = apply_visible_window(
+                position.start_minute,
+                position.end_minute,
+                position.clipped_start,
+                position.clipped_end,
+                query,
+            )?;
+            Some(BlackoutLayoutNode {
+                blackout_id: window.blackout_id.clone(),
+                day_index: position.day_index,
+                start_minute: clipped.start_minute,
+                end_minute: clipped.end_minute,
+                clipped_start: clipped.clipped_start,
+                clipped_end: clipped.clipped_end,
+            })
+        })
+        .collect::<Vec<_>>();
+
+    nodes.sort_by(|left, right| {
+        (
+            left.day_index,
+            left.start_minute,
+            left.end_minute,
+            left.blackout_id.as_str(),
+        )
+            .cmp(&(
+                right.day_index,
+                right.start_minute,
+                right.end_minute,
+                right.blackout_id.as_str(),
             ))
     });
 

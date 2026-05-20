@@ -8,7 +8,8 @@ mod tests;
 pub use crate::layout::query_filter::CalendarOwnerFilter;
 pub use projection::{
     project_appointment_layout_nodes, project_appointment_layout_nodes_resolved,
-    project_slot_layout_nodes, project_slot_layout_nodes_resolved,
+    project_blackout_layout_nodes, project_blackout_layout_nodes_resolved, project_slot_layout_nodes,
+    project_slot_layout_nodes_resolved,
 };
 pub use query::{
     DAYS_PER_WEEK, MINUTES_PER_DAY, ResolvedWeeklyLayoutQuery, VisibleMinuteWindow,

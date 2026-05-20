@@ -25,11 +25,21 @@ export interface AppointmentLayoutNode {
   clipped_end: boolean;
 }
 
+export interface BlackoutLayoutNode {
+  blackout_id: string;
+  day_index: number;
+  start_minute: number;
+  end_minute: number;
+  clipped_start: boolean;
+  clipped_end: boolean;
+}
+
 export interface WeeklyLayout {
   week_start: string;
   week_end: string;
   slots: SlotLayoutNode[];
   appointments: AppointmentLayoutNode[];
+  blackout_windows?: BlackoutLayoutNode[];
 }
 
 export type WeeklyViewFilterMode = "all" | "none" | "owners" | "group";
