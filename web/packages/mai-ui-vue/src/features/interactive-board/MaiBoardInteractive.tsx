@@ -202,6 +202,7 @@ export const MaiBoardInteractive = defineComponent({
     return () => (
       <section
         class="mai-board-interactive"
+        data-board-mode={props.mode}
         data-view-filter-mode={props.viewFilter?.mode ?? "all"}
       >
         {interactionError.value ? <p class="mai-board__error">{interactionError.value}</p> : null}

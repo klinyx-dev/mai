@@ -220,6 +220,9 @@ export const MaiEventCard = defineComponent({
         .join(" ");
 
       const nodes = [];
+      const eventLabel = `${props.event.kind === "slot" ? "Available slot" : "Appointment"} ${props.minuteLabel(
+        props.event.startMinute
+      )} - ${props.minuteLabel(props.event.endMinute)}`;
 
       nodes.push(
         <div
@@ -228,6 +231,7 @@ export const MaiEventCard = defineComponent({
           style={{ top: `${props.top}%`, height: `${props.height}%` }}
           role="button"
           tabindex={0}
+          aria-label={eventLabel}
           onClick={(event) => {
             event.stopPropagation();
             if (suppressNextClick.value) {

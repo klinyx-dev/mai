@@ -62,3 +62,6 @@ cd web && pnpm run build && pnpm run test
 - Payload examples: [docs/adapter_payload_examples.md](./docs/adapter_payload_examples.md)
 - Booking flow contract: [docs/booking_flow_contract.md](./docs/booking_flow_contract.md)
 - Booking flow usage: [docs/booking_flow_usage.md](./docs/booking_flow_usage.md)
+- Provider board contract: [docs/provider_board_contract.md](./docs/provider_board_contract.md)
+- Provider availability usage: [docs/provider_availability_usage.md](./docs/provider_availability_usage.md)
+- UI accessibility audit: [docs/ui_accessibility_audit.md](./docs/ui_accessibility_audit.md)

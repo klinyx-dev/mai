@@ -20,6 +20,7 @@ export type {
   MaiAppointmentChangedEventPayload,
   MaiBoardInteractiveActionConfig,
   MaiBoardInteractiveActorConfig,
+  MaiBoardMode,
   MaiViewFilter,
   MaiViewFilterMode,
   MaiCalendarFilterOwnerOption,

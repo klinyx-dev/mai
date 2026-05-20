@@ -131,6 +131,33 @@ export const MaiDayColumn = defineComponent({
       );
     }
 
+    function handleGridKeyboardActivate(event: KeyboardEvent) {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+      event.preventDefault();
+      const grid = event.currentTarget as HTMLElement | null;
+      if (!grid) {
+        return;
+      }
+      const rect = grid.getBoundingClientRect();
+      const midpointMinute = Math.round(
+        props.visibleStartMinute + props.totalVisibleMinutes / 2
+      );
+      props.onEmptyCellClick({
+        dayIndex: props.column.dayIndex,
+        minuteOfDay: midpointMinute,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+        columnRect: {
+          left: rect.left,
+          top: rect.top,
+          width: rect.width,
+          height: rect.height,
+        },
+      });
+    }
+
     function handleGridPointerDown(event: PointerEvent) {
       if (event.button !== 0) {
         return;
@@ -229,6 +256,7 @@ export const MaiDayColumn = defineComponent({
           "mai-board__day-column",
           props.column.isToday ? "mai-board__day-column--today" : "",
         ]}
+        aria-label={`${props.column.label} ${props.column.dateLabel}`}
       >
         <header
           class={[
@@ -248,7 +276,11 @@ export const MaiDayColumn = defineComponent({
         </header>
         <div
           class="mai-board__day-grid"
+          role="button"
+          tabindex={0}
+          aria-label={`Create slot on ${props.column.label} ${props.column.dateLabel}`}
           onClick={handleGridClick}
+          onKeydown={handleGridKeyboardActivate}
           onPointerdown={handleGridPointerDown}
           onPointermove={handleGridPointerMove}
           onPointerup={handleGridPointerEnd}

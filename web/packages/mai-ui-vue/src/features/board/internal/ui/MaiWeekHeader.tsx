@@ -23,23 +23,34 @@ export const MaiWeekHeader = defineComponent({
           <p class="mai-board__subtitle">{props.subtitle}</p>
         </div>
         <div class="mai-board__toolbar">
-          <div class="mai-board__navigation">
-            <button type="button" class="mai-board__nav-button" onClick={() => emit("navigateWeek", -1)}>
+          <div class="mai-board__navigation" role="group" aria-label="Week navigation">
+            <button
+              type="button"
+              class="mai-board__nav-button"
+              aria-label="Go to previous week"
+              onClick={() => emit("navigateWeek", -1)}
+            >
               Previous
             </button>
             <button
               type="button"
               class="mai-board__nav-button mai-board__nav-button--today"
+              aria-label="Jump to current week"
               onClick={() => emit("navigateWeek", 0)}
             >
               Today
             </button>
-            <button type="button" class="mai-board__nav-button" onClick={() => emit("navigateWeek", 1)}>
+            <button
+              type="button"
+              class="mai-board__nav-button"
+              aria-label="Go to next week"
+              onClick={() => emit("navigateWeek", 1)}
+            >
               Next
             </button>
           </div>
-          <p class="mai-board__range-label">{props.weekLabel}</p>
-          <div class="mai-board__metrics">
+          <p class="mai-board__range-label" aria-live="polite">{props.weekLabel}</p>
+          <div class="mai-board__metrics" aria-live="polite">
             <span class="mai-board__metric">{props.slotCount} slots</span>
             <span class="mai-board__metric mai-board__metric--soft">
               {props.appointmentCount} appointments

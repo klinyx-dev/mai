@@ -1,7 +1,7 @@
 @layer mai.responsive {
     @media (max-width: 1024px) {
         .mai-board__title {
-            font-size: 40px;
+            font-size: clamp(30px, 5vw, 40px);
         }
 
         .mai-board__toolbar {
@@ -34,6 +34,22 @@
             width: 100%;
         }
 
+        .mai-board__navigation {
+            width: 100%;
+            flex-wrap: wrap;
+            row-gap: 6px;
+        }
+
+        .mai-board__nav-button {
+            min-width: 84px;
+            padding: 0 10px;
+        }
+
+        .mai-board__range-label {
+            font-size: 16px;
+            line-height: 1.25;
+        }
+
         .mai-board__metrics {
             justify-content: flex-start;
         }
@@ -63,6 +79,14 @@
         .mai-booking-week-nav {
             width: 100%;
             justify-content: space-between;
+            flex-wrap: wrap;
+            row-gap: 8px;
+        }
+
+        .mai-booking-week-label {
+            min-width: 0;
+            flex: 1 1 100%;
+            text-align: left;
         }
 
         .mai-booking-availability-content {

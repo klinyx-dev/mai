@@ -279,6 +279,10 @@
         white-space: nowrap;
     }
 
+    .mai-booking-slot--selected .mai-booking-slot__resource {
+        color: var(--color-text);
+    }
+
     .mai-booking-day__empty,
     .mai-booking-empty {
         margin: 0;
@@ -419,5 +423,20 @@
     .mai-booking-summary__time {
         font-family: var(--font-mono);
         font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 480px) {
+        .mai-booking-summary__row {
+            grid-template-columns: 1fr;
+            gap: var(--space-1);
+        }
+
+        .mai-booking-card__actions {
+            justify-content: stretch;
+        }
+
+        .mai-booking-button {
+            width: 100%;
+        }
     }
 }
