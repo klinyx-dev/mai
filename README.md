@@ -60,3 +60,5 @@ cd web && pnpm run build && pnpm run test
 - Wasm adapter usage: [docs/wasm_adapter_usage.md](./docs/wasm_adapter_usage.md)
 - Adapter error codes: [docs/adapter_error_codes.md](./docs/adapter_error_codes.md)
 - Payload examples: [docs/adapter_payload_examples.md](./docs/adapter_payload_examples.md)
+- Booking flow contract: [docs/booking_flow_contract.md](./docs/booking_flow_contract.md)
+- Booking flow usage: [docs/booking_flow_usage.md](./docs/booking_flow_usage.md)

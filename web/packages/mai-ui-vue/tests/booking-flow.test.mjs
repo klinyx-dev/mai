@@ -52,6 +52,25 @@ test("booking flow exposes deterministic event contracts", () => {
     }),
     true
   );
+  assert.equal(
+    MaiBookingFlow.emits.bookingSubmitted({
+      appointmentId: "appt-1",
+      slotId: "slot-1",
+      inviteeId: "participant-1",
+      createdBy: "participant-1",
+      userDisplayName: "Alex Martin",
+      reason: "Category A",
+      title: "Alex Martin - Category A",
+      categoryId: "category-a",
+    }),
+    true
+  );
+  assert.equal(
+    MaiBookingFlow.emits.bookingSubmitted({
+      slotId: "slot-1",
+    }),
+    false
+  );
 });
 
 test("booking flow is exported from the public package entrypoint", () => {

@@ -7,6 +7,7 @@ import {
   type MaiBookingActorConfig,
   type MaiBookingCategory,
   type MaiBookingContext,
+  type MaiBookingLocation,
   type MaiBookingResource,
   type MaiBookingSlotOwner,
 } from "@mai/mai-ui-vue";
@@ -47,6 +48,19 @@ const categories: MaiBookingCategory[] = [
     categoryId: "category-b",
     label: "Category B",
     description: "Focused consultation",
+  },
+];
+
+const locations: MaiBookingLocation[] = [
+  {
+    locationId: "location-main",
+    label: "Main clinic",
+    description: "In-person appointments",
+  },
+  {
+    locationId: "location-virtual",
+    label: "Video consultation",
+    description: "Remote appointments",
   },
 ];
 
@@ -185,6 +199,10 @@ function onBookingError(payload: { action: string; message: string }): void {
   bookingError.value = `${payload.action}: ${payload.message}`;
 }
 
+function onAvailabilityRefreshed(): void {
+  statusMessage.value = "Availability refreshed after booking.";
+}
+
 onMounted(async () => {
   const { $mai } = useNuxtApp();
   mai = useMai({ adapter: $mai.adapter });
@@ -207,6 +225,7 @@ onMounted(async () => {
     <ClientOnly>
       <MaiBookingFlow
         :context="context"
+        :locations="locations"
         :categories="categories"
         :resources="resources"
         :layout="layout"
@@ -216,6 +235,7 @@ onMounted(async () => {
         :booking="{ createAppointmentId: nextAppointmentId }"
         :actions="{ queryLayout, bookSlot, requestAuth }"
         @booking-confirmed="onBookingConfirmed"
+        @availability-refreshed="onAvailabilityRefreshed"
         @booking-error="onBookingError"
       />
     </ClientOnly>

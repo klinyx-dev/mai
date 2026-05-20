@@ -62,10 +62,19 @@ export function isBookingAuthIdentity(value: unknown): value is MaiBookingAuthId
 }
 
 export function isBookSlotPayload(value: unknown): value is MaiBookSlotPayload {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const payload = value as Record<string, unknown>;
   return Boolean(
-    value &&
-      typeof value === "object" &&
-      isNonEmptyString((value as Record<string, unknown>).slotId)
+    isNonEmptyString(payload.appointmentId) &&
+      isNonEmptyString(payload.slotId) &&
+      isNonEmptyString(payload.inviteeId) &&
+      isNonEmptyString(payload.createdBy) &&
+      isNonEmptyString(payload.userDisplayName) &&
+      isNonEmptyString(payload.reason) &&
+      isNonEmptyString(payload.title) &&
+      isNonEmptyString(payload.categoryId)
   );
 }
 
