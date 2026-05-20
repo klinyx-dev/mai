@@ -49,6 +49,10 @@ test("exports interactive constants", () => {
   );
   assert.match(
     distEntry,
+    /MAI_BOARD_MODES/
+  );
+  assert.match(
+    distEntry,
     /MAI_BOOKING_FLOW_EVENTS/
   );
   assert.match(distTypes, /MaiBoardInteractiveEvent/);
@@ -64,6 +68,10 @@ test("exports interactive constants", () => {
   assert.match(
     distTypes,
     /MaiBoardInteractiveViewConfig/,
+  );
+  assert.match(
+    distTypes,
+    /MaiBoardMode/,
   );
   assert.match(
     distTypes,

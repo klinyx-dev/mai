@@ -8,6 +8,7 @@ export { MAI_BOOKING_FLOW_EVENTS } from "./types/booking";
 export {
   INTERACTION_ACTIONS,
   INTERACTION_SUCCESS_EVENTS,
+  MAI_BOARD_MODES,
   MAI_BOARD_INTERACTIVE_EVENTS,
 } from "./types/interactive";
 export {
@@ -40,6 +41,7 @@ export type {
   SlotClickEventPayload,
   MaiBoardInteractiveActionConfig,
   MaiBoardInteractiveActorConfig,
+  MaiBoardMode,
   MaiViewFilter,
   MaiViewFilterMode,
   MaiCalendarFilterOwnerOption,

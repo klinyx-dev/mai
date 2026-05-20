@@ -3,6 +3,7 @@ import "@mai/mai-ui-vue/styles.css";
 import {
   INTERACTION_ACTIONS,
   INTERACTION_SUCCESS_EVENTS,
+  MAI_BOARD_MODES,
   MaiBoardInteractive,
   MaiCalendarFilterToolbar,
   useMai,
@@ -224,6 +225,7 @@ onMounted(async () => {
       <MaiBoardInteractive
         :layout="layout"
         :anchor-date="anchorDate"
+        :mode="MAI_BOARD_MODES.PROVIDER_ADMIN"
         :is-loading="loading"
         :error-message="errorMessage"
         :view="boardView"

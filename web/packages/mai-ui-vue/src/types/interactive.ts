@@ -47,6 +47,13 @@ export const MAI_BOARD_INTERACTIVE_EVENTS = {
   INTERACTION_ERROR: "interaction-error",
 } as const;
 
+export const MAI_BOARD_MODES = {
+  READ_ONLY: "read-only",
+  BOOKING_CLIENT: "booking-client",
+  PROVIDER_ADMIN: "provider-admin",
+  DEBUG_ADMIN: "debug-admin",
+} as const;
+
 export type MaiInteractionAction =
   (typeof INTERACTION_ACTIONS)[keyof typeof INTERACTION_ACTIONS];
 export type MaiActionVisibility = Partial<Record<MaiInteractionAction, boolean>>;
@@ -80,6 +87,8 @@ export interface MaiBoardInteractiveViewConfig {
   timeLabelFormat: TimeLabelFormat;
   emptyStateText: string;
 }
+
+export type MaiBoardMode = (typeof MAI_BOARD_MODES)[keyof typeof MAI_BOARD_MODES];
 
 export type MaiViewFilterMode = WeeklyViewFilterMode;
 export type MaiViewFilter = WeeklyViewFilter;

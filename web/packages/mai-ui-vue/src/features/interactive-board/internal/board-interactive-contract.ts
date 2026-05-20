@@ -9,6 +9,7 @@ import type {
   MaiBoardInteractiveActorConfig,
   MaiBoardInteractiveViewConfig,
   MaiInteractionErrorPayload,
+  MaiBoardMode,
   MaiViewFilter,
   MaiViewFilterOption,
   SlotActionEventPayload,
@@ -29,6 +30,7 @@ import {
   isSlotReschedulePayload,
   isWeekShift,
 } from "../../../validators/events";
+import { MAI_BOARD_MODES } from "../../../types/interactive";
 
 export type PartialViewConfig = Partial<MaiBoardInteractiveViewConfig>;
 export type PartialActorConfig = Partial<MaiBoardInteractiveActorConfig>;
@@ -70,6 +72,11 @@ export const maiBoardInteractiveProps = {
     type: Object as PropType<PartialActionConfig | null>,
     required: false,
     default: null,
+  },
+  mode: {
+    type: String as PropType<MaiBoardMode>,
+    required: false,
+    default: MAI_BOARD_MODES.PROVIDER_ADMIN,
   },
 
   viewFilter: {
