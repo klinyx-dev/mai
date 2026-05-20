@@ -4,7 +4,11 @@ use crate::application::errors::{
     BusinessRuleError, ReferentialError, SchedulerError, StructuralError,
 };
 use crate::commands::add_appointment::AddAppointmentCommand;
+use crate::commands::add_blackout_window::AddBlackoutWindowCommand;
+use crate::commands::add_recurring_template::AddRecurringTemplateCommand;
 use crate::commands::add_slot::AddSlotCommand;
+use crate::commands::add_slots_batch::{AddSlotsBatchCommand, BatchMode};
+use crate::commands::apply_recurring_templates::ApplyRecurringTemplatesCommand;
 use crate::commands::cancel_appointment::CancelAppointmentCommand;
 use crate::commands::cancel_slot::CancelSlotCommand;
 use crate::commands::delete_appointment::DeleteAppointmentCommand;
@@ -642,5 +646,72 @@ fn weekly_layout_query_rejects_out_of_range_visible_window_bound() {
     assert_eq!(
         result.expect_err("out of range visible window bound must fail"),
         SchedulerError::Structural(StructuralError::InvalidVisibleWindow)
+    );
+}
+
+#[test]
+fn atomic_batch_rolls_back_on_conflict() {
+    let mut service = SchedulerService::new();
+    let one = add_slot_cmd("slot-1");
+    let mut two = add_slot_cmd("slot-2");
+    two.start = Utc.with_ymd_and_hms(2026, 1, 5, 9, 30, 0).unwrap();
+    two.end = Utc.with_ymd_and_hms(2026, 1, 5, 10, 30, 0).unwrap();
+
+    let result = service.add_slots_batch(AddSlotsBatchCommand {
+        mode: BatchMode::Atomic,
+        slots: vec![one, two],
+    });
+    assert_eq!(
+        result.expect_err("batch should conflict"),
+        SchedulerError::Business(BusinessRuleError::BatchConflictDetected)
+    );
+    assert_eq!(service.state().slots_len(), 0);
+}
+
+#[test]
+fn recurring_template_apply_creates_slots_for_week() {
+    let mut service = SchedulerService::new();
+    service
+        .add_recurring_template(AddRecurringTemplateCommand {
+            template_id: "tmpl-1".to_string(),
+            resource_owner_id: ActorId::new("owner-1"),
+            weekday: 0,
+            start_minute: 540,
+            end_minute: 600,
+            effective_from: chrono::NaiveDate::from_ymd_opt(2026, 1, 1).unwrap(),
+            effective_until: chrono::NaiveDate::from_ymd_opt(2026, 12, 31).unwrap(),
+            created_by: ActorId::new("creator-1"),
+        })
+        .unwrap();
+
+    service
+        .apply_recurring_templates(ApplyRecurringTemplatesCommand {
+            week_start: chrono::NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(),
+            owner_ids: vec![],
+            dry_run: false,
+            created_by: ActorId::new("creator-1"),
+        })
+        .unwrap();
+
+    assert_eq!(service.state().slots_len(), 1);
+}
+
+#[test]
+fn blackout_window_blocks_add_slot() {
+    let mut service = SchedulerService::new();
+    service
+        .add_blackout_window(AddBlackoutWindowCommand {
+            blackout_id: "bo-1".to_string(),
+            resource_owner_id: ActorId::new("owner-1"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 8, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+            reason: "holiday".to_string(),
+            created_by: ActorId::new("creator-1"),
+        })
+        .unwrap();
+    let result = service.add_slot(add_slot_cmd("slot-1"));
+    assert_eq!(
+        result.expect_err("blackout should reject slot"),
+        SchedulerError::Business(BusinessRuleError::SlotInBlackoutWindow)
     );
 }

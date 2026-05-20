@@ -4,6 +4,7 @@ use std::fmt;
 use std::sync::Arc;
 
 mod actors;
+mod commands_advanced;
 mod commands_appointment;
 mod commands_slot;
 mod queries;

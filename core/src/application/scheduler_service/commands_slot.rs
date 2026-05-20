@@ -25,6 +25,9 @@ impl SchedulerService {
         self.ensure_actor_exists(&cmd.created_by, ReferentialError::CreatorNotFound)?;
 
         let time = Slot::rebuilt_time_range(cmd.start, cmd.end)?;
+        if self.is_slot_blocked_by_blackout(&cmd.resource_owner_id, time.start, time.end) {
+            return Err(BusinessRuleError::SlotInBlackoutWindow.into());
+        }
         let slot = Slot::new(
             cmd.slot_id.clone(),
             time,
@@ -63,6 +66,9 @@ impl SchedulerService {
 
         let slot = ensure_slot_exists(&self.state, &cmd.slot_id)?;
         let time = Slot::rebuilt_time_range(cmd.new_start, cmd.new_end)?;
+        if self.is_slot_blocked_by_blackout(&slot.resource_owner_id, time.start, time.end) {
+            return Err(BusinessRuleError::SlotInBlackoutWindow.into());
+        }
 
         let candidate = Slot::with_status(
             slot.id.clone(),

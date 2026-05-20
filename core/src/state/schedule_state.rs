@@ -3,13 +3,17 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::domain::appointment::Appointment;
+use crate::domain::blackout_window::BlackoutWindow;
 use crate::domain::ids::{AppointmentId, SlotId};
+use crate::domain::recurring_template::RecurringTemplate;
 use crate::domain::slot::Slot;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ScheduleState {
     pub(crate) slots: HashMap<SlotId, Slot>,
     pub(crate) appointments: HashMap<AppointmentId, Appointment>,
+    pub(crate) recurring_templates: HashMap<String, RecurringTemplate>,
+    pub(crate) blackout_windows: HashMap<String, BlackoutWindow>,
 }
 
 impl ScheduleState {
@@ -61,6 +65,14 @@ impl ScheduleState {
         self.appointments.values()
     }
 
+    pub fn recurring_templates_iter(&self) -> impl Iterator<Item = &RecurringTemplate> {
+        self.recurring_templates.values()
+    }
+
+    pub fn blackout_windows_iter(&self) -> impl Iterator<Item = &BlackoutWindow> {
+        self.blackout_windows.values()
+    }
+
     pub(crate) fn appointment_ids_sorted(&self) -> Vec<AppointmentId> {
         let mut appointment_ids: Vec<_> = self.appointments.keys().cloned().collect();
         appointment_ids.sort_by(|a, b| a.as_str().cmp(b.as_str()));
@@ -81,6 +93,16 @@ impl ScheduleState {
     ) -> Option<Appointment> {
         self.appointments.remove(appointment_id)
     }
+
+    pub(crate) fn insert_recurring_template(&mut self, template: RecurringTemplate) {
+        self.recurring_templates
+            .insert(template.template_id.clone(), template);
+    }
+
+    pub(crate) fn insert_blackout_window(&mut self, blackout: BlackoutWindow) {
+        self.blackout_windows
+            .insert(blackout.blackout_id.clone(), blackout);
+    }
 }
 
 #[cfg(test)]
@@ -93,5 +115,7 @@ mod tests {
 
         assert!(state.slots.is_empty());
         assert!(state.appointments.is_empty());
+        assert!(state.recurring_templates.is_empty());
+        assert!(state.blackout_windows.is_empty());
     }
 }

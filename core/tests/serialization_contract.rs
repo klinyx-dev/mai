@@ -3,7 +3,8 @@ use mai::{
     AddAppointmentCommand, AddSlotCommand, BusinessRuleError, CancelAppointmentCommand,
     ReferentialError, SchedulerError, StructuralError, WeeklyLayoutQuery,
     adapters::wasm::{
-        WasmAdapterError, WasmAddSlotPayload, WasmBindgenAdapter, WasmCancelAppointmentPayload,
+        WasmAdapterError, WasmAddRecurringTemplatePayload, WasmAddSlotPayload,
+        WasmAddSlotsBatchPayload, WasmBindgenAdapter, WasmCancelAppointmentPayload,
         WasmCommandRequest, WasmCommandResponse, WasmDeleteSlotPayload, WasmErrorCategory,
         WasmMutationSuccess, WasmQueryRequest, WasmQueryResponse, WasmSchedulerAdapter,
         WasmViewFilter, WasmViewFilterMode, WasmWeeklyLayoutQuery, parse_command_request,
@@ -124,6 +125,38 @@ fn wasm_cancel_appointment_request_uses_tagged_envelope() {
 
     let restored: WasmCommandRequest = serde_json::from_value(json).unwrap();
     assert_eq!(restored, request);
+}
+
+#[test]
+fn wasm_add_recurring_template_request_uses_tagged_envelope() {
+    let request = WasmCommandRequest::AddRecurringTemplate(WasmAddRecurringTemplatePayload {
+        template_id: "tmpl-1".to_string(),
+        resource_owner_id: "owner-42".into(),
+        weekday: 1,
+        start_minute: 540,
+        end_minute: 600,
+        effective_from: NaiveDate::from_ymd_opt(2026, 5, 1).unwrap(),
+        effective_until: NaiveDate::from_ymd_opt(2026, 12, 31).unwrap(),
+        created_by: "admin-7".into(),
+    });
+    let json = serde_json::to_value(&request).unwrap();
+    assert_eq!(json["command"], "add_recurring_template");
+}
+
+#[test]
+fn wasm_add_slots_batch_request_uses_tagged_envelope() {
+    let request = WasmCommandRequest::AddSlotsBatch(WasmAddSlotsBatchPayload {
+        mode: mai::BatchMode::Atomic,
+        slots: vec![WasmAddSlotPayload {
+            slot_id: "slot-1001".into(),
+            start: Utc.with_ymd_and_hms(2026, 5, 4, 9, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 5, 4, 9, 30, 0).unwrap(),
+            resource_owner_id: "owner-42".into(),
+            created_by: "admin-7".into(),
+        }],
+    });
+    let json = serde_json::to_value(&request).unwrap();
+    assert_eq!(json["command"], "add_slots_batch");
 }
 
 #[test]
@@ -813,6 +846,11 @@ fn wasm_adapter_error_conversion_covers_all_structural_codes() {
             StructuralError::InvalidVisibleWindow,
             "invalid_visible_window",
         ),
+        (
+            StructuralError::InvalidRecurrenceRule,
+            "invalid_recurrence_rule",
+        ),
+        (StructuralError::InvalidBatchPayload, "invalid_batch_payload"),
     ];
 
     for (source, code) in cases {
@@ -873,6 +911,18 @@ fn wasm_adapter_error_conversion_covers_all_business_codes() {
         (
             BusinessRuleError::AppointmentCancelNotAllowed,
             "appointment_cancel_not_allowed",
+        ),
+        (
+            BusinessRuleError::SlotInBlackoutWindow,
+            "slot_in_blackout_window",
+        ),
+        (
+            BusinessRuleError::BatchConflictDetected,
+            "batch_conflict_detected",
+        ),
+        (
+            BusinessRuleError::RecurringTemplateOverlap,
+            "recurring_template_overlap",
         ),
     ];
 

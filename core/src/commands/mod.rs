@@ -1,5 +1,9 @@
 pub mod add_appointment;
+pub mod add_blackout_window;
+pub mod add_recurring_template;
 pub mod add_slot;
+pub mod add_slots_batch;
+pub mod apply_recurring_templates;
 pub mod cancel_appointment;
 pub mod cancel_slot;
 pub mod delete_appointment;
@@ -7,7 +11,11 @@ pub mod delete_slot;
 pub mod reschedule_slot;
 
 pub use add_appointment::AddAppointmentCommand;
+pub use add_blackout_window::AddBlackoutWindowCommand;
+pub use add_recurring_template::AddRecurringTemplateCommand;
 pub use add_slot::AddSlotCommand;
+pub use add_slots_batch::{AddSlotsBatchCommand, BatchMode};
+pub use apply_recurring_templates::ApplyRecurringTemplatesCommand;
 pub use cancel_appointment::CancelAppointmentCommand;
 pub use cancel_slot::CancelSlotCommand;
 pub use delete_appointment::DeleteAppointmentCommand;

@@ -45,6 +45,8 @@ fn structural_error_code(error: &StructuralError) -> &'static str {
         StructuralError::InvalidTimeRange => "invalid_time_range",
         StructuralError::EmptyTitle => "empty_title",
         StructuralError::InvalidVisibleWindow => "invalid_visible_window",
+        StructuralError::InvalidRecurrenceRule => "invalid_recurrence_rule",
+        StructuralError::InvalidBatchPayload => "invalid_batch_payload",
     }
 }
 
@@ -71,5 +73,8 @@ fn business_error_code(error: &BusinessRuleError) -> &'static str {
         BusinessRuleError::CannotDeleteBookedSlot => "cannot_delete_booked_slot",
         BusinessRuleError::AppointmentAlreadyExistsForSlot => "appointment_already_exists_for_slot",
         BusinessRuleError::AppointmentCancelNotAllowed => "appointment_cancel_not_allowed",
+        BusinessRuleError::SlotInBlackoutWindow => "slot_in_blackout_window",
+        BusinessRuleError::BatchConflictDetected => "batch_conflict_detected",
+        BusinessRuleError::RecurringTemplateOverlap => "recurring_template_overlap",
     }
 }

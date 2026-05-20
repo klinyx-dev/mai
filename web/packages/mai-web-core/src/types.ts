@@ -57,6 +57,10 @@ export interface WeeklyLayoutQueryPayload {
 
 export const COMMANDS = {
   ADD_SLOT: "add_slot",
+  ADD_SLOTS_BATCH: "add_slots_batch",
+  ADD_RECURRING_TEMPLATE: "add_recurring_template",
+  APPLY_RECURRING_TEMPLATES: "apply_recurring_templates",
+  ADD_BLACKOUT_WINDOW: "add_blackout_window",
   RESCHEDULE_SLOT: "reschedule_slot",
   DELETE_SLOT: "delete_slot",
   CANCEL_SLOT: "cancel_slot",
@@ -77,6 +81,40 @@ export interface AddSlotCommandPayload {
 
 export interface DeleteSlotCommandPayload {
   slot_id: string;
+}
+
+export type BatchMode = "atomic" | "best_effort";
+
+export interface AddSlotsBatchCommandPayload {
+  mode: BatchMode;
+  slots: AddSlotCommandPayload[];
+}
+
+export interface AddRecurringTemplateCommandPayload {
+  template_id: string;
+  resource_owner_id: string;
+  weekday: number;
+  start_minute: number;
+  end_minute: number;
+  effective_from: string;
+  effective_until: string;
+  created_by: string;
+}
+
+export interface ApplyRecurringTemplatesCommandPayload {
+  week_start: string;
+  owner_ids: string[];
+  dry_run: boolean;
+  created_by: string;
+}
+
+export interface AddBlackoutWindowCommandPayload {
+  blackout_id: string;
+  resource_owner_id: string;
+  start: string;
+  end: string;
+  reason: string;
+  created_by: string;
 }
 
 export interface RescheduleSlotCommandPayload {
@@ -121,6 +159,10 @@ export interface DeleteAppointmentCommandPayload {
 
 export interface CommandPayloadMap {
   [COMMANDS.ADD_SLOT]: AddSlotCommandPayload;
+  [COMMANDS.ADD_SLOTS_BATCH]: AddSlotsBatchCommandPayload;
+  [COMMANDS.ADD_RECURRING_TEMPLATE]: AddRecurringTemplateCommandPayload;
+  [COMMANDS.APPLY_RECURRING_TEMPLATES]: ApplyRecurringTemplatesCommandPayload;
+  [COMMANDS.ADD_BLACKOUT_WINDOW]: AddBlackoutWindowCommandPayload;
   [COMMANDS.RESCHEDULE_SLOT]: RescheduleSlotCommandPayload;
   [COMMANDS.DELETE_SLOT]: DeleteSlotCommandPayload;
   [COMMANDS.CANCEL_SLOT]: CancelSlotCommandPayload;

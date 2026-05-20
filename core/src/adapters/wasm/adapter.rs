@@ -36,6 +36,14 @@ impl WasmSchedulerAdapter {
                 self.service.delete_appointment(cmd.into())
             }
             WasmCommandRequest::RescheduleSlot(cmd) => self.service.reschedule_slot(cmd.into()),
+            WasmCommandRequest::AddRecurringTemplate(cmd) => {
+                self.service.add_recurring_template(cmd.into())
+            }
+            WasmCommandRequest::ApplyRecurringTemplates(cmd) => {
+                self.service.apply_recurring_templates(cmd.into())
+            }
+            WasmCommandRequest::AddSlotsBatch(cmd) => self.service.add_slots_batch(cmd.into()),
+            WasmCommandRequest::AddBlackoutWindow(cmd) => self.service.add_blackout_window(cmd.into()),
         };
 
         match result {

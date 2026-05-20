@@ -10,6 +10,10 @@ pub enum StructuralError {
     EmptyTitle,
     #[error("invalid visible window")]
     InvalidVisibleWindow,
+    #[error("invalid recurrence rule")]
+    InvalidRecurrenceRule,
+    #[error("invalid batch payload")]
+    InvalidBatchPayload,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]
@@ -51,6 +55,12 @@ pub enum BusinessRuleError {
     AppointmentAlreadyExistsForSlot,
     #[error("appointment cancellation is not allowed for this actor")]
     AppointmentCancelNotAllowed,
+    #[error("slot is in blackout window")]
+    SlotInBlackoutWindow,
+    #[error("batch conflict detected")]
+    BatchConflictDetected,
+    #[error("recurring template overlap")]
+    RecurringTemplateOverlap,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Error, Serialize, Deserialize)]

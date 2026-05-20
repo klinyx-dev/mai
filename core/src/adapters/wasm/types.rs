@@ -4,8 +4,10 @@ use serde::{Deserialize, Serialize};
 use crate::{
     WeeklyLayout,
     commands::{
-        AddAppointmentCommand, AddSlotCommand, CancelAppointmentCommand, CancelSlotCommand,
-        DeleteAppointmentCommand, DeleteSlotCommand, RescheduleSlotCommand,
+        AddAppointmentCommand, AddBlackoutWindowCommand, AddRecurringTemplateCommand,
+        AddSlotCommand, AddSlotsBatchCommand, ApplyRecurringTemplatesCommand, BatchMode,
+        CancelAppointmentCommand, CancelSlotCommand, DeleteAppointmentCommand, DeleteSlotCommand,
+        RescheduleSlotCommand,
     },
     domain::{ActorId, AppointmentId, SlotId},
 };
@@ -130,6 +132,96 @@ pub struct WasmRescheduleSlotPayload {
     pub updated_by: ActorId,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WasmAddRecurringTemplatePayload {
+    pub template_id: String,
+    pub resource_owner_id: ActorId,
+    pub weekday: u8,
+    pub start_minute: u16,
+    pub end_minute: u16,
+    pub effective_from: NaiveDate,
+    pub effective_until: NaiveDate,
+    pub created_by: ActorId,
+}
+
+impl From<WasmAddRecurringTemplatePayload> for AddRecurringTemplateCommand {
+    fn from(value: WasmAddRecurringTemplatePayload) -> Self {
+        Self {
+            template_id: value.template_id,
+            resource_owner_id: value.resource_owner_id,
+            weekday: value.weekday,
+            start_minute: value.start_minute,
+            end_minute: value.end_minute,
+            effective_from: value.effective_from,
+            effective_until: value.effective_until,
+            created_by: value.created_by,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WasmApplyRecurringTemplatesPayload {
+    pub week_start: NaiveDate,
+    #[serde(default)]
+    pub owner_ids: Vec<ActorId>,
+    #[serde(default)]
+    pub dry_run: bool,
+    pub created_by: ActorId,
+}
+
+impl From<WasmApplyRecurringTemplatesPayload> for ApplyRecurringTemplatesCommand {
+    fn from(value: WasmApplyRecurringTemplatesPayload) -> Self {
+        Self {
+            week_start: value.week_start,
+            owner_ids: value.owner_ids,
+            dry_run: value.dry_run,
+            created_by: value.created_by,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WasmAddSlotsBatchPayload {
+    pub mode: BatchMode,
+    pub slots: Vec<WasmAddSlotPayload>,
+}
+
+impl From<WasmAddSlotsBatchPayload> for AddSlotsBatchCommand {
+    fn from(value: WasmAddSlotsBatchPayload) -> Self {
+        Self {
+            mode: value.mode,
+            slots: value.slots.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WasmAddBlackoutWindowPayload {
+    pub blackout_id: String,
+    pub resource_owner_id: ActorId,
+    pub start: chrono::DateTime<chrono::Utc>,
+    pub end: chrono::DateTime<chrono::Utc>,
+    pub reason: String,
+    pub created_by: ActorId,
+}
+
+impl From<WasmAddBlackoutWindowPayload> for AddBlackoutWindowCommand {
+    fn from(value: WasmAddBlackoutWindowPayload) -> Self {
+        Self {
+            blackout_id: value.blackout_id,
+            resource_owner_id: value.resource_owner_id,
+            start: value.start,
+            end: value.end,
+            reason: value.reason,
+            created_by: value.created_by,
+        }
+    }
+}
+
 impl From<WasmRescheduleSlotPayload> for RescheduleSlotCommand {
     fn from(value: WasmRescheduleSlotPayload) -> Self {
         Self {
@@ -177,6 +269,10 @@ pub enum WasmCommandRequest {
     CancelAppointment(WasmCancelAppointmentPayload),
     DeleteAppointment(WasmDeleteAppointmentPayload),
     RescheduleSlot(WasmRescheduleSlotPayload),
+    AddRecurringTemplate(WasmAddRecurringTemplatePayload),
+    ApplyRecurringTemplates(WasmApplyRecurringTemplatesPayload),
+    AddSlotsBatch(WasmAddSlotsBatchPayload),
+    AddBlackoutWindow(WasmAddBlackoutWindowPayload),
 }
 
 /// Serialized query envelope for the WASM boundary.

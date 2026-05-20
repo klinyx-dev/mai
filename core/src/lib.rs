@@ -11,12 +11,13 @@ pub use application::{
     SchedulerService, StructuralError,
 };
 pub use commands::{
-    AddAppointmentCommand, AddSlotCommand, CancelAppointmentCommand, CancelSlotCommand,
-    DeleteAppointmentCommand, DeleteSlotCommand, RescheduleSlotCommand,
+    AddAppointmentCommand, AddBlackoutWindowCommand, AddRecurringTemplateCommand, AddSlotCommand,
+    AddSlotsBatchCommand, ApplyRecurringTemplatesCommand, BatchMode, CancelAppointmentCommand,
+    CancelSlotCommand, DeleteAppointmentCommand, DeleteSlotCommand, RescheduleSlotCommand,
 };
 pub use domain::{
-    ActorId, ActorRef, Appointment, AppointmentId, Slot, SlotId, SlotStatus, TimeRange,
-    TimeRangeError, WeekRange, WeekRangeError,
+    ActorId, ActorRef, Appointment, AppointmentId, BlackoutWindow, RecurringTemplate, Slot,
+    SlotId, SlotStatus, TimeRange, TimeRangeError, WeekRange, WeekRangeError,
 };
 pub use layout::{
     AppointmentLayoutNode, CalendarOwnerFilter, SlotLayoutNode, WeeklyLayout, WeeklyLayoutQuery,
