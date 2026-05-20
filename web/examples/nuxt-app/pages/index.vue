@@ -55,6 +55,7 @@ function toOwnerFilter(ids: readonly string[]): MaiViewFilter {
 const activeViewFilter = ref<MaiViewFilter>(toOwnerFilter(selectedOwnerIds.value));
 
 let mai: ReturnType<typeof useMai> | null = null;
+let seededDenseScenario = false;
 const SUCCESS_EVENT_TO_ACTION = {
   [INTERACTION_SUCCESS_EVENTS.SLOT_CREATED]: INTERACTION_ACTIONS.CREATE_SLOT,
   [INTERACTION_SUCCESS_EVENTS.SLOT_RESCHEDULED]: INTERACTION_ACTIONS.RESCHEDULE_SLOT,
@@ -110,6 +111,92 @@ async function mutateCommand(command: AnyCommandEnvelope): Promise<boolean> {
     errorMessage.value = mai.error.value;
   }
   return ok;
+}
+
+async function mutateCommandSoft(command: AnyCommandEnvelope): Promise<void> {
+  if (!mai) return;
+  await mai.mutate(command);
+}
+
+async function seedDenseProviderScenario(): Promise<void> {
+  if (!mai || seededDenseScenario) {
+    return;
+  }
+
+  const commands: AnyCommandEnvelope[] = [
+    {
+      command: "add_slot",
+      payload: {
+        slot_id: "demo-slot-capacity-42-a",
+        start: "2026-05-04T09:00:00Z",
+        end: "2026-05-04T09:30:00Z",
+        resource_owner_id: "owner-42",
+        created_by: operatorId,
+        capacity: 2,
+      },
+    },
+    {
+      command: "add_slot",
+      payload: {
+        slot_id: "demo-slot-capacity-42-b",
+        start: "2026-05-04T09:30:00Z",
+        end: "2026-05-04T10:00:00Z",
+        resource_owner_id: "owner-42",
+        created_by: operatorId,
+        capacity: 3,
+      },
+    },
+    {
+      command: "add_slot",
+      payload: {
+        slot_id: "demo-slot-dense-42-c",
+        start: "2026-05-04T10:00:00Z",
+        end: "2026-05-04T10:30:00Z",
+        resource_owner_id: "owner-42",
+        created_by: operatorId,
+        capacity: 1,
+      },
+    },
+    {
+      command: "add_slot",
+      payload: {
+        slot_id: "demo-slot-dense-77-a",
+        start: "2026-05-04T09:15:00Z",
+        end: "2026-05-04T09:45:00Z",
+        resource_owner_id: "owner-77",
+        created_by: operatorId,
+        capacity: 1,
+      },
+    },
+    {
+      command: "add_blackout_window",
+      payload: {
+        blackout_id: "demo-blackout-42-lunch",
+        resource_owner_id: "owner-42",
+        start: "2026-05-04T12:00:00Z",
+        end: "2026-05-04T13:30:00Z",
+        reason: "Lunch break",
+        created_by: operatorId,
+      },
+    },
+    {
+      command: "add_blackout_window",
+      payload: {
+        blackout_id: "demo-blackout-77-rounds",
+        resource_owner_id: "owner-77",
+        start: "2026-05-04T09:00:00Z",
+        end: "2026-05-04T10:00:00Z",
+        reason: "Hospital rounds",
+        created_by: operatorId,
+      },
+    },
+  ];
+
+  for (const command of commands) {
+    await mutateCommandSoft(command);
+  }
+
+  seededDenseScenario = true;
 }
 
 function setActionMessage(action: string, targetId: string): void {
@@ -206,6 +293,7 @@ async function onViewFilterChange(viewFilter: MaiViewFilter): Promise<void> {
 onMounted(async () => {
   const { $mai } = useNuxtApp();
   mai = useMai({ adapter: $mai.adapter });
+  await seedDenseProviderScenario();
   await refreshWeek();
 });
 </script>
