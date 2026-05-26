@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is currently spec-first. The source of truth lives in [`docs/functional_spec.md`](./docs/functional_spec.md) and [`docs/technical_spec.md`](./docs/technical_spec.md). 
+This repository is currently spec-first. The consolidated source of truth lives in [`docs/README.md`](./docs/README.md).
 
 Implementation is expected to start as a Rust crate with a layout close to `core/{domain,commands,validation,state,layout,application,adapters}`. 
 

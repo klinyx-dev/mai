@@ -5,7 +5,7 @@ Headless scheduling engine in Rust, with wasm output and a web workspace for app
 ## What is in this repo
 - `core/`: Rust scheduling core crate.
 - `web/`: pnpm workspace for TypeScript contracts, wasm adapter, Vue UI, and Nuxt example app.
-- `docs/`: functional/technical specs and supporting docs.
+- `docs/README.md`: consolidated project documentation.
 
 ## Quick start
 Prerequisites:
@@ -34,7 +34,7 @@ Open `http://localhost:3000/`.
 ## Web boundary rule
 - App code must not import `core/pkg/*` directly.
 - App code should use package exports from `web/packages/*` (for example `@mai/mai-wasm-adapter`).
-- Frontend adoption guide: [docs/frontend_adoption_guide.md](./docs/frontend_adoption_guide.md)
+- Frontend adoption guidance: [docs/README.md](./docs/README.md)
 
 ## Main validation
 From repository root:
@@ -54,16 +54,4 @@ cd web && pnpm run build && pnpm run test
 
 ## Developer docs
 - Contributor workflow: [README-dev.md](./README-dev.md)
-- Release process: [docs/release_process.md](./docs/release_process.md)
-- API compatibility: [docs/api_compatibility.md](./docs/api_compatibility.md)
-- Public API inventory: [docs/public_api_inventory.md](./docs/public_api_inventory.md)
-- Compatibility matrix: [docs/compatibility_matrix.md](./docs/compatibility_matrix.md)
-- Frontend adoption guide: [docs/frontend_adoption_guide.md](./docs/frontend_adoption_guide.md)
-- Wasm adapter usage: [docs/wasm_adapter_usage.md](./docs/wasm_adapter_usage.md)
-- Adapter error codes: [docs/adapter_error_codes.md](./docs/adapter_error_codes.md)
-- Payload examples: [docs/adapter_payload_examples.md](./docs/adapter_payload_examples.md)
-- Booking flow contract: [docs/booking_flow_contract.md](./docs/booking_flow_contract.md)
-- Booking flow usage: [docs/booking_flow_usage.md](./docs/booking_flow_usage.md)
-- Provider board contract: [docs/provider_board_contract.md](./docs/provider_board_contract.md)
-- Provider availability usage: [docs/provider_availability_usage.md](./docs/provider_availability_usage.md)
-- UI accessibility audit: [docs/ui_accessibility_audit.md](./docs/ui_accessibility_audit.md)
+- Consolidated project docs: [docs/README.md](./docs/README.md)

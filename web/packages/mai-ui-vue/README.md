@@ -2,7 +2,7 @@
 
 Vue 3 calendar UI package for `mai` scheduling workflows.
 
-This package is the Vue UI layer. App services such as auth, persistence, provider directories, notifications, payments, and deployment remain owned by the consuming application. For the full package boundary and adoption model, see `docs/frontend_adoption_guide.md` from the repository root.
+This package is the Vue UI layer. App services such as auth, persistence, provider directories, notifications, payments, and deployment remain owned by the consuming application. For the full package boundary and adoption model, see `docs/README.md` from the repository root.
 
 ## Install
 

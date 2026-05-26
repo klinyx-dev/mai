@@ -2,7 +2,7 @@
 
 Framework-agnostic TypeScript contracts and JSON envelope helpers for the `mai` scheduling core.
 
-Use this package when an app wants direct frontend access to `mai` commands and queries without Vue components. For the full package boundary and adoption model, see `docs/frontend_adoption_guide.md` from the repository root.
+Use this package when an app wants direct frontend access to `mai` commands and queries without Vue components. For the full package boundary and adoption model, see `docs/README.md` from the repository root.
 
 ## Client wrapper
 

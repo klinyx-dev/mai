@@ -12,4 +12,4 @@ const adapter = await createWasmAdapter();
 const mai = createMaiClient(adapter);
 ```
 
-For the full frontend-only adoption model, see `docs/frontend_adoption_guide.md` from the repository root.
+For the full frontend-only adoption model, see `docs/README.md` from the repository root.
