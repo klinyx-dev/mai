@@ -209,15 +209,16 @@ Acceptance:
 - new behavior is guarded by explicit contracts,
 - tests prove both old and new invariants.
 
-### PQR-6: Backend Integration Guidance
+### PQR-6: Frontend Adoption Guidance
 
-The project must document how consuming apps should persist and coordinate scheduling state.
+The project must document how consuming frontend apps should adopt `mai` while keeping app services outside the toolkit.
 
 Acceptance:
-- PostgreSQL-oriented reference schema exists,
-- transaction guidance covers double-booking prevention,
-- REST or equivalent backend example shows command flow,
-- idempotency and optimistic concurrency guidance are documented.
+- package roles and supported import entrypoints are documented,
+- framework-agnostic web-core usage is documented,
+- Vue and Nuxt usage are documented,
+- generated-wasm and package-internal imports are rejected in examples,
+- auth, persistence, provider records, APIs, notifications, payments, and deployment are documented as consuming-app responsibilities.
 
 ### PQR-7: Ecosystem Readiness
 
@@ -292,6 +293,6 @@ This spec is satisfied when:
 
 - First-class adapter after Vue: React, Web Components, or framework-agnostic primitives?
 - Recurrence model: generated slots or first-class recurrence rules?
-- Backend guide first target: PostgreSQL-only, Supabase, or generic REST?
+- Should a future phase add React, Web Components, or framework-agnostic DOM primitives?
 - Minimum browser support matrix?
 - Package publishing names and release cadence?

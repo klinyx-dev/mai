@@ -1,6 +1,7 @@
 import type {
   BookSlotCommandInput,
   BuildAppointmentTitleInput,
+  AnyCommandEnvelope,
   CommandPayloadMap,
   CommandName,
   CommandEnvelope,
@@ -18,6 +19,13 @@ import { COMMANDS, QUERIES } from "./types.js";
 export interface JsonAdapter {
   execute_command_json(input: string): string;
   execute_query_json(input: string): string;
+}
+
+export interface MaiClient {
+  executeCommand(command: AnyCommandEnvelope): WasmResponse<"applied">;
+  queryWeeklyLayout(payload: WeeklyLayoutQueryPayload): WasmResponse<WeeklyLayout>;
+  bookSlot(input: BookSlotCommandInput): WasmResponse<"applied">;
+  parseResponse<T>(input: string): WasmResponse<T>;
 }
 
 export function createCommandEnvelope<TCommand extends CommandName>(
@@ -82,4 +90,21 @@ export function parseJsonResponse<T>(input: string): WasmResponse<T> {
     throw new Error("invalid mai adapter response envelope");
   }
   return parsed;
+}
+
+export function createMaiClient(adapter: JsonAdapter): MaiClient {
+  return {
+    executeCommand(command: AnyCommandEnvelope) {
+      return executeCommand(adapter, command);
+    },
+    queryWeeklyLayout(payload: WeeklyLayoutQueryPayload) {
+      return executeWeeklyLayoutQuery(adapter, payload);
+    },
+    bookSlot(input: BookSlotCommandInput) {
+      return executeCommand(adapter, createBookSlotCommand(input));
+    },
+    parseResponse<T>(input: string) {
+      return parseJsonResponse<T>(input);
+    },
+  };
 }

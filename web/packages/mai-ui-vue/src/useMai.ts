@@ -1,7 +1,6 @@
 import { ref } from "vue";
 import {
-  executeCommand,
-  executeWeeklyLayoutQuery,
+  createMaiClient,
   type AnyCommandEnvelope,
   type JsonAdapter,
   type WeeklyLayout,
@@ -13,6 +12,7 @@ export interface UseMaiOptions {
 }
 
 export function useMai(options: UseMaiOptions) {
+  const client = createMaiClient(options.adapter);
   const layout = ref<WeeklyLayout | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -21,7 +21,7 @@ export function useMai(options: UseMaiOptions) {
     loading.value = true;
     error.value = null;
     try {
-      const response = executeWeeklyLayoutQuery(options.adapter, payload);
+      const response = client.queryWeeklyLayout(payload);
       if (response.status === "error") {
         error.value = `${response.error.code}: ${response.error.message}`;
         return;
@@ -33,7 +33,7 @@ export function useMai(options: UseMaiOptions) {
   }
 
   async function mutate(command: AnyCommandEnvelope) {
-    const response = executeCommand(options.adapter, command);
+    const response = client.executeCommand(command);
     if (response.status === "error") {
       error.value = `${response.error.code}: ${response.error.message}`;
       return false;

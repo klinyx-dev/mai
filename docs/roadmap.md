@@ -54,15 +54,17 @@ As of the v0.1 line, the repository contains:
 
 This baseline is strong enough to move from "can schedule" to "can be adopted".
 
-## Execution Specs and Plans
+## Execution Specs and Status
 
 - Product quality spec: `docs/product_quality_spec.md`
-- Phase 1 plan: `.agents/plans/phase-1-contract-hardening/plan.md`
-- Phase 2 plan: `.agents/plans/phase-2-booking-flow-productization/plan.md`
-- Phase 3 plan: `.agents/plans/phase-3-provider-availability-management/plan.md`
-- Phase 4 plan: `.agents/plans/phase-4-calendar-ui-quality-parity/plan.md`
+- Phase 1 status: `.agents/memory/phase-1-contract-hardening-status.md`
+- Phase 2 status: `.agents/memory/phase-2-booking-flow-productization-status.md`
+- Phase 3 status: `.agents/memory/phase-3-provider-availability-management-status.md`
+- Phase 4 status: `.agents/memory/phase-4-calendar-ui-quality-parity-status.md`
 
-Phases 5-7 remain gated by `docs/product_quality_spec.md` requirements and should receive dedicated specs before implementation.
+Completed implementation plans are removed from `.agents/plans/` after their outcomes are summarized in `.agents/memory/`, per repository workflow.
+
+Phases 5-7 remain gated by `docs/product_quality_spec.md` requirements and should receive dedicated specs and active plans before implementation.
 
 ## Phases
 
@@ -109,7 +111,7 @@ Candidate features:
 
 Acceptance criteria:
 - The Nuxt example demonstrates a full public booking page.
-- A consuming app can provide its own auth and backend calls.
+- A consuming app can provide its own auth and app-service calls.
 - The client flow only calls availability query and appointment booking operations.
 
 ### Phase 3: Provider Availability Management
@@ -187,27 +189,28 @@ Acceptance criteria:
 - Existing fixed-slot behavior remains backward-compatible.
 - New invariants are covered by deterministic tests.
 
-### Phase 6: Persistence and Backend Integration Guides
+### Phase 6: Frontend Adoption and App Integration Guides
 
-Goal: help real products store and synchronize scheduling data without making the core own infrastructure.
+Goal: help real products adopt `mai` in frontend apps while keeping auth, persistence, provider records, APIs, notifications, payments, and deployment outside the toolkit.
 
 Key outcomes:
-- Reference schemas and integration patterns exist for common stacks.
-- Persistence remains an adapter/application concern outside the headless core.
-- Sync and concurrency risks are clearly documented.
+- Package roles and import boundaries are clear.
+- Framework-agnostic web-core usage is documented.
+- Vue and Nuxt integration paths are easy to copy.
+- Consuming-app responsibilities are explicit.
 
 Candidate features:
-- PostgreSQL reference schema.
-- Event-sourced command log example.
-- REST API example.
-- Idempotency key guidance.
-- Optimistic concurrency guidance.
-- Multi-tenant data modeling guide.
-- Backend validation checklist.
+- Frontend adoption guide.
+- Stable `createMaiClient` wrapper for direct TypeScript use.
+- Nuxt plugin example.
+- Booking and provider/admin integration examples.
+- Package boundary checks for documented entrypoints.
+- Bring-your-own auth/data guidance.
 
 Acceptance criteria:
-- A product team can wire `mai` to a backend without guessing table shape or command flow.
-- Race conditions around booking are documented with recommended transaction boundaries.
+- A frontend team can install the packages and choose the right entrypoint without reading internals.
+- App code does not import generated wasm or package internals directly.
+- Docs clearly state that backend, database, auth, and provider-directory ownership belongs to the consuming app.
 
 ### Phase 7: Ecosystem and Distribution
 

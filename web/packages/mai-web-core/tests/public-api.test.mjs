@@ -18,12 +18,14 @@ test("exports documented command and query constants", () => {
 
 test("exports documented runtime client helpers", () => {
   assert.match(distEntry, /buildAppointmentTitle/);
+  assert.match(distEntry, /createMaiClient/);
   assert.match(distEntry, /createBookSlotCommand/);
   assert.match(distEntry, /createCommandEnvelope/);
   assert.match(distEntry, /createQueryEnvelope/);
   assert.match(distEntry, /executeCommand/);
   assert.match(distEntry, /executeWeeklyLayoutQuery/);
   assert.match(distEntry, /parseJsonResponse/);
+  assert.match(distTypes, /type MaiClient/);
 });
 
 test("does not expose wasm internals in app-facing entry", () => {

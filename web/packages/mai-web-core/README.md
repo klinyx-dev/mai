@@ -2,6 +2,23 @@
 
 Framework-agnostic TypeScript contracts and JSON envelope helpers for the `mai` scheduling core.
 
+Use this package when an app wants direct frontend access to `mai` commands and queries without Vue components. For the full package boundary and adoption model, see `docs/frontend_adoption_guide.md` from the repository root.
+
+## Client wrapper
+
+```ts
+import { createMaiClient } from "@mai/mai-web-core";
+import { createWasmAdapter } from "@mai/mai-wasm-adapter";
+
+const adapter = await createWasmAdapter();
+const mai = createMaiClient(adapter);
+
+const layout = mai.queryWeeklyLayout({
+  anchor_date: "2026-05-07",
+  view_filter: { mode: "owners", ids: ["owner-42"] },
+});
+```
+
 ## Weekly layout query filter contract
 
 `WeeklyViewFilter` supports four canonical modes:

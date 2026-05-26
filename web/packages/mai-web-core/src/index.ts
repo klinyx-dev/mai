@@ -37,6 +37,7 @@ export { COMMANDS, QUERIES } from "./types.js";
 
 export {
   buildAppointmentTitle,
+  createMaiClient,
   createBookSlotCommand,
   createCommandEnvelope,
   createQueryEnvelope,
@@ -44,4 +45,5 @@ export {
   executeWeeklyLayoutQuery,
   parseJsonResponse,
   type JsonAdapter,
+  type MaiClient,
 } from "./client.js";

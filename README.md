@@ -34,6 +34,7 @@ Open `http://localhost:3000/`.
 ## Web boundary rule
 - App code must not import `core/pkg/*` directly.
 - App code should use package exports from `web/packages/*` (for example `@mai/mai-wasm-adapter`).
+- Frontend adoption guide: [docs/frontend_adoption_guide.md](./docs/frontend_adoption_guide.md)
 
 ## Main validation
 From repository root:
@@ -57,6 +58,7 @@ cd web && pnpm run build && pnpm run test
 - API compatibility: [docs/api_compatibility.md](./docs/api_compatibility.md)
 - Public API inventory: [docs/public_api_inventory.md](./docs/public_api_inventory.md)
 - Compatibility matrix: [docs/compatibility_matrix.md](./docs/compatibility_matrix.md)
+- Frontend adoption guide: [docs/frontend_adoption_guide.md](./docs/frontend_adoption_guide.md)
 - Wasm adapter usage: [docs/wasm_adapter_usage.md](./docs/wasm_adapter_usage.md)
 - Adapter error codes: [docs/adapter_error_codes.md](./docs/adapter_error_codes.md)
 - Payload examples: [docs/adapter_payload_examples.md](./docs/adapter_payload_examples.md)

@@ -4,6 +4,7 @@ import {
   buildAppointmentTitle,
   createBookSlotCommand,
   createCommandEnvelope,
+  createMaiClient,
   createQueryEnvelope,
   executeCommand,
   executeWeeklyLayoutQuery,
@@ -36,6 +37,100 @@ test("executeWeeklyLayoutQuery returns parsed success payload", () => {
   });
 
   assert.equal(response.status, "success");
+});
+
+test("createMaiClient queries weekly layout through the adapter", () => {
+  let captured = "";
+  const adapter = {
+    execute_command_json: () => '{"status":"success","data":"applied"}',
+    execute_query_json: (input) => {
+      captured = input;
+      return JSON.stringify({
+        status: "success",
+        data: {
+          week_start: "2026-05-04",
+          week_end: "2026-05-11",
+          slots: [],
+          appointments: [],
+        },
+      });
+    },
+  };
+
+  const client = createMaiClient(adapter);
+  const response = client.queryWeeklyLayout({
+    anchor_date: "2026-05-07",
+    timezone: "Europe/Paris",
+  });
+
+  assert.equal(response.status, "success");
+  assert.deepEqual(JSON.parse(captured), {
+    query: "weekly_layout",
+    payload: {
+      anchor_date: "2026-05-07",
+      timezone: "Europe/Paris",
+    },
+  });
+});
+
+test("createMaiClient books a slot with the stable add appointment command", () => {
+  let captured = "";
+  const adapter = {
+    execute_command_json: (input) => {
+      captured = input;
+      return '{"status":"success","data":"applied"}';
+    },
+    execute_query_json: () =>
+      '{"status":"success","data":{"week_start":"","week_end":"","slots":[],"appointments":[]}}',
+  };
+
+  const client = createMaiClient(adapter);
+  const response = client.bookSlot({
+    appointmentId: "appt-1",
+    slotId: "slot-1",
+    inviteeId: "patient-1",
+    createdBy: "patient-1",
+    userDisplayName: "Alex Martin",
+    reason: "Consultation",
+  });
+
+  assert.equal(response.status, "success");
+  assert.deepEqual(JSON.parse(captured), {
+    command: "add_appointment",
+    payload: {
+      appointment_id: "appt-1",
+      slot_id: "slot-1",
+      invitee_ids: ["patient-1"],
+      title: "Alex Martin - Consultation",
+      created_by: "patient-1",
+    },
+  });
+});
+
+test("createMaiClient exposes command execution and response parsing", () => {
+  let captured = "";
+  const adapter = {
+    execute_command_json: (input) => {
+      captured = input;
+      return '{"status":"success","data":"applied"}';
+    },
+    execute_query_json: () =>
+      '{"status":"success","data":{"week_start":"","week_end":"","slots":[],"appointments":[]}}',
+  };
+
+  const client = createMaiClient(adapter);
+  const response = client.executeCommand(
+    createCommandEnvelope(COMMANDS.DELETE_SLOT, {
+      slot_id: "slot-1",
+    })
+  );
+
+  assert.equal(response.status, "success");
+  assert.equal(JSON.parse(captured).command, "delete_slot");
+  assert.deepEqual(client.parseResponse('{"status":"success","data":42}'), {
+    status: "success",
+    data: 42,
+  });
 });
 
 test("executeWeeklyLayoutQuery serializes none filter mode", () => {

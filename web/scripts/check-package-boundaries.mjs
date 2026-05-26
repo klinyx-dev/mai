@@ -22,6 +22,17 @@ const importLikePatterns = [
   /from\s*["'][^"']*mai_bg\.wasm/i,
   /import\s*\(\s*["'][^"']*mai_bg\.wasm/i,
 ];
+const packageInternalImportPatterns = [
+  /from\s*["']@mai\/mai-web-core\/(?!package\.json["'])[^"']+["']/,
+  /from\s*["']@mai\/mai-wasm-adapter\/(?!package\.json["'])[^"']+["']/,
+  /from\s*["']@mai\/mai-ui-vue\/(?!styles\.css["'])[^"']+["']/,
+  /import\s*\(\s*["']@mai\/mai-web-core\/(?!package\.json["'])[^"']+["']\s*\)/,
+  /import\s*\(\s*["']@mai\/mai-wasm-adapter\/(?!package\.json["'])[^"']+["']\s*\)/,
+  /import\s*\(\s*["']@mai\/mai-ui-vue\/(?!styles\.css["'])[^"']+["']\s*\)/,
+  /require\s*\(\s*["']@mai\/mai-web-core\/(?!package\.json["'])[^"']+["']\s*\)/,
+  /require\s*\(\s*["']@mai\/mai-wasm-adapter\/(?!package\.json["'])[^"']+["']\s*\)/,
+  /require\s*\(\s*["']@mai\/mai-ui-vue\/(?!styles\.css["'])[^"']+["']\s*\)/,
+];
 
 function collectFiles(rootDir) {
   const results = [];
@@ -56,18 +67,20 @@ for (const filePath of collectFiles(nuxtAppRoot)) {
   const hasImportViolation = importLikePatterns.some((pattern) =>
     pattern.test(content)
   );
-  if (hasImportViolation) {
+  const hasPackageInternalImportViolation =
+    packageInternalImportPatterns.some((pattern) => pattern.test(content));
+  if (hasImportViolation || hasPackageInternalImportViolation) {
     violations.push(path.relative(repoWebRoot, filePath));
   }
 }
 
 if (violations.length > 0) {
   const lines = [
-    "Boundary check failed: direct core/pkg usage is not allowed in app source.",
+    "Boundary check failed: app source must use documented package entrypoints.",
     ...violations.map((value) => `- ${value}`),
   ];
   console.error(lines.join("\n"));
   process.exit(1);
 }
 
-console.log("Boundary check passed: no direct core/pkg imports in app source.");
+console.log("Boundary check passed: app source uses documented package entrypoints.");
