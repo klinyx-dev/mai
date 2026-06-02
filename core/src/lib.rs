@@ -10,6 +10,7 @@ pub use application::{
     ActorLookup, BusinessRuleError, CommandResult, ReferentialError, SchedulerError,
     SchedulerService, StructuralError,
 };
+pub use application::{SchedulerError as MaiError, SchedulerService as MaiService};
 pub use commands::{
     AddAppointmentCommand, AddBlackoutWindowCommand, AddRecurringTemplateCommand, AddSlotCommand,
     AddSlotsBatchCommand, ApplyRecurringTemplatesCommand, BatchMode, CancelAppointmentCommand,

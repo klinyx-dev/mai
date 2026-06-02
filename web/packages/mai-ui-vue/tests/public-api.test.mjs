@@ -14,6 +14,10 @@ const distStyles = readFileSync(
   new URL("../dist/styles.css", import.meta.url),
   "utf8"
 );
+const distPublicTypes = readFileSync(
+  new URL("../dist/public-types.d.ts", import.meta.url),
+  "utf8"
+);
 
 test("exports primary package entry points", () => {
   assert.match(distEntry, /export \{ MaiBoard \} from "\.\/features\/board";/);
@@ -38,6 +42,10 @@ test("exports primary package entry points", () => {
     distTypes,
     /export \{ createNuxtMaiState, type NuxtMaiPluginState \} from "\.\/integration";/
   );
+  assert.match(
+    distTypes,
+    /export type \{ MaiBooking, MaiInteractive \} from "\.\/public-types";/
+  );
   assert.doesNotMatch(distEntry, /core\/pkg/i);
   assert.doesNotMatch(distEntry, /WasmBindgenAdapter/i);
 });
@@ -55,28 +63,14 @@ test("exports interactive constants", () => {
     distEntry,
     /MAI_BOOKING_FLOW_EVENTS/
   );
-  assert.match(distTypes, /MaiBoardInteractiveEvent/);
-  assert.match(distTypes, /MaiBookingFlowEvent/);
-  assert.match(
-    distTypes,
-    /MaiBoardInteractiveActionConfig/,
-  );
-  assert.match(
-    distTypes,
-    /MaiBoardInteractiveActorConfig/,
-  );
-  assert.match(
-    distTypes,
-    /MaiBoardInteractiveViewConfig/,
-  );
-  assert.match(
-    distTypes,
-    /MaiBoardMode/,
-  );
-  assert.match(
-    distTypes,
-    /MaiCalendarFilterOwnerOption/,
-  );
+  assert.match(distPublicTypes, /namespace MaiInteractive/);
+  assert.match(distPublicTypes, /type ActionConfig = MaiBoardInteractiveActionConfig/);
+  assert.match(distPublicTypes, /type ActorConfig = MaiBoardInteractiveActorConfig/);
+  assert.match(distPublicTypes, /type ViewConfig = MaiBoardInteractiveViewConfig/);
+  assert.match(distPublicTypes, /type Mode = MaiBoardMode/);
+  assert.match(distPublicTypes, /type CalendarFilterOwnerOption = MaiCalendarFilterOwnerOption/);
+  assert.doesNotMatch(distTypes, /export type \{[^}]*MaiBoardInteractiveEvent/s);
+  assert.doesNotMatch(distTypes, /export type \{[^}]*MaiBookingFlowEvent/s);
 });
 
 test("publishes a flattened style entrypoint", () => {

@@ -28,6 +28,13 @@ test("exports documented runtime client helpers", () => {
   assert.match(distTypes, /type MaiClient/);
 });
 
+test("exports documented type namespace", () => {
+  assert.match(distTypes, /MaiCore/);
+  assert.match(distTypes, /WeeklyLayout/);
+  assert.match(distTypes, /AnyCommand/);
+  assert.match(distTypes, /WeeklyLayoutQueryPayload/);
+});
+
 test("does not expose wasm internals in app-facing entry", () => {
   assert.doesNotMatch(distEntry, /core\/pkg/i);
   assert.doesNotMatch(distEntry, /WasmBindgenAdapter/i);

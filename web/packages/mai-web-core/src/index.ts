@@ -32,6 +32,7 @@ export type {
   WeeklyViewFilter,
   WeeklyViewFilterMode,
   WeeklyLayoutQueryPayload,
+  MaiCore,
 } from "./types.js";
 export { COMMANDS, QUERIES } from "./types.js";
 

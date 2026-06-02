@@ -7,18 +7,10 @@ import {
   MaiBoardInteractive,
   MaiCalendarFilterToolbar,
   useMai,
+  type MaiInteractive,
 } from "@mai/mai-ui-vue";
-import type { AnyCommandEnvelope } from "@mai/mai-web-core";
+import type { MaiCore } from "@mai/mai-web-core";
 import { computed, onMounted, ref, shallowRef } from "vue";
-import type {
-  MaiAppointmentChangedEventPayload,
-  MaiInteractionErrorPayload,
-  MaiSlotCreatedEventPayload,
-  MaiViewFilter,
-  MaiCalendarFilterOwnerOption,
-  MaiSlotRescheduledEventPayload,
-  SlotActionEventPayload,
-} from "@mai/mai-ui-vue";
 
 type MaiLayout = ReturnType<typeof useMai>["layout"]["value"];
 
@@ -33,7 +25,7 @@ const ownerLabels: Record<(typeof ownerIds)[number], string> = {
   "owner-77": "Dr Bernard",
   "owner-90": "Dr Dupont",
 };
-const ownerOptions: MaiCalendarFilterOwnerOption[] = ownerIds.map((ownerId) => ({
+const ownerOptions: MaiInteractive.CalendarFilterOwnerOption[] = ownerIds.map((ownerId) => ({
   id: ownerId,
   label: ownerLabels[ownerId],
 }));
@@ -44,7 +36,7 @@ function uniqueIds(ids: readonly string[]): string[] {
   return Array.from(new Set(ids));
 }
 
-function toOwnerFilter(ids: readonly string[]): MaiViewFilter {
+function toOwnerFilter(ids: readonly string[]): MaiInteractive.ViewFilter {
   const normalizedIds = uniqueIds(ids);
   if (normalizedIds.length === 0) {
     return { mode: "none" };
@@ -52,7 +44,7 @@ function toOwnerFilter(ids: readonly string[]): MaiViewFilter {
   return { mode: "owners", ids: normalizedIds };
 }
 
-const activeViewFilter = ref<MaiViewFilter>(toOwnerFilter(selectedOwnerIds.value));
+const activeViewFilter = ref<MaiInteractive.ViewFilter>(toOwnerFilter(selectedOwnerIds.value));
 
 let mai: ReturnType<typeof useMai> | null = null;
 let seededDenseScenario = false;
@@ -102,7 +94,7 @@ async function navigateWeek(shift: -1 | 0 | 1): Promise<void> {
   await refreshWeek();
 }
 
-async function mutateCommand(command: AnyCommandEnvelope): Promise<boolean> {
+async function mutateCommand(command: MaiCore.AnyCommand): Promise<boolean> {
   if (!mai) return false;
   const ok = await mai.mutate(command);
   if (ok) {
@@ -113,7 +105,7 @@ async function mutateCommand(command: AnyCommandEnvelope): Promise<boolean> {
   return ok;
 }
 
-async function mutateCommandSoft(command: AnyCommandEnvelope): Promise<void> {
+async function mutateCommandSoft(command: MaiCore.AnyCommand): Promise<void> {
   if (!mai) return;
   await mai.mutate(command);
 }
@@ -123,7 +115,7 @@ async function seedDenseProviderScenario(): Promise<void> {
     return;
   }
 
-  const commands: AnyCommandEnvelope[] = [
+  const commands: MaiCore.AnyCommand[] = [
     {
       command: "add_slot",
       payload: {
@@ -210,35 +202,35 @@ function setSuccessMessage(
   setActionMessage(SUCCESS_EVENT_TO_ACTION[eventName], targetId);
 }
 
-async function onSlotCreated(payload: MaiSlotCreatedEventPayload): Promise<void> {
+async function onSlotCreated(payload: MaiInteractive.SlotCreatedPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_CREATED, payload.slotId);
   await refreshWeek();
 }
 
-async function onSlotBooked(payload: SlotActionEventPayload): Promise<void> {
+async function onSlotBooked(payload: MaiInteractive.SlotActionPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED, payload.slotId);
   await refreshWeek();
 }
 
 async function onSlotRescheduled(
-  payload: MaiSlotRescheduledEventPayload
+  payload: MaiInteractive.SlotReschedulePayload
 ): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_RESCHEDULED, payload.slotId);
   await refreshWeek();
 }
 
-async function onSlotCancelled(payload: SlotActionEventPayload): Promise<void> {
+async function onSlotCancelled(payload: MaiInteractive.SlotActionPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED, payload.slotId);
   await refreshWeek();
 }
 
-async function onSlotDeleted(payload: SlotActionEventPayload): Promise<void> {
+async function onSlotDeleted(payload: MaiInteractive.SlotActionPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_DELETED, payload.slotId);
   await refreshWeek();
 }
 
 async function onAppointmentCancelled(
-  payload: MaiAppointmentChangedEventPayload
+  payload: MaiInteractive.AppointmentChangedPayload
 ): Promise<void> {
   setSuccessMessage(
     INTERACTION_SUCCESS_EVENTS.APPOINTMENT_CANCELLED,
@@ -248,7 +240,7 @@ async function onAppointmentCancelled(
 }
 
 async function onAppointmentDeleted(
-  payload: MaiAppointmentChangedEventPayload
+  payload: MaiInteractive.AppointmentChangedPayload
 ): Promise<void> {
   setSuccessMessage(
     INTERACTION_SUCCESS_EVENTS.APPOINTMENT_DELETED,
@@ -257,7 +249,7 @@ async function onAppointmentDeleted(
   await refreshWeek();
 }
 
-function onInteractionError(payload: MaiInteractionErrorPayload): void {
+function onInteractionError(payload: MaiInteractive.ErrorPayload): void {
   errorMessage.value = `${payload.action}: ${payload.message}`;
   setActionMessage("interaction-error", payload.action);
 }
@@ -280,7 +272,7 @@ const boardActions = {
   mutateCommand,
 } as const;
 
-async function onViewFilterChange(viewFilter: MaiViewFilter): Promise<void> {
+async function onViewFilterChange(viewFilter: MaiInteractive.ViewFilter): Promise<void> {
   activeViewFilter.value = viewFilter;
   interactionMessage.value = `view-filter-change: ${viewFilter.mode}`;
   selectedOwnerIds.value =

@@ -1,7 +1,7 @@
 use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
     AddAppointmentCommand, AddSlotCommand, BlackoutLayoutNode, BusinessRuleError,
-    CancelAppointmentCommand, ReferentialError, SchedulerError, StructuralError, WeeklyLayout,
+    CancelAppointmentCommand, MaiError, ReferentialError, StructuralError, WeeklyLayout,
     WeeklyLayoutQuery,
     adapters::wasm::{
         WasmAdapterError, WasmAddBlackoutWindowPayload, WasmAddRecurringTemplatePayload,
@@ -82,14 +82,14 @@ fn weekly_layout_query_round_trips_with_iso_date() {
 
 #[test]
 fn scheduler_error_serializes_with_stable_tagged_shape() {
-    let error = SchedulerError::Business(BusinessRuleError::SlotAlreadyBooked);
+    let error = MaiError::Business(BusinessRuleError::SlotAlreadyBooked);
 
     let json = serde_json::to_value(&error).unwrap();
 
     assert_eq!(json["kind"], "Business");
     assert_eq!(json["detail"], "SlotAlreadyBooked");
 
-    let restored: SchedulerError = serde_json::from_value(json).unwrap();
+    let restored: MaiError = serde_json::from_value(json).unwrap();
     assert_eq!(restored, error);
 }
 
@@ -264,7 +264,7 @@ fn wasm_query_request_accepts_none_view_filter_mode() {
 #[test]
 fn wasm_error_response_wraps_scheduler_error() {
     let response = WasmCommandResponse::Error {
-        error: WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+        error: WasmAdapterError::from_scheduler_error(MaiError::Business(
             BusinessRuleError::SlotAlreadyBooked,
         )),
     };
@@ -316,7 +316,7 @@ fn wasm_contract_helpers_parse_and_render_json_strings() {
     })
     .unwrap();
     let rendered_query = render_query_response(&WasmQueryResponse::Error {
-        error: WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+        error: WasmAdapterError::from_scheduler_error(MaiError::Business(
             BusinessRuleError::SlotAlreadyBooked,
         )),
     })
@@ -811,7 +811,7 @@ fn wasm_adapter_wrapper_maps_invalid_json_to_contract_error() {
 
 #[test]
 fn wasm_adapter_error_conversion_is_deterministic_for_business_errors() {
-    let error = WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+    let error = WasmAdapterError::from_scheduler_error(MaiError::Business(
         BusinessRuleError::CannotDeleteBookedSlot,
     ));
     assert_eq!(error.category, WasmErrorCategory::Business);
@@ -821,7 +821,7 @@ fn wasm_adapter_error_conversion_is_deterministic_for_business_errors() {
 
 #[test]
 fn wasm_adapter_error_conversion_is_deterministic_for_cancel_authorization_error() {
-    let error = WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+    let error = WasmAdapterError::from_scheduler_error(MaiError::Business(
         BusinessRuleError::AppointmentCancelNotAllowed,
     ));
     assert_eq!(error.category, WasmErrorCategory::Business);
@@ -834,7 +834,7 @@ fn wasm_adapter_error_conversion_is_deterministic_for_cancel_authorization_error
 
 #[test]
 fn wasm_adapter_error_conversion_is_deterministic_for_referential_errors() {
-    let error = WasmAdapterError::from_scheduler_error(SchedulerError::Referential(
+    let error = WasmAdapterError::from_scheduler_error(MaiError::Referential(
         ReferentialError::CreatorNotFound,
     ));
     assert_eq!(error.category, WasmErrorCategory::Referential);
@@ -863,7 +863,7 @@ fn wasm_adapter_error_conversion_covers_all_structural_codes() {
     ];
 
     for (source, code) in cases {
-        let error = WasmAdapterError::from_scheduler_error(SchedulerError::Structural(source));
+        let error = WasmAdapterError::from_scheduler_error(MaiError::Structural(source));
         assert_eq!(error.category, WasmErrorCategory::Structural);
         assert_eq!(error.code, code);
     }
@@ -888,7 +888,7 @@ fn wasm_adapter_error_conversion_covers_all_referential_codes() {
     ];
 
     for (source, code) in cases {
-        let error = WasmAdapterError::from_scheduler_error(SchedulerError::Referential(source));
+        let error = WasmAdapterError::from_scheduler_error(MaiError::Referential(source));
         assert_eq!(error.category, WasmErrorCategory::Referential);
         assert_eq!(error.code, code);
     }
@@ -937,7 +937,7 @@ fn wasm_adapter_error_conversion_covers_all_business_codes() {
     ];
 
     for (source, code) in cases {
-        let error = WasmAdapterError::from_scheduler_error(SchedulerError::Business(source));
+        let error = WasmAdapterError::from_scheduler_error(MaiError::Business(source));
         assert_eq!(error.category, WasmErrorCategory::Business);
         assert_eq!(error.code, code);
     }
@@ -1033,7 +1033,7 @@ fn wasm_response_fixture_matches_success_applied_shape() {
 #[test]
 fn wasm_response_fixture_matches_business_error_shape() {
     let response = WasmCommandResponse::Error {
-        error: WasmAdapterError::from_scheduler_error(SchedulerError::Business(
+        error: WasmAdapterError::from_scheduler_error(MaiError::Business(
             BusinessRuleError::SlotAlreadyBooked,
         )),
     };

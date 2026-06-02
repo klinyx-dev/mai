@@ -1,8 +1,7 @@
 use chrono::{NaiveDate, TimeZone, Utc};
 use mai::{
     ActorId, AddAppointmentCommand, AddSlotCommand, AppointmentId, CalendarOwnerFilter,
-    CancelAppointmentCommand, CancelSlotCommand, SchedulerError, SchedulerService, SlotId,
-    WeeklyLayoutQuery,
+    CancelAppointmentCommand, CancelSlotCommand, MaiError, MaiService, SlotId, WeeklyLayoutQuery,
 };
 
 fn add_slot_command(
@@ -33,7 +32,7 @@ fn add_appointment_command(appointment_id: &str, slot_id: &str) -> AddAppointmen
 
 #[test]
 fn add_slot_book_unbook_and_layout_flow() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
@@ -59,7 +58,7 @@ fn add_slot_book_unbook_and_layout_flow() {
 
 #[test]
 fn participant_can_cancel_appointment_and_unbook_slot() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
@@ -86,7 +85,7 @@ fn participant_can_cancel_appointment_and_unbook_slot() {
 
 #[test]
 fn cancel_then_booking_is_rejected() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
@@ -102,13 +101,13 @@ fn cancel_then_booking_is_rejected() {
 
     assert_eq!(
         error,
-        SchedulerError::Business(mai::BusinessRuleError::SlotCancelled)
+        MaiError::Business(mai::BusinessRuleError::SlotCancelled)
     );
 }
 
 #[test]
 fn overlapping_slots_same_resource_owner_are_rejected() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
@@ -126,13 +125,13 @@ fn overlapping_slots_same_resource_owner_are_rejected() {
 
     assert_eq!(
         error,
-        SchedulerError::Business(mai::BusinessRuleError::SlotOverlap)
+        MaiError::Business(mai::BusinessRuleError::SlotOverlap)
     );
 }
 
 #[test]
 fn overlapping_slots_different_resource_owners_are_allowed() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
@@ -163,7 +162,7 @@ fn overlapping_slots_different_resource_owners_are_allowed() {
 
 #[test]
 fn duplicate_slot_id_is_rejected_and_keeps_original_slot() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
@@ -173,7 +172,7 @@ fn duplicate_slot_id_is_rejected_and_keeps_original_slot() {
 
     assert_eq!(
         error,
-        SchedulerError::Business(mai::BusinessRuleError::SlotIdAlreadyExists)
+        MaiError::Business(mai::BusinessRuleError::SlotIdAlreadyExists)
     );
 
     let layout = service
@@ -190,7 +189,7 @@ fn duplicate_slot_id_is_rejected_and_keeps_original_slot() {
 
 #[test]
 fn duplicate_appointment_id_is_rejected_and_keeps_original_appointment() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
@@ -207,7 +206,7 @@ fn duplicate_appointment_id_is_rejected_and_keeps_original_appointment() {
 
     assert_eq!(
         error,
-        SchedulerError::Business(mai::BusinessRuleError::AppointmentIdAlreadyExists)
+        MaiError::Business(mai::BusinessRuleError::AppointmentIdAlreadyExists)
     );
 
     let layout = service
@@ -226,7 +225,7 @@ fn duplicate_appointment_id_is_rejected_and_keeps_original_appointment() {
 
 #[test]
 fn weekly_layout_owner_filter_modes_are_deterministic() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();
@@ -259,7 +258,7 @@ fn weekly_layout_owner_filter_modes_are_deterministic() {
 
 #[test]
 fn weekly_layout_visible_window_clips_and_filters_nodes() {
-    let mut service = SchedulerService::new();
+    let mut service = MaiService::new();
     service
         .add_slot(add_slot_command("slot-1", "owner-1", 9, 10))
         .unwrap();

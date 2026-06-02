@@ -78,9 +78,10 @@ test("booking flow is exported from the public package entrypoint", () => {
   assert.match(distEntry, /MaiAvailabilityPicker/);
   assert.match(distEntry, /MaiCategoryPicker/);
   assert.match(distEntry, /MaiResourcePicker/);
-  assert.match(distTypes, /MaiBookingActionConfig/);
-  assert.match(distTypes, /MaiBookSlotPayload/);
-  assert.match(distTypes, /MaiBookingResource/);
+  assert.match(distTypes, /export type \{ MaiBooking, MaiInteractive \}/);
+  assert.doesNotMatch(distTypes, /export type \{[^}]*MaiBookingActionConfig/s);
+  assert.doesNotMatch(distTypes, /export type \{[^}]*MaiBookSlotPayload/s);
+  assert.doesNotMatch(distTypes, /export type \{[^}]*MaiBookingResource/s);
 });
 
 test("booking flow styles follow design-system constraints", () => {

@@ -215,3 +215,61 @@ export type TypedQueryEnvelope<TQuery extends QueryName> = {
   query: TQuery;
   payload: QueryPayloadMap[TQuery];
 };
+
+export declare namespace MaiCore {
+  export type ErrorCategory = WasmErrorCategory;
+  export type AdapterError = WasmAdapterError;
+  export type Response<T> = WasmResponse<T>;
+
+  export type SlotLayoutNode = import("./types.js").SlotLayoutNode;
+  export type AppointmentLayoutNode = import("./types.js").AppointmentLayoutNode;
+  export type BlackoutLayoutNode = import("./types.js").BlackoutLayoutNode;
+  export type WeeklyLayout = import("./types.js").WeeklyLayout;
+  export type WeeklyViewFilterMode = import("./types.js").WeeklyViewFilterMode;
+  export type WeeklyViewFilter = import("./types.js").WeeklyViewFilter;
+  export type WeeklyLayoutQueryPayload =
+    import("./types.js").WeeklyLayoutQueryPayload;
+
+  export type CommandName = import("./types.js").CommandName;
+  export type CommandPayloadMap = import("./types.js").CommandPayloadMap;
+  export type Command<TCommand extends CommandName = CommandName> =
+    TCommand extends CommandName ? TypedCommandEnvelope<TCommand> : never;
+  export type AnyCommand = AnyCommandEnvelope;
+  export type CommandEnvelope<TPayload extends object> =
+    import("./types.js").CommandEnvelope<TPayload>;
+
+  export type QueryName = import("./types.js").QueryName;
+  export type QueryPayloadMap = import("./types.js").QueryPayloadMap;
+  export type Query<TQuery extends QueryName = QueryName> =
+    TQuery extends QueryName ? TypedQueryEnvelope<TQuery> : never;
+  export type QueryEnvelope<TPayload extends object> =
+    import("./types.js").QueryEnvelope<TPayload>;
+
+  export type AddSlotCommandPayload =
+    import("./types.js").AddSlotCommandPayload;
+  export type AddSlotsBatchCommandPayload =
+    import("./types.js").AddSlotsBatchCommandPayload;
+  export type AddRecurringTemplateCommandPayload =
+    import("./types.js").AddRecurringTemplateCommandPayload;
+  export type ApplyRecurringTemplatesCommandPayload =
+    import("./types.js").ApplyRecurringTemplatesCommandPayload;
+  export type AddBlackoutWindowCommandPayload =
+    import("./types.js").AddBlackoutWindowCommandPayload;
+  export type RescheduleSlotCommandPayload =
+    import("./types.js").RescheduleSlotCommandPayload;
+  export type DeleteSlotCommandPayload =
+    import("./types.js").DeleteSlotCommandPayload;
+  export type CancelSlotCommandPayload =
+    import("./types.js").CancelSlotCommandPayload;
+  export type AddAppointmentCommandPayload =
+    import("./types.js").AddAppointmentCommandPayload;
+  export type CancelAppointmentCommandPayload =
+    import("./types.js").CancelAppointmentCommandPayload;
+  export type DeleteAppointmentCommandPayload =
+    import("./types.js").DeleteAppointmentCommandPayload;
+  export type BatchMode = import("./types.js").BatchMode;
+  export type BookSlotCommandInput =
+    import("./types.js").BookSlotCommandInput;
+  export type BuildAppointmentTitleInput =
+    import("./types.js").BuildAppointmentTitleInput;
+}

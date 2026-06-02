@@ -3,33 +3,26 @@ import "@mai/mai-ui-vue/styles.css";
 import {
   MaiBookingFlow,
   useMai,
-  type MaiBookSlotPayload,
-  type MaiBookingActorConfig,
-  type MaiBookingCategory,
-  type MaiBookingContext,
-  type MaiBookingLocation,
-  type MaiBookingResource,
-  type MaiBookingSlotOwner,
+  type MaiBooking,
 } from "@mai/mai-ui-vue";
 import {
   COMMANDS,
   createBookSlotCommand,
   createCommandEnvelope,
-  type WeeklyLayout,
-  type WeeklyLayoutQueryPayload,
+  type MaiCore,
 } from "@mai/mai-web-core";
 import { computed, onMounted, ref, shallowRef } from "vue";
 
 const route = useRoute();
 const contextId = computed(() => String(route.params.contextId ?? "workspace-demo"));
 const anchorDate = ref("2026-05-07");
-const layout = shallowRef<WeeklyLayout | null>(null);
+const layout = shallowRef<MaiCore.WeeklyLayout | null>(null);
 const statusMessage = ref("Choose a category to begin.");
 const bookingError = ref<string | null>(null);
 const signedInUser = ref<{ inviteeId: string; userDisplayName: string } | null>(
   null
 );
-const context = computed<MaiBookingContext>(() => ({
+const context = computed<MaiBooking.Context>(() => ({
   contextId: contextId.value,
   label: "Resource workspace",
 }));
@@ -38,7 +31,7 @@ let mai: ReturnType<typeof useMai> | null = null;
 let appointmentCounter = 1;
 const seeded = ref(false);
 
-const categories: MaiBookingCategory[] = [
+const categories: MaiBooking.Category[] = [
   {
     categoryId: "category-a",
     label: "Category A",
@@ -51,7 +44,7 @@ const categories: MaiBookingCategory[] = [
   },
 ];
 
-const locations: MaiBookingLocation[] = [
+const locations: MaiBooking.Location[] = [
   {
     locationId: "location-main",
     label: "Main clinic",
@@ -64,7 +57,7 @@ const locations: MaiBookingLocation[] = [
   },
 ];
 
-const resources: MaiBookingResource[] = [
+const resources: MaiBooking.Resource[] = [
   {
     resourceId: "resource-1",
     label: "Resource One",
@@ -85,7 +78,7 @@ const resources: MaiBookingResource[] = [
   },
 ];
 
-const slotOwners: Record<string, MaiBookingSlotOwner> = {
+const slotOwners: Record<string, MaiBooking.SlotOwner> = {
   "slot-resource-1": {
     resourceOwnerId: "owner-1",
     resourceId: "resource-1",
@@ -103,7 +96,7 @@ const slotOwners: Record<string, MaiBookingSlotOwner> = {
   },
 };
 
-const bookingActor = computed<MaiBookingActorConfig>(() => ({
+const bookingActor = computed<MaiBooking.ActorConfig>(() => ({
   inviteeId: signedInUser.value?.inviteeId,
   userDisplayName: signedInUser.value?.userDisplayName,
   createdBy: signedInUser.value?.inviteeId,
@@ -150,7 +143,9 @@ async function seedResourceSlots(): Promise<void> {
   seeded.value = true;
 }
 
-async function queryLayout(payload: WeeklyLayoutQueryPayload): Promise<WeeklyLayout> {
+async function queryLayout(
+  payload: MaiCore.WeeklyLayoutQueryPayload
+): Promise<MaiCore.WeeklyLayout> {
   if (!mai) {
     throw new Error("mai adapter is not ready");
   }
@@ -166,7 +161,7 @@ async function queryLayout(payload: WeeklyLayoutQueryPayload): Promise<WeeklyLay
   return layout.value;
 }
 
-async function bookSlot(payload: MaiBookSlotPayload): Promise<void> {
+async function bookSlot(payload: MaiBooking.BookSlotPayload): Promise<void> {
   if (!mai) {
     throw new Error("mai adapter is not ready");
   }
@@ -190,7 +185,7 @@ async function requestAuth(): Promise<{
   return signedInUser.value;
 }
 
-async function onBookingConfirmed(payload: MaiBookSlotPayload): Promise<void> {
+async function onBookingConfirmed(payload: MaiBooking.BookSlotPayload): Promise<void> {
   bookingError.value = null;
   statusMessage.value = `Confirmed: ${payload.title}`;
 }
