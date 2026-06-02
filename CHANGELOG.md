@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+### Changed
+- Replaced verbose `@mai/mai-ui-vue` root type exports with compact public namespaces: `MaiBooking.*` and `MaiInteractive.*`.
+- Added `MaiCore.*` as the compact type namespace for `@mai/mai-web-core` command, query, response, and layout contracts.
+- Added crate-root Rust facade names `MaiService` and `MaiError` for project-consistent public usage.
+- Updated the Nuxt example app to use the namespace-based public API.
+- Consolidated documentation into one concise root `README.md` and one canonical `SPEC.md`.
+
+### Breaking
+- Consumers should replace imports such as `type MaiBookingConfig` and `type WeekShift` with `type MaiBooking`/`type MaiInteractive` namespace imports.
+
 ## [0.1.1] - 2026-04-20
 ### Fixed
 - Restored generated-package smoke validation in CI by tracking `core/tests/generated_package_smoke.mjs` (previously ignored by `.gitignore`, causing `MODULE_NOT_FOUND` in `core/tests/run_generated_package_smoke.sh`).

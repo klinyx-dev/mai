@@ -1,11 +1,11 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is currently spec-first. The consolidated source of truth lives in [`docs/README.md`](./docs/README.md).
+This repository is spec-first. The technical source of truth lives in [`SPEC.md`](./SPEC.md).
 
 Implementation is expected to start as a Rust crate with a layout close to `core/{domain,commands,validation,state,layout,application,adapters}`. 
 
-Put architectural decisions and major changes under `docs/`, and keep agent workflow artifacts in `.agents/{rules,plans,memory}`.
+Put architectural decisions and major changes in `SPEC.md`, and keep agent workflow artifacts in `.agents/{rules,plans,memory}`.
 
 ## Build, Test, and Development Commands
 Once the crate is scaffolded, standardize on Cargo:

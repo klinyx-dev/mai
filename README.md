@@ -1,21 +1,28 @@
 # mai
 
-Headless scheduling engine in Rust, with wasm output and a web workspace for app integration.
+`mai` is a frontend-first appointment scheduling toolkit with a deterministic Rust core, a wasm JSON boundary, TypeScript web contracts, a wasm loader, Vue UI components, and a Nuxt example app.
 
-## What is in this repo
-- `core/`: Rust scheduling core crate.
-- `web/`: pnpm workspace for TypeScript contracts, wasm adapter, Vue UI, and Nuxt example app.
-- `docs/README.md`: consolidated project documentation.
+The project is booking-first. Consuming apps keep ownership of auth, persistence, provider records, backend APIs, payments, notifications, deployment, and product-specific workflows.
 
-## Quick start
-Prerequisites:
-- Rust stable (`rustup`, `cargo`)
+## Repository
+
+- `core/`: Rust scheduling crate and wasm-bindgen adapter.
+- `web/packages/mai-web-core`: framework-agnostic TypeScript contracts and client helpers.
+- `web/packages/mai-wasm-adapter`: browser wasm loader.
+- `web/packages/mai-ui-vue`: Vue board, interactive board, booking flow, and styles.
+- `web/examples/nuxt-app`: runnable Nuxt integration example.
+- `SPEC.md`: technical source of truth.
+
+## Requirements
+
+- Rust stable
 - Rust target `wasm32-unknown-unknown`
 - `wasm-pack`
 - Node.js 22.x
 - `pnpm` 10.x
 
-From repository root:
+## Run Locally
+
 ```bash
 rustup target add wasm32-unknown-unknown
 
@@ -31,18 +38,22 @@ pnpm run example:dev
 
 Open `http://localhost:3000/`.
 
-## Web boundary rule
-- App code must not import `core/pkg/*` directly.
-- App code should use package exports from `web/packages/*` (for example `@mai/mai-wasm-adapter`).
-- Frontend adoption guidance: [docs/README.md](./docs/README.md)
+If port `3000` is busy:
 
-## Main validation
-From repository root:
+```bash
+pnpm --filter @mai/nuxt-app-example dev --host 127.0.0.1 --port 3101
+```
+
+## Validate
+
+From the repository root:
+
 ```bash
 ./scripts/verify-local.sh
 ```
 
 Manual equivalent:
+
 ```bash
 cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
@@ -52,6 +63,15 @@ core/tests/run_generated_package_smoke.sh
 cd web && pnpm run build && pnpm run test
 ```
 
-## Developer docs
-- Contributor workflow: [README-dev.md](./README-dev.md)
-- Consolidated project docs: [docs/README.md](./docs/README.md)
+## Public Imports
+
+App code should use package entrypoints only:
+
+```ts
+import { createMaiClient, type MaiCore } from "@mai/mai-web-core";
+import { createWasmAdapter } from "@mai/mai-wasm-adapter";
+import { MaiBookingFlow, type MaiBooking } from "@mai/mai-ui-vue";
+import "@mai/mai-ui-vue/styles.css";
+```
+
+Do not import generated wasm files, `core/pkg/*`, package `src/*`, package `dist/*`, or feature-internal paths from app code.

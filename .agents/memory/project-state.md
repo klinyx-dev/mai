@@ -2,7 +2,7 @@
 
 ## Snapshot
 
-Date: 2026-05-26
+Date: 2026-06-02
 
 `mai` is a frontend-first appointment scheduling toolkit. The repository contains a deterministic Rust core, wasm JSON adapter, TypeScript web contracts, a wasm loader package, Vue UI components, and a Nuxt example app.
 
@@ -42,6 +42,7 @@ Current emphasis:
 - Vue presentational board, interactive provider/admin board, and client-facing booking flow.
 - Nuxt example app.
 - Boundary checks preventing app direct imports from generated wasm and package internals.
+- Compact public type namespaces for frontend consumers: `MaiCore.*`, `MaiBooking.*`, and `MaiInteractive.*`.
 
 ## Important Decisions
 
@@ -56,6 +57,7 @@ Current emphasis:
 - `mai` does not own backend APIs, persistence, auth, provider directories, payments, notifications, reminders, or deployment.
 - Completed implementation plans are removed from `.agents/plans` and summarized here.
 - Public contract changes follow semver expectations; breaking changes require migration notes.
+- Frontend apps should prefer namespace type imports over individual root type imports.
 
 ## Public Contract Baseline
 
@@ -109,6 +111,9 @@ Weekly layout payload supports:
 - `MaiBoard` is the presentational week board.
 - `MaiBoardInteractive` handles provider/admin interactions and command orchestration.
 - `MaiBookingFlow` handles client-facing booking.
+- `@mai/mai-ui-vue` root exports component values directly and exposes public contracts through `MaiBooking.*` and `MaiInteractive.*`.
+- `@mai/mai-web-core` exposes framework-agnostic contracts through `MaiCore.*`.
+- Rust consumers should prefer crate-root `MaiService` and `MaiError` facade names.
 - Booking flow must not mutate provider availability.
 - Provider/admin board handles slot and appointment administration actions according to app-provided permissions.
 - Styles follow `DESIGN.md`: monochrome-first, calm operational utility, tokenized CSS, restrained status colors, accessible focus states, no decorative gradients/glassmorphism.
@@ -116,10 +121,10 @@ Weekly layout payload supports:
 
 ## Documentation State
 
-- `docs/README.md` is now the single synthetic public docs document.
-- `.agents/memory/project-state.md` is now the single synthetic agent memory document.
-- Historical per-task memory files and split docs were consolidated into these two documents.
-- The deleted roadmap plan file `.agents/plans/product-quality-roadmap/plan.md` is intentionally included in the cleanup.
+- `README.md` is the single concise project entrypoint.
+- `SPEC.md` is the single technical source of truth.
+- Package-level READMEs, `README-dev.md`, and `docs/README.md` were removed to avoid fragmented documentation.
+- `.agents/memory/project-state.md` remains the single synthetic agent memory document.
 
 ## Verification Baseline
 
@@ -140,7 +145,18 @@ core/tests/run_generated_package_smoke.sh
 cd web && pnpm run build && pnpm run test
 ```
 
-Last known full validation before docs cleanup passed after rerunning outside the sandbox due to a sandbox `wasm-pack` permission issue.
+Last known full validation passed on 2026-06-02 with `./scripts/verify-local.sh`.
+
+Consumer validation also passed on 2026-06-02:
+
+```bash
+pnpm -C klinyx-web test
+pnpm -C klinyx-web typecheck
+pnpm -C klinyx-web build
+pnpm -C clinic test
+pnpm -C clinic typecheck
+pnpm -C clinic build
+```
 
 ## Next Logical Work
 
