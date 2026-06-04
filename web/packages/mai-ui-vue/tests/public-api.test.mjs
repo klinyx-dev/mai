@@ -18,6 +18,10 @@ const distPublicTypes = readFileSync(
   new URL("../dist/public-types.d.ts", import.meta.url),
   "utf8"
 );
+const distUseMaiTypes = readFileSync(
+  new URL("../dist/useMai.d.ts", import.meta.url),
+  "utf8"
+);
 
 test("exports primary package entry points", () => {
   assert.match(distEntry, /export \{ MaiBoard \} from "\.\/features\/board";/);
@@ -38,6 +42,7 @@ test("exports primary package entry points", () => {
     distTypes,
     /export \{ useMai, type UseMaiOptions \} from "\.\/integration";/
   );
+  assert.match(distUseMaiTypes, /mutateAndRefresh/);
   assert.match(
     distTypes,
     /export \{ createNuxtMaiState, type NuxtMaiPluginState \} from "\.\/integration";/

@@ -16,19 +16,26 @@ export function useMai(options: UseMaiOptions) {
   const layout = ref<WeeklyLayout | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  let refreshRequestId = 0;
 
   async function refresh(payload: WeeklyLayoutQueryPayload) {
+    const requestId = ++refreshRequestId;
     loading.value = true;
     error.value = null;
     try {
       const response = client.queryWeeklyLayout(payload);
+      if (requestId !== refreshRequestId) {
+        return;
+      }
       if (response.status === "error") {
         error.value = `${response.error.code}: ${response.error.message}`;
         return;
       }
       layout.value = response.data;
     } finally {
-      loading.value = false;
+      if (requestId === refreshRequestId) {
+        loading.value = false;
+      }
     }
   }
 
@@ -38,6 +45,19 @@ export function useMai(options: UseMaiOptions) {
       error.value = `${response.error.code}: ${response.error.message}`;
       return false;
     }
+    error.value = null;
+    return true;
+  }
+
+  async function mutateAndRefresh(
+    command: AnyCommandEnvelope,
+    payload: WeeklyLayoutQueryPayload
+  ) {
+    const ok = await mutate(command);
+    if (!ok) {
+      return false;
+    }
+    await refresh(payload);
     return true;
   }
 
@@ -47,5 +67,6 @@ export function useMai(options: UseMaiOptions) {
     error,
     refresh,
     mutate,
+    mutateAndRefresh,
   };
 }

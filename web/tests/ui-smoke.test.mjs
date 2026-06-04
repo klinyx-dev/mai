@@ -47,3 +47,11 @@ test("ui smoke: example refreshes layout after blackout creation", () => {
   assert.match(nuxtExamplePage, /INTERACTION_SUCCESS_EVENTS\.BLACKOUT_CREATED/);
   assert.match(nuxtExamplePage, /@blackout-created="onBlackoutCreated"/);
 });
+
+test("ui smoke: example centralizes mutation-triggered layout refresh", () => {
+  assert.match(nuxtExamplePage, /mai\.mutateAndRefresh/);
+  assert.doesNotMatch(
+    nuxtExamplePage,
+    /async function onBlackoutCreated[\s\S]*?await refreshWeek\(\);[\s\S]*?async function onSlotBooked/
+  );
+});

@@ -97,13 +97,18 @@ async function navigateWeek(shift: -1 | 0 | 1): Promise<void> {
 
 async function mutateCommand(command: MaiCore.AnyCommand): Promise<boolean> {
   if (!mai) return false;
-  const ok = await mai.mutate(command);
-  if (ok) {
-    errorMessage.value = null;
-  } else {
+  loading.value = true;
+  try {
+    const ok = await mai.mutateAndRefresh(command, {
+      anchor_date: anchorDate.value,
+      view_filter: activeViewFilter.value,
+    });
+    layout.value = mai.layout.value;
     errorMessage.value = mai.error.value;
+    return ok;
+  } finally {
+    loading.value = false;
   }
-  return ok;
 }
 
 async function mutateCommandSoft(command: MaiCore.AnyCommand): Promise<void> {
@@ -205,36 +210,30 @@ function setSuccessMessage(
 
 async function onSlotCreated(payload: MaiInteractive.SlotCreatedPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_CREATED, payload.slotId);
-  await refreshWeek();
 }
 
 async function onBlackoutCreated(
   payload: MaiInteractive.BlackoutCreatedPayload
 ): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.BLACKOUT_CREATED, payload.blackoutId);
-  await refreshWeek();
 }
 
 async function onSlotBooked(payload: MaiInteractive.SlotActionPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED, payload.slotId);
-  await refreshWeek();
 }
 
 async function onSlotRescheduled(
   payload: MaiInteractive.SlotReschedulePayload
 ): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_RESCHEDULED, payload.slotId);
-  await refreshWeek();
 }
 
 async function onSlotCancelled(payload: MaiInteractive.SlotActionPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED, payload.slotId);
-  await refreshWeek();
 }
 
 async function onSlotDeleted(payload: MaiInteractive.SlotActionPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_DELETED, payload.slotId);
-  await refreshWeek();
 }
 
 async function onAppointmentCancelled(
@@ -244,7 +243,6 @@ async function onAppointmentCancelled(
     INTERACTION_SUCCESS_EVENTS.APPOINTMENT_CANCELLED,
     payload.appointmentId
   );
-  await refreshWeek();
 }
 
 async function onAppointmentDeleted(
@@ -254,7 +252,6 @@ async function onAppointmentDeleted(
     INTERACTION_SUCCESS_EVENTS.APPOINTMENT_DELETED,
     payload.appointmentId
   );
-  await refreshWeek();
 }
 
 function onInteractionError(payload: MaiInteractive.ErrorPayload): void {
