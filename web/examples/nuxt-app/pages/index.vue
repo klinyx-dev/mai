@@ -50,6 +50,7 @@ let mai: ReturnType<typeof useMai> | null = null;
 let seededDenseScenario = false;
 const SUCCESS_EVENT_TO_ACTION = {
   [INTERACTION_SUCCESS_EVENTS.SLOT_CREATED]: INTERACTION_ACTIONS.CREATE_SLOT,
+  [INTERACTION_SUCCESS_EVENTS.BLACKOUT_CREATED]: INTERACTION_ACTIONS.CREATE_BLACKOUT,
   [INTERACTION_SUCCESS_EVENTS.SLOT_RESCHEDULED]: INTERACTION_ACTIONS.RESCHEDULE_SLOT,
   [INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED]: INTERACTION_ACTIONS.BOOK_SLOT,
   [INTERACTION_SUCCESS_EVENTS.SLOT_CANCELLED]: INTERACTION_ACTIONS.CANCEL_SLOT,
@@ -207,6 +208,13 @@ async function onSlotCreated(payload: MaiInteractive.SlotCreatedPayload): Promis
   await refreshWeek();
 }
 
+async function onBlackoutCreated(
+  payload: MaiInteractive.BlackoutCreatedPayload
+): Promise<void> {
+  setSuccessMessage(INTERACTION_SUCCESS_EVENTS.BLACKOUT_CREATED, payload.blackoutId);
+  await refreshWeek();
+}
+
 async function onSlotBooked(payload: MaiInteractive.SlotActionPayload): Promise<void> {
   setSuccessMessage(INTERACTION_SUCCESS_EVENTS.SLOT_BOOKED, payload.slotId);
   await refreshWeek();
@@ -314,6 +322,7 @@ onMounted(async () => {
         :actions="boardActions"
         @navigate-week="navigateWeek"
         @slot-created="onSlotCreated"
+        @blackout-created="onBlackoutCreated"
         @slot-rescheduled="onSlotRescheduled"
         @slot-booked="onSlotBooked"
         @slot-cancelled="onSlotCancelled"

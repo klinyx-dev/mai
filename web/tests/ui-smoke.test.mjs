@@ -14,6 +14,10 @@ const headerBundle = readFileSync(
   new URL("../packages/mai-ui-vue/dist/features/board/internal/ui/MaiWeekHeader.js", import.meta.url),
   "utf8"
 );
+const nuxtExamplePage = readFileSync(
+  new URL("../examples/nuxt-app/pages/index.vue", import.meta.url),
+  "utf8"
+);
 
 test("ui smoke: day grid remains keyboard interactive", () => {
   assert.match(boardBundle, /onKeydown/);
@@ -36,4 +40,10 @@ test("ui smoke: blackout windows render as non-interactive overlays", () => {
   assert.match(boardBundle, /mai-board__blackout-window/);
   assert.match(boardCss, /\.mai-board__blackout-window/);
   assert.match(boardCss, /pointer-events:\s*none/);
+});
+
+test("ui smoke: example refreshes layout after blackout creation", () => {
+  assert.match(nuxtExamplePage, /async function onBlackoutCreated/);
+  assert.match(nuxtExamplePage, /INTERACTION_SUCCESS_EVENTS\.BLACKOUT_CREATED/);
+  assert.match(nuxtExamplePage, /@blackout-created="onBlackoutCreated"/);
 });
