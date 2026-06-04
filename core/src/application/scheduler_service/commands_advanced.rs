@@ -12,6 +12,12 @@ use super::SchedulerService;
 
 impl SchedulerService {
     pub fn add_blackout_window(&mut self, cmd: AddBlackoutWindowCommand) -> CommandResult {
+        if self
+            .state
+            .contains_blackout_window(&cmd.resource_owner_id, &cmd.blackout_id)
+        {
+            return Err(BusinessRuleError::BlackoutIdAlreadyExists.into());
+        }
         self.ensure_actor_exists(
             &cmd.resource_owner_id,
             crate::application::ReferentialError::ResourceOwnerNotFound,

@@ -27,6 +27,7 @@ export interface AppointmentLayoutNode {
 
 export interface BlackoutLayoutNode {
   blackout_id: string;
+  resource_owner_id: string;
   day_index: number;
   start_minute: number;
   end_minute: number;

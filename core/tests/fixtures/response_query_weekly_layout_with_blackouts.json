@@ -8,6 +8,7 @@
     "blackout_windows": [
       {
         "blackout_id": "blackout-1001",
+        "resource_owner_id": "owner-42",
         "day_index": 0,
         "start_minute": 720,
         "end_minute": 810,

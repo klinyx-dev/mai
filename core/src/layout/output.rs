@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::domain::ids::{AppointmentId, SlotId};
+use crate::domain::ids::{ActorId, AppointmentId, SlotId};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WeeklyLayout {
@@ -37,6 +37,7 @@ pub struct AppointmentLayoutNode {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BlackoutLayoutNode {
     pub blackout_id: String,
+    pub resource_owner_id: ActorId,
     pub day_index: u8,
     pub start_minute: u16,
     pub end_minute: u16,

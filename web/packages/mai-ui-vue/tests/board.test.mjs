@@ -252,9 +252,19 @@ test("maps blackout windows and groups them by day", () => {
     blackout_windows: [
       {
         blackout_id: "bo-1",
+        resource_owner_id: "owner-1",
         day_index: 2,
         start_minute: 540,
         end_minute: 600,
+        clipped_start: false,
+        clipped_end: false,
+      },
+      {
+        blackout_id: "bo-1",
+        resource_owner_id: "owner-2",
+        day_index: 2,
+        start_minute: 600,
+        end_minute: 660,
         clipped_start: false,
         clipped_end: false,
       },
@@ -264,9 +274,17 @@ test("maps blackout windows and groups them by day", () => {
   assert.deepEqual(mapBlackoutWindows(layout), [
     {
       id: "bo-1",
+      ownerId: "owner-1",
       dayIndex: 2,
       startMinute: 540,
       endMinute: 600,
+    },
+    {
+      id: "bo-1",
+      ownerId: "owner-2",
+      dayIndex: 2,
+      startMinute: 600,
+      endMinute: 660,
     },
   ]);
 });

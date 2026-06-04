@@ -32,6 +32,7 @@ export interface DayColumn {
   events: CalendarEvent[];
   blackoutWindows: {
     id: string;
+    ownerId: string;
     dayIndex: number;
     startMinute: number;
     endMinute: number;
@@ -191,6 +192,7 @@ export function mapBlackoutWindows(layout: WeeklyLayout | null): DayColumn["blac
   }
   return layout.blackout_windows.map((window) => ({
     id: window.blackout_id,
+    ownerId: window.resource_owner_id,
     dayIndex: window.day_index,
     startMinute: window.start_minute,
     endMinute: window.end_minute,

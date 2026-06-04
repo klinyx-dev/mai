@@ -905,6 +905,10 @@ fn wasm_adapter_error_conversion_covers_all_business_codes() {
             BusinessRuleError::AppointmentIdAlreadyExists,
             "appointment_id_already_exists",
         ),
+        (
+            BusinessRuleError::BlackoutIdAlreadyExists,
+            "blackout_id_already_exists",
+        ),
         (BusinessRuleError::SlotOverlap, "slot_overlap"),
         (BusinessRuleError::SlotAlreadyBooked, "slot_already_booked"),
         (BusinessRuleError::SlotCancelled, "slot_cancelled"),
@@ -1069,6 +1073,7 @@ fn wasm_query_response_fixture_matches_weekly_layout_with_blackouts_shape() {
             appointments: vec![],
             blackout_windows: vec![BlackoutLayoutNode {
                 blackout_id: "blackout-1001".to_string(),
+                resource_owner_id: "owner-42".into(),
                 day_index: 0,
                 start_minute: 720,
                 end_minute: 810,

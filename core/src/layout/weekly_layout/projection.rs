@@ -134,6 +134,7 @@ pub fn project_blackout_layout_nodes_resolved(
             )?;
             Some(BlackoutLayoutNode {
                 blackout_id: window.blackout_id.clone(),
+                resource_owner_id: window.resource_owner_id.clone(),
                 day_index: position.day_index,
                 start_minute: clipped.start_minute,
                 end_minute: clipped.end_minute,

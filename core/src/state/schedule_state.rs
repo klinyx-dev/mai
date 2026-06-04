@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::domain::appointment::Appointment;
 use crate::domain::blackout_window::BlackoutWindow;
-use crate::domain::ids::{AppointmentId, SlotId};
+use crate::domain::ids::{ActorId, AppointmentId, SlotId};
 use crate::domain::recurring_template::RecurringTemplate;
 use crate::domain::slot::Slot;
 
@@ -13,7 +13,7 @@ pub struct ScheduleState {
     pub(crate) slots: HashMap<SlotId, Slot>,
     pub(crate) appointments: HashMap<AppointmentId, Appointment>,
     pub(crate) recurring_templates: HashMap<String, RecurringTemplate>,
-    pub(crate) blackout_windows: HashMap<String, BlackoutWindow>,
+    pub(crate) blackout_windows: Vec<BlackoutWindow>,
 }
 
 impl ScheduleState {
@@ -70,7 +70,13 @@ impl ScheduleState {
     }
 
     pub fn blackout_windows_iter(&self) -> impl Iterator<Item = &BlackoutWindow> {
-        self.blackout_windows.values()
+        self.blackout_windows.iter()
+    }
+
+    pub fn contains_blackout_window(&self, resource_owner_id: &ActorId, blackout_id: &str) -> bool {
+        self.blackout_windows_iter().any(|window| {
+            &window.resource_owner_id == resource_owner_id && window.blackout_id == blackout_id
+        })
     }
 
     pub(crate) fn appointment_ids_sorted(&self) -> Vec<AppointmentId> {
@@ -100,8 +106,7 @@ impl ScheduleState {
     }
 
     pub(crate) fn insert_blackout_window(&mut self, blackout: BlackoutWindow) {
-        self.blackout_windows
-            .insert(blackout.blackout_id.clone(), blackout);
+        self.blackout_windows.push(blackout);
     }
 }
 

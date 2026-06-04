@@ -43,6 +43,8 @@ pub enum BusinessRuleError {
     SlotIdAlreadyExists,
     #[error("appointment id already exists")]
     AppointmentIdAlreadyExists,
+    #[error("blackout id already exists for this resource owner")]
+    BlackoutIdAlreadyExists,
     #[error("slot overlaps with an existing active slot for the same resource owner")]
     SlotOverlap,
     #[error("slot is already booked")]

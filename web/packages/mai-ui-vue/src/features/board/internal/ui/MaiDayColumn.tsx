@@ -309,7 +309,7 @@ export const MaiDayColumn = defineComponent({
                 class="mai-board__blackout-window"
                 style={{ top: `${position.top}%`, height: `${position.height}%` }}
                 aria-hidden="true"
-                key={`blackout-${window.id}`}
+                key={`blackout-${window.ownerId}-${window.id}`}
               ></div>
             );
           })}

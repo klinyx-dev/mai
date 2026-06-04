@@ -71,6 +71,7 @@ Out of scope:
 - Active overlapping slots for the same resource owner are rejected.
 - Overlaps across different resource owners are allowed.
 - Blackout windows block slot creation for affected owners and time ranges.
+- Blackout IDs are unique per resource owner; the same blackout ID is allowed for different resource owners.
 - Duplicate slot IDs and appointment IDs are rejected atomically.
 - Invalid operations leave state unchanged.
 

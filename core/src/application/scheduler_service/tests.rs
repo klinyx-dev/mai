@@ -722,6 +722,88 @@ fn blackout_window_blocks_add_slot() {
 }
 
 #[test]
+fn duplicate_blackout_id_for_same_owner_is_rejected_and_state_is_unchanged() {
+    let mut service = SchedulerService::new();
+    let command = AddBlackoutWindowCommand {
+        blackout_id: "bo-1".to_string(),
+        resource_owner_id: ActorId::new("owner-1"),
+        start: Utc.with_ymd_and_hms(2026, 1, 5, 8, 0, 0).unwrap(),
+        end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+        reason: "holiday".to_string(),
+        created_by: ActorId::new("creator-1"),
+    };
+    service.add_blackout_window(command.clone()).unwrap();
+
+    let result = service.add_blackout_window(AddBlackoutWindowCommand {
+        start: Utc.with_ymd_and_hms(2026, 1, 6, 8, 0, 0).unwrap(),
+        end: Utc.with_ymd_and_hms(2026, 1, 6, 11, 0, 0).unwrap(),
+        ..command
+    });
+
+    assert_eq!(
+        result.expect_err("duplicate blackout id for same owner must fail"),
+        SchedulerError::Business(BusinessRuleError::BlackoutIdAlreadyExists)
+    );
+    assert_eq!(service.state().blackout_windows_iter().count(), 1);
+}
+
+#[test]
+fn duplicate_blackout_id_for_different_owner_is_allowed() {
+    let mut service = SchedulerService::new();
+    service
+        .add_blackout_window(AddBlackoutWindowCommand {
+            blackout_id: "bo-shared".to_string(),
+            resource_owner_id: ActorId::new("owner-1"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 8, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+            reason: "holiday".to_string(),
+            created_by: ActorId::new("creator-1"),
+        })
+        .unwrap();
+
+    service
+        .add_blackout_window(AddBlackoutWindowCommand {
+            blackout_id: "bo-shared".to_string(),
+            resource_owner_id: ActorId::new("owner-2"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 8, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+            reason: "holiday".to_string(),
+            created_by: ActorId::new("creator-1"),
+        })
+        .unwrap();
+
+    assert_eq!(service.state().blackout_windows_iter().count(), 2);
+}
+
+#[test]
+fn blackout_window_blocks_reschedule_slot_for_matching_owner() {
+    let mut service = SchedulerService::new();
+    service.add_slot(add_slot_cmd("slot-1")).unwrap();
+    service
+        .add_blackout_window(AddBlackoutWindowCommand {
+            blackout_id: "bo-1".to_string(),
+            resource_owner_id: ActorId::new("owner-1"),
+            start: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+            end: Utc.with_ymd_and_hms(2026, 1, 5, 12, 0, 0).unwrap(),
+            reason: "holiday".to_string(),
+            created_by: ActorId::new("creator-1"),
+        })
+        .unwrap();
+
+    let result = service.reschedule_slot(RescheduleSlotCommand {
+        slot_id: SlotId::new("slot-1"),
+        new_start: Utc.with_ymd_and_hms(2026, 1, 5, 11, 0, 0).unwrap(),
+        new_end: Utc.with_ymd_and_hms(2026, 1, 5, 11, 30, 0).unwrap(),
+        updated_by: ActorId::new("creator-1"),
+    });
+
+    assert_eq!(
+        result.expect_err("blackout should reject reschedule"),
+        SchedulerError::Business(BusinessRuleError::SlotInBlackoutWindow)
+    );
+}
+
+#[test]
 fn capacity_two_allows_two_appointments_then_rejects_third() {
     let mut service = SchedulerService::new();
     service
