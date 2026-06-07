@@ -38,7 +38,8 @@ export const MaiEventCardBody = defineComponent({
       );
       const showInlineMain = props.density !== MAI_EVENT_TIME_DENSITIES.MICRO;
       const showInlineDescription =
-        props.density === MAI_EVENT_TIME_DENSITIES.COMPACT;
+        props.density === MAI_EVENT_TIME_DENSITIES.COMPACT ||
+        props.density === MAI_EVENT_TIME_DENSITIES.MEDIUM;
 
       if (isInline) {
         return (

@@ -34,7 +34,9 @@ export const MaiDraftEventCard = defineComponent({
       );
       const isInline = density !== MAI_EVENT_TIME_DENSITIES.COMFORTABLE;
       const showInlineMain = density !== MAI_EVENT_TIME_DENSITIES.MICRO;
-      const showInlineDescription = density === MAI_EVENT_TIME_DENSITIES.COMPACT;
+      const showInlineDescription =
+        density === MAI_EVENT_TIME_DENSITIES.COMPACT ||
+        density === MAI_EVENT_TIME_DENSITIES.MEDIUM;
 
       return (
         <div

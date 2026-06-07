@@ -27,6 +27,7 @@ import {
 } from "../dist/features/board/internal/model/event-geometry.js";
 import {
   MAI_EVENT_TIME_DENSITIES,
+  eventCardDensity,
   eventTimeText,
 } from "../dist/features/board/internal/model/event-display.js";
 
@@ -258,6 +259,13 @@ test("event visual height preserves normal spans and floors tiny events", () => 
   assert.equal(eventVisualHeightPercent(600, 610, 60), 25);
 });
 
+test("event card density uses medium layout for 45 to 60 minute cards", () => {
+  assert.equal(eventCardDensity(540, 570), MAI_EVENT_TIME_DENSITIES.COMPACT);
+  assert.equal(eventCardDensity(480, 525), MAI_EVENT_TIME_DENSITIES.MEDIUM);
+  assert.equal(eventCardDensity(480, 540), MAI_EVENT_TIME_DENSITIES.MEDIUM);
+  assert.equal(eventCardDensity(480, 555), MAI_EVENT_TIME_DENSITIES.COMFORTABLE);
+});
+
 test("event time text only shows start time for small cards", () => {
   const label = (minute) => `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
 
@@ -272,6 +280,10 @@ test("event time text only shows start time for small cards", () => {
   assert.equal(
     eventTimeText(label, 540, 545, MAI_EVENT_TIME_DENSITIES.MICRO),
     "09:00"
+  );
+  assert.equal(
+    eventTimeText(label, 480, 540, MAI_EVENT_TIME_DENSITIES.MEDIUM),
+    "08:00-09:00"
   );
   assert.equal(
     eventTimeText(label, 540, 600, MAI_EVENT_TIME_DENSITIES.COMFORTABLE),

@@ -28,6 +28,10 @@
         padding: 5px 8px;
     }
 
+    .mai-board__event--medium {
+        padding: 4px 8px;
+    }
+
     .mai-board__event--tight {
         padding: 2px 6px;
     }
@@ -166,6 +170,16 @@
 
     .mai-board__event-summary--compact {
         gap: 4px;
+    }
+
+    .mai-board__event-summary--medium {
+        gap: 3px;
+    }
+
+    .mai-board__event-summary--inline.mai-board__event-summary--medium {
+        grid-template-columns: minmax(0, 1fr);
+        align-content: center;
+        align-items: center;
     }
 
     .mai-board__event-summary--inline {
@@ -312,6 +326,16 @@
 
     .mai-board__event-summary--compact .mai-board__event-time-row {
         gap: 4px;
+    }
+
+    .mai-board__event-summary--medium .mai-board__event-time-row {
+        gap: 5px;
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .mai-board__event-summary--medium .mai-board__event-inline-main {
+        width: 100%;
     }
 
     .mai-board__event-summary--tight {

@@ -94,6 +94,8 @@ test("compiled styles preserve restrained scheduler design rules", () => {
   );
   assert.match(distStyles, /\.mai-board__event--slot/);
   assert.match(distStyles, /\.mai-board__event--appointment/);
+  assert.match(distStyles, /\.mai-board__event--medium/);
+  assert.match(distStyles, /\.mai-board__event-summary--medium/);
   assert.match(distStyles, /\.mai-board__event-inline-main/);
   assert.match(
     distStyles,
