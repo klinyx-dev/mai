@@ -7,6 +7,7 @@ import type { CalendarEvent } from "../model/view-model";
 import { MIN_SLOT_SPAN_MINUTES } from "../model/slot-gesture";
 import { MaiEventCardBody } from "./event-card/MaiEventCardBody";
 import { MaiEventResizeHandles } from "./event-card/MaiEventResizeHandles";
+import { canStartEventDrag } from "../model/event-display";
 import {
   buildReschedulePayload,
   centerPointFromTarget,
@@ -126,11 +127,11 @@ export const MaiEventCard = defineComponent({
     }
 
     function startDrag(mode: DragMode, event: PointerEvent) {
-      if (event.button !== 0 || props.event.kind !== "slot") {
+      event.stopPropagation();
+      if (!canStartEventDrag(props.event.kind, event.button)) {
         return;
       }
       event.preventDefault();
-      event.stopPropagation();
 
       const source = event.target instanceof HTMLElement ? event.target : null;
       const card = source?.closest(".mai-board__event") as HTMLElement | null;

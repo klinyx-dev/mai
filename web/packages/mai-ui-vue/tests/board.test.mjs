@@ -27,6 +27,7 @@ import {
 } from "../dist/features/board/internal/model/event-geometry.js";
 import {
   MAI_EVENT_TIME_DENSITIES,
+  canStartEventDrag,
   eventCardDensity,
   eventTimeText,
 } from "../dist/features/board/internal/model/event-display.js";
@@ -264,6 +265,12 @@ test("event card density uses medium layout for 45 to 60 minute cards", () => {
   assert.equal(eventCardDensity(480, 525), MAI_EVENT_TIME_DENSITIES.MEDIUM);
   assert.equal(eventCardDensity(480, 540), MAI_EVENT_TIME_DENSITIES.MEDIUM);
   assert.equal(eventCardDensity(480, 555), MAI_EVENT_TIME_DENSITIES.COMFORTABLE);
+});
+
+test("only slot cards can start event drag gestures", () => {
+  assert.equal(canStartEventDrag("slot", 0), true);
+  assert.equal(canStartEventDrag("appointment", 0), false);
+  assert.equal(canStartEventDrag("slot", 2), false);
 });
 
 test("event time text only shows start time for small cards", () => {

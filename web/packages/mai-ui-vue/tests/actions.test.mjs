@@ -11,6 +11,10 @@ import {
   normalizeSlotMinuteRange,
   timeLabelFromMinuteOfDay,
 } from "../dist/features/interactive-board/actions/payload.js";
+import {
+  actionDayLabel,
+  actionTimeRangeLabel,
+} from "../dist/features/interactive-board/actions/display.js";
 
 test("builds slot and appointment action payloads", () => {
   assert.deepEqual(buildSlotActionPayload("slot-9"), { slotId: "slot-9" });
@@ -55,6 +59,12 @@ test("parses and formats minute labels for create-slot time editing", () => {
   assert.equal(timeLabelFromMinuteOfDay(0), "00:00");
   assert.equal(timeLabelFromMinuteOfDay(570), "09:30");
   assert.equal(timeLabelFromMinuteOfDay(1450), "24:00");
+});
+
+test("formats action-card day and time display labels", () => {
+  assert.equal(actionDayLabel(0), "Mon");
+  assert.equal(actionDayLabel(8), "Day 9");
+  assert.equal(actionTimeRangeLabel(480, 540), "08:00 - 09:00");
 });
 
 test("normalizes invalid create-slot minute range deterministically", () => {

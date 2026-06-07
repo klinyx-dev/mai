@@ -9,6 +9,10 @@ export const MAI_EVENT_TIME_DENSITIES = {
 export type EventTimeDensity =
   (typeof MAI_EVENT_TIME_DENSITIES)[keyof typeof MAI_EVENT_TIME_DENSITIES];
 
+export function canStartEventDrag(kind: "slot" | "appointment", button: number): boolean {
+  return kind === "slot" && button === 0;
+}
+
 export function eventCardDensity(
   startMinute: number,
   endMinute: number

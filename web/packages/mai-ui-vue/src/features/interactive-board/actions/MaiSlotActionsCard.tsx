@@ -7,12 +7,14 @@ import type {
 import { INTERACTION_ACTIONS } from "../../../types/interactive";
 import {
   type ActionButtonModel,
+  MAI_ACTION_BUTTON_TONES,
   MaiActionButtons,
   MaiActionCard,
-  MaiActionMetaList,
+  MaiActionDetailList,
 } from "../../../shared/ui/action-card/MaiActionCard";
+import { actionDayLabel, actionTimeRangeLabel } from "./display";
 import { buildSlotActionPayload } from "./payload";
-import { isMaiActionVisible } from "./visibility";
+import { visibleActionButtons } from "./visibility";
 
 export const MaiSlotActionsCard = defineComponent({
   name: "MaiSlotActionsCard",
@@ -46,52 +48,42 @@ export const MaiSlotActionsCard = defineComponent({
     const buttons: ActionButtonModel[] = [
       {
         key: INTERACTION_ACTIONS.BOOK_SLOT,
-        label: "Book Slot",
-        tone: "primary",
+        label: "Book slot",
+        tone: MAI_ACTION_BUTTON_TONES.PRIMARY,
         disabled: props.busy,
         onClick: () => emit(INTERACTION_ACTIONS.BOOK_SLOT, slotPayload()),
       },
       {
         key: INTERACTION_ACTIONS.CANCEL_SLOT,
-        label: "Cancel Slot",
+        label: "Cancel slot",
         disabled: props.busy,
         onClick: () => emit(INTERACTION_ACTIONS.CANCEL_SLOT, slotPayload()),
       },
       {
         key: INTERACTION_ACTIONS.DELETE_SLOT,
-        label: "Delete Slot",
-        tone: "danger",
+        label: "Delete slot",
+        tone: MAI_ACTION_BUTTON_TONES.DANGER,
         disabled: props.busy,
         onClick: () => emit(INTERACTION_ACTIONS.DELETE_SLOT, slotPayload()),
       },
     ];
 
-    return () =>
-      h(
-        MaiActionCard,
-        {
-          title: "Selected Slot",
-          closeAriaLabel: "Close slot actions",
-          onClose: () => emit("close"),
-        },
-        {
-          default: () => [
-            h(MaiActionMetaList, {
-              lines: [
-                `${props.slot.slotId} - day ${props.slot.dayIndex}`,
-                `${props.slot.startMinute} - ${props.slot.endMinute}`,
-              ],
-            }),
-            h(MaiActionButtons, {
-              buttons: buttons.filter((button) =>
-                isMaiActionVisible(
-                  props.visibleActions,
-                  button.key as (typeof INTERACTION_ACTIONS)[keyof typeof INTERACTION_ACTIONS]
-                )
-              ),
-            }),
-          ],
-        }
-      );
+    return () => (
+      <MaiActionCard
+        eyebrow="Available slot"
+        title={actionTimeRangeLabel(props.slot.startMinute, props.slot.endMinute)}
+        subtitle={`${actionDayLabel(props.slot.dayIndex)} availability`}
+        closeAriaLabel="Close slot actions"
+        onClose={() => emit("close")}
+      >
+        <MaiActionDetailList
+          details={[
+            { label: "Slot ID", value: props.slot.slotId },
+            { label: "Day", value: actionDayLabel(props.slot.dayIndex) },
+          ]}
+        />
+        <MaiActionButtons buttons={visibleActionButtons(buttons, props.visibleActions)} />
+      </MaiActionCard>
+    );
   },
 });

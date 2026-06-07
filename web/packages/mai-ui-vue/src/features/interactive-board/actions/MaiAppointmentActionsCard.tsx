@@ -7,12 +7,14 @@ import type {
 import { INTERACTION_ACTIONS } from "../../../types/interactive";
 import {
   type ActionButtonModel,
+  MAI_ACTION_BUTTON_TONES,
   MaiActionButtons,
   MaiActionCard,
-  MaiActionMetaList,
+  MaiActionDetailList,
 } from "../../../shared/ui/action-card/MaiActionCard";
+import { actionDayLabel, actionTimeRangeLabel } from "./display";
 import { buildAppointmentActionPayload } from "./payload";
-import { isMaiActionVisible } from "./visibility";
+import { visibleActionButtons } from "./visibility";
 
 export const MaiAppointmentActionsCard = defineComponent({
   name: "MaiAppointmentActionsCard",
@@ -48,48 +50,43 @@ export const MaiAppointmentActionsCard = defineComponent({
       buildAppointmentActionPayload(props.appointment.appointmentId);
     const buttons: ActionButtonModel[] = [
       {
-        key: INTERACTION_ACTIONS.DELETE_APPOINTMENT,
-        label: "Delete Appointment",
-        tone: "danger",
-        disabled: props.busy,
-        onClick: () =>
-          emit(INTERACTION_ACTIONS.DELETE_APPOINTMENT, appointmentPayload()),
-      },
-      {
         key: INTERACTION_ACTIONS.CANCEL_APPOINTMENT,
-        label: "Cancel Appointment",
+        label: "Cancel appointment",
         disabled: props.busy,
         onClick: () =>
           emit(INTERACTION_ACTIONS.CANCEL_APPOINTMENT, appointmentPayload()),
       },
+      {
+        key: INTERACTION_ACTIONS.DELETE_APPOINTMENT,
+        label: "Delete appointment",
+        tone: MAI_ACTION_BUTTON_TONES.DANGER,
+        disabled: props.busy,
+        onClick: () =>
+          emit(INTERACTION_ACTIONS.DELETE_APPOINTMENT, appointmentPayload()),
+      },
     ];
 
-    return () =>
-      h(
-        MaiActionCard,
-        {
-          title: "Selected Appointment",
-          closeAriaLabel: "Close appointment actions",
-          onClose: () => emit("close"),
-        },
-        {
-          default: () => [
-            h(MaiActionMetaList, {
-              lines: [
-                `${props.appointment.appointmentId} - slot ${props.appointment.slotId}`,
-                `day ${props.appointment.dayIndex} - ${props.appointment.startMinute} - ${props.appointment.endMinute}`,
-              ],
-            }),
-            h(MaiActionButtons, {
-              buttons: buttons.filter((button) =>
-                isMaiActionVisible(
-                  props.visibleActions,
-                  button.key as (typeof INTERACTION_ACTIONS)[keyof typeof INTERACTION_ACTIONS]
-                )
-              ),
-            }),
-          ],
-        }
-      );
+    return () => (
+      <MaiActionCard
+        eyebrow="Appointment"
+        title={actionTimeRangeLabel(
+          props.appointment.startMinute,
+          props.appointment.endMinute
+        )}
+        subtitle={`${actionDayLabel(props.appointment.dayIndex)} booking`}
+        closeAriaLabel="Close appointment actions"
+        onClose={() => emit("close")}
+      >
+        <MaiActionDetailList
+          details={[
+            { label: "Appointment ID", value: props.appointment.appointmentId },
+            { label: "Slot ID", value: props.appointment.slotId },
+          ]}
+        />
+        <MaiActionButtons
+          buttons={visibleActionButtons(buttons, props.visibleActions)}
+        />
+      </MaiActionCard>
+    );
   },
 });

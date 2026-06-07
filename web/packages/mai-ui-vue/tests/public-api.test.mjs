@@ -83,6 +83,8 @@ test("publishes a flattened style entrypoint", () => {
   assert.match(distStyles, /@layer mai\.tokens, mai\.base, mai\.components, mai\.responsive;/);
   assert.match(distStyles, /\.mai-board__/);
   assert.match(distStyles, /\.mai-action-/);
+  assert.match(distStyles, /\.mai-action-card__details/);
+  assert.match(distStyles, /\.mai-action-card__detail-label/);
   assert.match(distStyles, /--duration-fast:\s*120ms/);
   assert.doesNotMatch(distStyles, /@import\s+["']\.\//);
 });
@@ -101,6 +103,18 @@ test("compiled styles preserve restrained scheduler design rules", () => {
     distStyles,
     /\.mai-board__event\s*\{[^}]*box-sizing:\s*border-box;/s
   );
+  assert.match(
+    distStyles,
+    /\.mai-action-card\s*\{[^}]*font-family:\s*var\(--font-sans\);/s
+  );
+  assert.match(
+    distStyles,
+    /\.mai-action-input\s*\{[^}]*font:\s*inherit;/s
+  );
+  assert.match(
+    distStyles,
+    /\.mai-action-button\s*\{[^}]*font:\s*inherit;/s
+  );
   assert.doesNotMatch(
     distStyles,
     /\.mai-board__event(?:--compact|--tight|--micro)?\s*\{[^}]*min-height:/s
@@ -114,6 +128,7 @@ test("compiled styles preserve restrained scheduler design rules", () => {
     /\.mai-filter-toolbar__dropdown-panel\s*\{[^}]*width:\s*220px;/s
   );
   assert.doesNotMatch(distStyles, /#dc2626/i);
+  assert.doesNotMatch(distStyles, /#991b1b/i);
   assert.doesNotMatch(distStyles, /drop-shadow/i);
   assert.doesNotMatch(distStyles, /translateY\(-1px\)/);
   assert.doesNotMatch(distStyles, /text-transform:\s*uppercase/i);

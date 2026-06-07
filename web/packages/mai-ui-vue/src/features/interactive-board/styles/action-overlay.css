@@ -1,12 +1,14 @@
 @layer mai.components {
     .mai-action-card {
         display: grid;
-        gap: 10px;
+        gap: var(--space-4);
         padding: var(--space-4);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        background: var(--color-surface);
-        box-shadow: var(--shadow-md);
+        border-radius: var(--radius-xl);
+        background: var(--color-surface-raised);
+        color: var(--color-text);
+        font-family: var(--font-sans);
+        box-shadow: var(--shadow-lg);
     }
 
     .mai-action-popover {
@@ -18,42 +20,19 @@
 
     .mai-action-card__header {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
-        gap: var(--space-2);
+        gap: var(--space-3);
     }
 
-    .mai-action-card__title {
-        margin: 0;
-        color: var(--color-text-strong);
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 1.25;
+    .mai-action-card__heading {
+        display: grid;
+        gap: var(--space-1);
+        min-width: 0;
     }
 
-    .mai-action-card__close {
-        border: 1px solid var(--color-border-subtle);
-        border-radius: var(--radius-sm);
-        background: var(--color-bg-subtle);
-        color: var(--color-text-subtle);
-        width: 28px;
-        height: 28px;
-        cursor: pointer;
-        box-shadow: var(--shadow-ring);
-        transition: background-color 120ms ease, color 120ms ease;
-    }
-
-    .mai-action-card__close:hover {
-        background: var(--color-bg-muted);
-        color: var(--color-text);
-    }
-
-    .mai-action-card__close:focus-visible {
-        outline: 2px solid var(--color-focus);
-        outline-offset: 1px;
-    }
-
-    .mai-action-card__meta {
+    .mai-action-card__eyebrow,
+    .mai-action-card__subtitle {
         margin: 0;
         color: var(--color-text-muted);
         font-size: 12px;
@@ -61,21 +40,104 @@
         line-height: 1.35;
     }
 
-    .mai-action-card__actions {
-        display: flex;
-        flex-wrap: wrap;
+    .mai-action-card__title {
+        margin: 0;
+        color: var(--color-text-strong);
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .mai-action-card__close {
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-md);
+        background: var(--color-surface);
+        color: var(--color-text-subtle);
+        flex: 0 0 auto;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        box-shadow: var(--shadow-ring);
+        transition:
+            background-color var(--duration-fast) var(--ease-standard),
+            border-color var(--duration-fast) var(--ease-standard),
+            color var(--duration-fast) var(--ease-standard);
+    }
+
+    .mai-action-card__close:hover {
+        background: var(--color-bg-muted);
+        color: var(--color-text);
+        border-color: var(--color-border);
+    }
+
+    .mai-action-card__close:focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    .mai-action-card__body {
+        display: grid;
+        gap: var(--space-4);
+    }
+
+    .mai-action-card__details {
+        display: grid;
         gap: var(--space-2);
+        margin: 0;
+        padding: var(--space-3);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-lg);
+        background: var(--color-bg-subtle);
+    }
+
+    .mai-action-card__detail {
+        display: grid;
+        grid-template-columns: minmax(84px, 0.42fr) minmax(0, 1fr);
+        gap: var(--space-3);
+        align-items: baseline;
+        min-width: 0;
+    }
+
+    .mai-action-card__detail-label,
+    .mai-action-card__detail-value {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .mai-action-card__detail-label {
+        color: var(--color-text-muted);
+        font-weight: 500;
+    }
+
+    .mai-action-card__detail-value {
+        color: var(--color-text);
+        font-size: 12px;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+    }
+
+    .mai-action-card__actions {
+        display: grid;
+        gap: var(--space-2);
+        grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
     }
 
     .mai-action-field {
         display: grid;
         gap: 6px;
+        min-width: 0;
     }
 
     .mai-action-field-grid {
         display: grid;
-        gap: 8px;
+        gap: var(--space-3);
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mai-action-field--full {
+        grid-column: 1 / -1;
     }
 
     .mai-action-field__label {
@@ -90,10 +152,13 @@
         border-radius: var(--radius-md);
         background: var(--color-surface);
         color: var(--color-text);
-        padding: 8px 10px;
+        width: 100%;
+        height: 36px;
+        box-sizing: border-box;
+        padding: 0 var(--space-3);
+        font: inherit;
         font-size: 13px;
-        font-weight: 400;
-        line-height: 1.2;
+        line-height: 36px;
         box-shadow: none;
         font-variant-numeric: tabular-nums;
     }
@@ -108,14 +173,21 @@
         border-radius: var(--radius-md);
         background: var(--color-surface);
         color: var(--color-text);
-        padding: 0 14px;
+        width: 100%;
+        min-width: 0;
+        padding: 0 var(--space-3);
         height: 36px;
+        font: inherit;
         font-size: 14px;
         font-weight: 500;
         line-height: 1.2;
         cursor: pointer;
         box-shadow: var(--shadow-sm);
-        transition: background-color 120ms ease, box-shadow 120ms ease;
+        transition:
+            background-color var(--duration-fast) var(--ease-standard),
+            border-color var(--duration-fast) var(--ease-standard),
+            color var(--duration-fast) var(--ease-standard),
+            box-shadow var(--duration-fast) var(--ease-standard);
     }
 
     .mai-action-button:hover:not(:disabled) {
@@ -138,11 +210,17 @@
         color: var(--color-text-inverse);
         border-color: var(--color-danger);
         background: var(--color-danger);
-        box-shadow: none;
+        box-shadow: var(--shadow-button-inset);
     }
 
     .mai-action-button--danger:hover:not(:disabled) {
-        background: #991b1b;
+        background: var(--color-danger);
+        border-color: var(--color-danger);
+    }
+
+    .mai-action-button:focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
     }
 
     .mai-action-button:disabled {
