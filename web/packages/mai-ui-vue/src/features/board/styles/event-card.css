@@ -3,7 +3,7 @@
         position: absolute;
         left: 8px;
         right: 8px;
-        min-height: 24px;
+        box-sizing: border-box;
         padding: 9px 10px;
         border-radius: var(--radius-md);
         overflow: hidden;
@@ -25,18 +25,15 @@
     }
 
     .mai-board__event--compact {
-        min-height: 20px;
-        padding: 6px 8px;
+        padding: 5px 8px;
     }
 
     .mai-board__event--tight {
-        min-height: 17px;
-        padding: 3px 6px;
+        padding: 2px 6px;
     }
 
     .mai-board__event--micro {
-        min-height: 14px;
-        padding: 2px 5px;
+        padding: 1px 5px;
     }
 
     .mai-board__event--slot {
@@ -179,6 +176,10 @@
         gap: 6px;
     }
 
+    .mai-board__event-summary--time-only {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .mai-board__event-meta,
     .mai-board__event-heading,
     .mai-board__event-time-row,
@@ -237,6 +238,7 @@
     .mai-board__event-heading--inline {
         font-size: 11px;
         line-height: 1.1;
+        text-overflow: clip;
     }
 
     .mai-board__event-heading--compact {
@@ -264,6 +266,11 @@
         width: auto;
         color: var(--color-text-muted);
         gap: 6px;
+    }
+
+    .mai-board__event-summary--time-only .mai-board__event-time-row--inline {
+        justify-content: flex-start;
+        min-width: 0;
     }
 
     .mai-board__event-time-dot {
@@ -338,11 +345,6 @@
         gap: 4px;
     }
 
-    .mai-board__event--micro .mai-board__event-summary--inline {
-        grid-template-columns: minmax(0, 1fr) max-content;
-        gap: 4px;
-    }
-
     .mai-board__event-inline-main {
         display: inline-flex;
         align-items: center;
@@ -355,9 +357,5 @@
     .mai-board__event-inline-main .mai-board__event-heading {
         width: auto;
         min-width: 0;
-    }
-
-    .mai-board__event--micro .mai-board__event-heading--inline {
-        display: none;
     }
 }

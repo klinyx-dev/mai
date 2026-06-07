@@ -3,8 +3,8 @@ import {
   computeMoveDraft,
   computeResizeBottomDraft,
   computeResizeTopDraft,
-  MIN_SLOT_SPAN_MINUTES,
 } from "../../model/slot-gesture";
+import { eventVisualHeightPercent } from "../../model/event-geometry";
 import type { CalendarEvent } from "../../model/view-model";
 import type { DragState } from "./types";
 
@@ -147,8 +147,11 @@ export function draftTopPercent(
 }
 
 export function draftHeightPercent(state: DragState, totalVisibleMinutes: number): number {
-  const span = Math.max(state.draftEndMinute - state.draftStartMinute, MIN_SLOT_SPAN_MINUTES);
-  return (span / totalVisibleMinutes) * 100;
+  return eventVisualHeightPercent(
+    state.draftStartMinute,
+    state.draftEndMinute,
+    totalVisibleMinutes
+  );
 }
 
 export function draftTransform(state: DragState): string | undefined {

@@ -2,6 +2,7 @@ import { defineComponent, h, ref, type PropType } from "vue";
 import { MaiEventCard } from "./MaiEventCard";
 import { MaiDraftEventCard } from "./day-column/MaiDraftEventCard";
 import { MaiNowIndicator } from "./MaiNowIndicator";
+import { eventVisualHeightPercent } from "../model/event-geometry";
 import type { DayColumn } from "../model/view-model";
 import { clampToVisibleRange } from "../model/view-model";
 import {
@@ -87,6 +88,27 @@ export const MaiDayColumn = defineComponent({
       const top = ((clamped.start - props.visibleStartMinute) / props.totalVisibleMinutes) * 100;
       const height = (span / props.totalVisibleMinutes) * 100;
       return { top, height };
+    }
+
+    function computeEventPosition(startMinute: number, endMinute: number) {
+      const clamped = clampToVisibleRange(
+        startMinute,
+        endMinute,
+        props.visibleStartMinute,
+        props.visibleEndMinute
+      );
+      if (!clamped) {
+        return null;
+      }
+      const top = ((clamped.start - props.visibleStartMinute) / props.totalVisibleMinutes) * 100;
+      return {
+        top,
+        height: eventVisualHeightPercent(
+          clamped.start,
+          clamped.end,
+          props.totalVisibleMinutes
+        ),
+      };
     }
 
     function handleEventActivate(
@@ -314,7 +336,7 @@ export const MaiDayColumn = defineComponent({
             );
           })}
           {props.column.events.map((event) => {
-            const position = computePosition(event.startMinute, event.endMinute);
+            const position = computeEventPosition(event.startMinute, event.endMinute);
             if (!position) {
               return null;
             }
@@ -347,7 +369,7 @@ export const MaiDayColumn = defineComponent({
             if (!activeDraft) {
               return null;
             }
-            const position = computePosition(
+            const position = computeEventPosition(
               activeDraft.startMinute,
               activeDraft.endMinute
             );

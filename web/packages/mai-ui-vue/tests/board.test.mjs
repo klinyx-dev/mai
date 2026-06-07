@@ -21,6 +21,13 @@ import {
   toEmptyCellClickPayload,
   toSlotClickPayload,
 } from "../dist/features/board/internal/model/interaction.js";
+import {
+  eventVisualHeightPercent,
+  eventVisualSpanMinutes,
+} from "../dist/features/board/internal/model/event-geometry.js";
+import {
+  eventTimeText,
+} from "../dist/features/board/internal/model/event-display.js";
 
 test("defaults to full-day visible window", () => {
   assert.equal(DEFAULT_VISIBLE_START_MINUTE, 0);
@@ -241,6 +248,22 @@ test("computes empty-cell payload from drag range", () => {
       height: 500,
     },
   });
+});
+
+test("event visual height preserves normal spans and floors tiny events", () => {
+  assert.equal(eventVisualSpanMinutes(600, 630), 30);
+  assert.equal(eventVisualSpanMinutes(600, 610), 15);
+  assert.equal(eventVisualHeightPercent(600, 630, 60), 50);
+  assert.equal(eventVisualHeightPercent(600, 610, 60), 25);
+});
+
+test("event time text only shows start time for small cards", () => {
+  const label = (minute) => `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
+
+  assert.equal(eventTimeText(label, 540, 570, "compact"), "09:00");
+  assert.equal(eventTimeText(label, 540, 555, "tight"), "09:00");
+  assert.equal(eventTimeText(label, 540, 545, "micro"), "09:00");
+  assert.equal(eventTimeText(label, 540, 600, "comfortable"), "09:00-10:00");
 });
 
 test("maps blackout windows and groups them by day", () => {

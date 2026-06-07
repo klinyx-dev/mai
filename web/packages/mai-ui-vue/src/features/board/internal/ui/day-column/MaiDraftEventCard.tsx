@@ -1,8 +1,8 @@
 import { defineComponent, h, type PropType } from "vue";
+import { eventTimeText } from "../../model/event-display";
 import {
   eventCardDensity,
   eventDurationLabel,
-  timeText,
 } from "../event-card/helpers";
 
 export const MaiDraftEventCard = defineComponent({
@@ -23,8 +23,15 @@ export const MaiDraftEventCard = defineComponent({
     return () => {
       const density = eventCardDensity(props.startMinute, props.endMinute);
       const duration = eventDurationLabel(props.startMinute, props.endMinute);
-      const time = timeText(props.minuteLabel, props.startMinute, props.endMinute);
-      const isInline = density === "micro" || density === "tight";
+      const time = eventTimeText(
+        props.minuteLabel,
+        props.startMinute,
+        props.endMinute,
+        density
+      );
+      const isInline = density !== "comfortable";
+      const showInlineMain = density !== "micro";
+      const showInlineDescription = density === "compact";
 
       return (
         <div
@@ -43,42 +50,39 @@ export const MaiDraftEventCard = defineComponent({
               class={[
                 "mai-board__event-summary",
                 "mai-board__event-summary--inline",
+                showInlineMain ? "" : "mai-board__event-summary--time-only",
                 `mai-board__event-summary--${density}`,
-              ]}
+              ].filter(Boolean)}
             >
-              <span class="mai-board__event-badge">Draft</span>
-              <p class="mai-board__event-heading mai-board__event-heading--inline">
-                Open slot
-              </p>
+              {showInlineMain ? (
+                <span class="mai-board__event-inline-main">
+                  <span class="mai-board__event-badge">Draft</span>
+                  {showInlineDescription ? (
+                    <span class="mai-board__event-heading mai-board__event-heading--inline">
+                      Open slot
+                    </span>
+                  ) : null}
+                </span>
+              ) : null}
               <p class="mai-board__event-time-row mai-board__event-time-row--inline">
                 <span class="mai-board__event-time">{time}</span>
-                {density === "tight" ? (
-                  <span class="mai-board__event-duration mai-board__event-duration--inline">
-                    {duration}
-                  </span>
-                ) : null}
+                <span class="mai-board__event-duration mai-board__event-duration--inline">
+                  {duration}
+                </span>
               </p>
             </div>
           ) : (
             <div
               class={[
                 "mai-board__event-summary",
-                density === "compact" ? "mai-board__event-summary--compact" : "",
                 `mai-board__event-summary--${density}`,
-              ]}
+              ].filter(Boolean)}
             >
               <div class="mai-board__event-meta">
                 <span class="mai-board__event-badge">Draft</span>
-                {density === "compact" ? (
-                  <p class="mai-board__event-heading mai-board__event-heading--compact">
-                    Open slot
-                  </p>
-                ) : null}
                 <span class="mai-board__event-duration">{duration}</span>
               </div>
-              {density !== "compact" ? (
-                <p class="mai-board__event-heading">Open slot</p>
-              ) : null}
+              <p class="mai-board__event-heading">Open slot</p>
               <p class="mai-board__event-time-row">
                 <span class="mai-board__event-time-dot" aria-hidden="true" />
                 <span class="mai-board__event-time">{time}</span>
