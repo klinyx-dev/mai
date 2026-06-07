@@ -1,13 +1,14 @@
 import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, type PropType } from "vue";
 import type { MaiCalendarFilterOwnerOption, MaiViewFilter } from "../../../types";
+import { WEEKLY_VIEW_FILTER_MODES } from "@mai/mai-web-core";
 import { isMaiViewFilter } from "../../../validators/events.js";
 
 function normalizeOwnerFilter(ids: readonly string[]): MaiViewFilter {
   const normalizedIds = Array.from(new Set(ids.filter((id) => id.length > 0)));
   if (normalizedIds.length === 0) {
-    return { mode: "none" };
+    return { mode: WEEKLY_VIEW_FILTER_MODES.NONE };
   }
-  return { mode: "owners", ids: normalizedIds };
+  return { mode: WEEKLY_VIEW_FILTER_MODES.OWNERS, ids: normalizedIds };
 }
 
 export const MaiCalendarFilterToolbar = defineComponent({
@@ -36,16 +37,19 @@ export const MaiCalendarFilterToolbar = defineComponent({
     const rootEl = ref<HTMLElement | null>(null);
 
     const selectedOwnerIds = computed(() =>
-      props.value.mode === "owners" || props.value.mode === "group" ? props.value.ids : []
+      props.value.mode === WEEKLY_VIEW_FILTER_MODES.OWNERS ||
+      props.value.mode === WEEKLY_VIEW_FILTER_MODES.GROUP
+        ? props.value.ids
+        : []
     );
 
     const selectedCount = computed(() => selectedOwnerIds.value.length);
 
     const selectedLabel = computed(() => {
-      if (props.value.mode === "all") {
+      if (props.value.mode === WEEKLY_VIEW_FILTER_MODES.ALL) {
         return "All calendars";
       }
-      if (props.value.mode === "none") {
+      if (props.value.mode === WEEKLY_VIEW_FILTER_MODES.NONE) {
         return "No calendars";
       }
       if (selectedCount.value === 1) {
@@ -62,11 +66,11 @@ export const MaiCalendarFilterToolbar = defineComponent({
     }
 
     function setAll() {
-      emitFilter({ mode: "all" });
+      emitFilter({ mode: WEEKLY_VIEW_FILTER_MODES.ALL });
     }
 
     function setNone() {
-      emitFilter({ mode: "none" });
+      emitFilter({ mode: WEEKLY_VIEW_FILTER_MODES.NONE });
     }
 
     function isOwnerSelected(ownerId: string): boolean {
@@ -116,9 +120,11 @@ export const MaiCalendarFilterToolbar = defineComponent({
             type="button"
             class={[
               "mai-filter-toolbar__mode-button",
-              props.value.mode === "all" ? "mai-filter-toolbar__mode-button--active" : "",
+              props.value.mode === WEEKLY_VIEW_FILTER_MODES.ALL
+                ? "mai-filter-toolbar__mode-button--active"
+                : "",
             ]}
-            aria-pressed={props.value.mode === "all"}
+            aria-pressed={props.value.mode === WEEKLY_VIEW_FILTER_MODES.ALL}
             onClick={setAll}
           >
             All
@@ -127,9 +133,11 @@ export const MaiCalendarFilterToolbar = defineComponent({
             type="button"
             class={[
               "mai-filter-toolbar__mode-button",
-              props.value.mode === "none" ? "mai-filter-toolbar__mode-button--active" : "",
+              props.value.mode === WEEKLY_VIEW_FILTER_MODES.NONE
+                ? "mai-filter-toolbar__mode-button--active"
+                : "",
             ]}
-            aria-pressed={props.value.mode === "none"}
+            aria-pressed={props.value.mode === WEEKLY_VIEW_FILTER_MODES.NONE}
             onClick={setNone}
           >
             None

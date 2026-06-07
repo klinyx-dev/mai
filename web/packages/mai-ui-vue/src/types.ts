@@ -1,3 +1,11 @@
+export { MAI_TIME_LABEL_FORMATS } from "./types/board";
+export {
+  MAI_BOOKING_FLOW_EVENTS,
+  MAI_BOOKING_SLOT_STATUSES,
+  MAI_BOOKING_SLOT_VISIBILITIES,
+  MAI_BOOKING_STEPS,
+} from "./types/booking";
+
 export type {
   AppointmentClickEventPayload,
   EmptyCellClickEventPayload,

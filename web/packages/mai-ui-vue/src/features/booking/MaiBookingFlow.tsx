@@ -7,6 +7,7 @@ import type {
 import {
   buildAppointmentTitle,
   createBookSlotCommand,
+  WEEKLY_VIEW_FILTER_MODES,
 } from "@mai/mai-web-core";
 import { computed, defineComponent, h, ref, watch, type PropType } from "vue";
 import { weekRangeLabel } from "../board/internal/model/view-model.js";
@@ -51,7 +52,11 @@ import type {
   MaiBookingSlotOwner,
   MaiBookingViewConfig,
 } from "../../types/booking";
-import { MAI_BOOKING_FLOW_EVENTS } from "../../types/booking.js";
+import {
+  MAI_BOOKING_FLOW_EVENTS,
+  MAI_BOOKING_SLOT_VISIBILITIES,
+} from "../../types/booking.js";
+import { MAI_TIME_LABEL_FORMATS } from "../../types/board.js";
 import {
   isBookSlotPayload,
   isBookingAuthIdentity,
@@ -93,7 +98,7 @@ function createQueryPayload(
     visible_end_minute: view.visibleEndMinute,
     view_filter: resource
       ? {
-          mode: "owners",
+          mode: WEEKLY_VIEW_FILTER_MODES.OWNERS,
           ids: [resource.resourceOwnerId],
         }
       : undefined,
@@ -499,8 +504,13 @@ export const MaiBookingFlow = defineComponent({
             slots={availableSlots.value}
             selectedSlotId={state.value.selectedSlot?.slotId ?? undefined}
             weekLabel={weekLabel.value}
-            timeLabelFormat={props.view.timeLabelFormat ?? "24h"}
-            slotVisibility={props.booking.slotVisibility ?? "available-only"}
+            timeLabelFormat={
+              props.view.timeLabelFormat ?? MAI_TIME_LABEL_FORMATS.TWENTY_FOUR_HOUR
+            }
+            slotVisibility={
+              props.booking.slotVisibility ??
+              MAI_BOOKING_SLOT_VISIBILITIES.AVAILABLE_ONLY
+            }
             isLoading={props.booking.isAvailabilityLoading ?? state.value.step === "refreshing"}
             copy={props.copy}
             onNavigateWeek={(shift) => emit(MAI_BOOKING_FLOW_EVENTS.NAVIGATE_WEEK, shift)}
@@ -538,7 +548,9 @@ export const MaiBookingFlow = defineComponent({
             location={selectedLocation.value}
             resourceLabel={selectedResource.value?.label ?? selectedSlot.value?.resourceLabel ?? ""}
             notes={state.value.notes}
-            timeLabelFormat={props.view.timeLabelFormat ?? "24h"}
+            timeLabelFormat={
+              props.view.timeLabelFormat ?? MAI_TIME_LABEL_FORMATS.TWENTY_FOUR_HOUR
+            }
             isBusy={
               state.value.step === "submitting" || state.value.step === "refreshing"
             }

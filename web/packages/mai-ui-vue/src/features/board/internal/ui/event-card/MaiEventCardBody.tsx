@@ -1,5 +1,8 @@
 import { defineComponent, h, type PropType } from "vue";
-import { eventTimeText } from "../../model/event-display";
+import {
+  MAI_EVENT_TIME_DENSITIES,
+  eventTimeText,
+} from "../../model/event-display";
 import type { CalendarEvent } from "../../model/view-model";
 import {
   type EventCardDensity,
@@ -18,7 +21,7 @@ export const MaiEventCardBody = defineComponent({
     density: {
       type: String as PropType<EventCardDensity>,
       required: false,
-      default: "comfortable",
+      default: MAI_EVENT_TIME_DENSITIES.COMFORTABLE,
     },
   },
   setup(props) {
@@ -26,15 +29,16 @@ export const MaiEventCardBody = defineComponent({
       const title = eventTitle(props.eventKind);
       const description = eventDescription(props.eventKind);
       const duration = eventDurationLabel(props.startMinute, props.endMinute);
-      const isInline = props.density !== "comfortable";
+      const isInline = props.density !== MAI_EVENT_TIME_DENSITIES.COMFORTABLE;
       const time = eventTimeText(
         props.minuteLabel,
         props.startMinute,
         props.endMinute,
         props.density
       );
-      const showInlineMain = props.density !== "micro";
-      const showInlineDescription = props.density === "compact";
+      const showInlineMain = props.density !== MAI_EVENT_TIME_DENSITIES.MICRO;
+      const showInlineDescription =
+        props.density === MAI_EVENT_TIME_DENSITIES.COMPACT;
 
       if (isInline) {
         return (

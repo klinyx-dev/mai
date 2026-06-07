@@ -1,4 +1,12 @@
-export type WasmErrorCategory = "structural" | "referential" | "business" | "contract";
+export const WASM_ERROR_CATEGORIES = {
+  STRUCTURAL: "structural",
+  REFERENTIAL: "referential",
+  BUSINESS: "business",
+  CONTRACT: "contract",
+} as const;
+
+export type WasmErrorCategory =
+  (typeof WASM_ERROR_CATEGORIES)[keyof typeof WASM_ERROR_CATEGORIES];
 
 export interface WasmAdapterError {
   category: WasmErrorCategory;
@@ -43,13 +51,23 @@ export interface WeeklyLayout {
   blackout_windows?: BlackoutLayoutNode[];
 }
 
-export type WeeklyViewFilterMode = "all" | "none" | "owners" | "group";
+export const WEEKLY_VIEW_FILTER_MODES = {
+  ALL: "all",
+  NONE: "none",
+  OWNERS: "owners",
+  GROUP: "group",
+} as const;
+
+export type WeeklyViewFilterMode =
+  (typeof WEEKLY_VIEW_FILTER_MODES)[keyof typeof WEEKLY_VIEW_FILTER_MODES];
 
 export type WeeklyViewFilter =
-  | { mode: "all" }
-  | { mode: "none" }
+  | { mode: typeof WEEKLY_VIEW_FILTER_MODES.ALL }
+  | { mode: typeof WEEKLY_VIEW_FILTER_MODES.NONE }
   | {
-      mode: "owners" | "group";
+      mode:
+        | typeof WEEKLY_VIEW_FILTER_MODES.OWNERS
+        | typeof WEEKLY_VIEW_FILTER_MODES.GROUP;
       // Empty IDs remain a deterministic "none selected" contract at the core boundary.
       ids: string[];
     };
@@ -95,7 +113,12 @@ export interface DeleteSlotCommandPayload {
   slot_id: string;
 }
 
-export type BatchMode = "atomic" | "best_effort";
+export const BATCH_MODES = {
+  ATOMIC: "atomic",
+  BEST_EFFORT: "best_effort",
+} as const;
+
+export type BatchMode = (typeof BATCH_MODES)[keyof typeof BATCH_MODES];
 
 export interface AddSlotsBatchCommandPayload {
   mode: BatchMode;

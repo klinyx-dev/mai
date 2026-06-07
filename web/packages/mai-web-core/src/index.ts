@@ -34,7 +34,13 @@ export type {
   WeeklyLayoutQueryPayload,
   MaiCore,
 } from "./types.js";
-export { COMMANDS, QUERIES } from "./types.js";
+export {
+  BATCH_MODES,
+  COMMANDS,
+  QUERIES,
+  WASM_ERROR_CATEGORIES,
+  WEEKLY_VIEW_FILTER_MODES,
+} from "./types.js";
 
 export {
   buildAppointmentTitle,

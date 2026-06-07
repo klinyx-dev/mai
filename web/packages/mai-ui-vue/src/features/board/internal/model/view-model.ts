@@ -1,6 +1,7 @@
 import type { WeeklyLayout } from "@mai/mai-web-core";
 
-export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+export const MAI_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+export const DAY_LABELS = MAI_DAY_LABELS;
 export const DEFAULT_VISIBLE_START_MINUTE = 0;
 export const DEFAULT_VISIBLE_END_MINUTE = 1440;
 export const DEFAULT_TOTAL_VISIBLE_MINUTES =
@@ -204,9 +205,9 @@ export function buildDayColumns(
   events: CalendarEvent[],
   blackoutWindows: DayColumn["blackoutWindows"] = []
 ): DayColumn[] {
-  const dayDates = DAY_LABELS.map((_, dayIndex) => addDaysIso(weekStartIso, dayIndex));
+  const dayDates = MAI_DAY_LABELS.map((_, dayIndex) => addDaysIso(weekStartIso, dayIndex));
   const todayIso = todayIsoUtc();
-  return DAY_LABELS.map((_, dayIndex) => ({
+  return MAI_DAY_LABELS.map((_, dayIndex) => ({
     dayIndex,
     label: weekdayLabel(dayDates[dayIndex]),
     dateLabel: monthDayLabel(dayDates[dayIndex]),

@@ -1,4 +1,12 @@
-export type EventTimeDensity = "micro" | "tight" | "compact" | "comfortable";
+export const MAI_EVENT_TIME_DENSITIES = {
+  MICRO: "micro",
+  TIGHT: "tight",
+  COMPACT: "compact",
+  COMFORTABLE: "comfortable",
+} as const;
+
+export type EventTimeDensity =
+  (typeof MAI_EVENT_TIME_DENSITIES)[keyof typeof MAI_EVENT_TIME_DENSITIES];
 
 export function eventTimeText(
   minuteLabel: (value: number) => string,
@@ -6,7 +14,7 @@ export function eventTimeText(
   endMinute: number,
   density: EventTimeDensity
 ): string {
-  if (density !== "comfortable") {
+  if (density !== MAI_EVENT_TIME_DENSITIES.COMFORTABLE) {
     return minuteLabel(startMinute);
   }
 

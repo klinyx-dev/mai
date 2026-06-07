@@ -1,5 +1,8 @@
 import { defineComponent, h, type PropType } from "vue";
-import { eventTimeText } from "../../model/event-display";
+import {
+  MAI_EVENT_TIME_DENSITIES,
+  eventTimeText,
+} from "../../model/event-display";
 import {
   eventCardDensity,
   eventDurationLabel,
@@ -29,9 +32,9 @@ export const MaiDraftEventCard = defineComponent({
         props.endMinute,
         density
       );
-      const isInline = density !== "comfortable";
-      const showInlineMain = density !== "micro";
-      const showInlineDescription = density === "compact";
+      const isInline = density !== MAI_EVENT_TIME_DENSITIES.COMFORTABLE;
+      const showInlineMain = density !== MAI_EVENT_TIME_DENSITIES.MICRO;
+      const showInlineDescription = density === MAI_EVENT_TIME_DENSITIES.COMPACT;
 
       return (
         <div

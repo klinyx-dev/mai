@@ -1,5 +1,9 @@
 import type { SlotRescheduleActionEventPayload } from "../../../../../types";
 import {
+  MAI_EVENT_TIME_DENSITIES,
+  type EventTimeDensity,
+} from "../../model/event-display";
+import {
   computeMoveDraft,
   computeResizeBottomDraft,
   computeResizeTopDraft,
@@ -9,7 +13,7 @@ import type { CalendarEvent } from "../../model/view-model";
 import type { DragState } from "./types";
 
 export const DRAG_ACTIVATION_PX = 4;
-export type EventCardDensity = "micro" | "tight" | "compact" | "comfortable";
+export type EventCardDensity = EventTimeDensity;
 
 export function eventTitle(kind: CalendarEvent["kind"]): string {
   return kind === "slot" ? "Available" : "Booked";
@@ -40,15 +44,15 @@ export function eventCardDensity(
   const totalMinutes = Math.max(endMinute - startMinute, 0);
 
   if (totalMinutes <= 5) {
-    return "micro";
+    return MAI_EVENT_TIME_DENSITIES.MICRO;
   }
   if (totalMinutes <= 20) {
-    return "tight";
+    return MAI_EVENT_TIME_DENSITIES.TIGHT;
   }
   if (totalMinutes <= 40) {
-    return "compact";
+    return MAI_EVENT_TIME_DENSITIES.COMPACT;
   }
-  return "comfortable";
+  return MAI_EVENT_TIME_DENSITIES.COMFORTABLE;
 }
 
 export function centerPointFromTarget(target: EventTarget | null): {

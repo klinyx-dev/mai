@@ -1,13 +1,17 @@
 import type { WeeklyLayout } from "@mai/mai-web-core";
+import {
+  MAI_BOOKING_SLOT_STATUSES,
+  MAI_BOOKING_SLOT_VISIBILITIES,
+} from "../../../types/booking.js";
 import type {
   MaiBookingAvailabilitySlot,
   MaiBookingSlotOwner,
   MaiBookingSlotStatus,
   MaiBookingSlotVisibility,
-} from "../../../types/booking";
+} from "../../../types/booking.js";
 
 export function isBookableSlotStatus(status: MaiBookingSlotStatus | undefined): boolean {
-  return !status || status === "available";
+  return !status || status === MAI_BOOKING_SLOT_STATUSES.AVAILABLE;
 }
 
 export function sortAvailabilitySlots(
@@ -24,9 +28,12 @@ export function sortAvailabilitySlots(
 
 export function filterAvailabilitySlotsByVisibility(
   slots: readonly MaiBookingAvailabilitySlot[],
-  visibility: MaiBookingSlotVisibility = "available-only"
+  visibility: MaiBookingSlotVisibility = MAI_BOOKING_SLOT_VISIBILITIES.AVAILABLE_ONLY
 ): MaiBookingAvailabilitySlot[] {
-  if (visibility === "all" || visibility === "show-disabled") {
+  if (
+    visibility === MAI_BOOKING_SLOT_VISIBILITIES.ALL ||
+    visibility === MAI_BOOKING_SLOT_VISIBILITIES.SHOW_DISABLED
+  ) {
     return sortAvailabilitySlots(slots);
   }
   return sortAvailabilitySlots(slots).filter((slot) => isBookableSlotStatus(slot.status));
@@ -71,7 +78,7 @@ export function availabilitySlotsFromWeeklyLayout(
         dayIndex: slot.day_index,
         startMinute: slot.start_minute,
         endMinute: slot.end_minute,
-        status: "available",
+        status: MAI_BOOKING_SLOT_STATUSES.AVAILABLE,
         resourceOwnerId: owner?.resourceOwnerId,
         resourceId: owner?.resourceId,
         resourceLabel: owner?.resourceLabel,

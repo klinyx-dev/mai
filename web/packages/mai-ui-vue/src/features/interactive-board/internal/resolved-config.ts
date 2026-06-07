@@ -20,6 +20,7 @@ import type {
   SlotRescheduleActionEventPayload,
   TimeLabelFormat,
 } from "../../../types";
+import { MAI_TIME_LABEL_FORMATS } from "../../../types/board.js";
 import type { AnyCommandEnvelope } from "@mai/mai-web-core";
 import type {
   PartialActionConfig,
@@ -32,7 +33,7 @@ const DEFAULT_RESOLVED_VIEW = {
   subtitle: "Weekly planning",
   visibleStartMinute: 0,
   visibleEndMinute: 1440,
-  timeLabelFormat: "24h" as TimeLabelFormat,
+  timeLabelFormat: MAI_TIME_LABEL_FORMATS.TWENTY_FOUR_HOUR as TimeLabelFormat,
   emptyStateText: "No events",
 };
 

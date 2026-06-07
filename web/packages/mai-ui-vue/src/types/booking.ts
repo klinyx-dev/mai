@@ -1,15 +1,36 @@
-export type MaiBookingStep =
-  | "select-location"
-  | "select-category"
-  | "select-slot"
-  | "auth-required"
-  | "submitting"
-  | "refreshing"
-  | "confirmed"
-  | "error";
+import type { TimeLabelFormat } from "./board";
 
-export type MaiBookingSlotStatus = "available" | "booked" | "cancelled";
-export type MaiBookingSlotVisibility = "available-only" | "show-disabled" | "all";
+export const MAI_BOOKING_STEPS = {
+  SELECT_LOCATION: "select-location",
+  SELECT_CATEGORY: "select-category",
+  SELECT_SLOT: "select-slot",
+  AUTH_REQUIRED: "auth-required",
+  SUBMITTING: "submitting",
+  REFRESHING: "refreshing",
+  CONFIRMED: "confirmed",
+  ERROR: "error",
+} as const;
+
+export type MaiBookingStep =
+  (typeof MAI_BOOKING_STEPS)[keyof typeof MAI_BOOKING_STEPS];
+
+export const MAI_BOOKING_SLOT_STATUSES = {
+  AVAILABLE: "available",
+  BOOKED: "booked",
+  CANCELLED: "cancelled",
+} as const;
+
+export type MaiBookingSlotStatus =
+  (typeof MAI_BOOKING_SLOT_STATUSES)[keyof typeof MAI_BOOKING_SLOT_STATUSES];
+
+export const MAI_BOOKING_SLOT_VISIBILITIES = {
+  AVAILABLE_ONLY: "available-only",
+  SHOW_DISABLED: "show-disabled",
+  ALL: "all",
+} as const;
+
+export type MaiBookingSlotVisibility =
+  (typeof MAI_BOOKING_SLOT_VISIBILITIES)[keyof typeof MAI_BOOKING_SLOT_VISIBILITIES];
 
 export type MaiBookingMetadata = Record<string, unknown>;
 
@@ -68,7 +89,7 @@ export interface MaiBookingViewConfig {
   timezone?: string;
   visibleStartMinute?: number;
   visibleEndMinute?: number;
-  timeLabelFormat?: "24h" | "12h";
+  timeLabelFormat?: TimeLabelFormat;
 }
 
 export interface MaiBookingActorConfig {

@@ -1,6 +1,10 @@
 import type { WeeklyLayout } from "@mai/mai-web-core";
 import type { ExtractPropTypes, PropType } from "vue";
-import type { SlotDraftPreview, TimeLabelFormat } from "../../../../types";
+import { MAI_TIME_LABEL_FORMATS } from "../../../../types/board.js";
+import {
+  type SlotDraftPreview,
+  type TimeLabelFormat,
+} from "../../../../types";
 import { isMinuteRange } from "./validators";
 
 export const maiBoardProps = {
@@ -48,8 +52,10 @@ export const maiBoardProps = {
   timeLabelFormat: {
     type: String as PropType<TimeLabelFormat>,
     required: false,
-    default: "24h",
-    validator: (value: unknown) => value === "24h" || value === "12h",
+    default: MAI_TIME_LABEL_FORMATS.TWENTY_FOUR_HOUR,
+    validator: (value: unknown) =>
+      value === MAI_TIME_LABEL_FORMATS.TWENTY_FOUR_HOUR ||
+      value === MAI_TIME_LABEL_FORMATS.TWELVE_HOUR,
   },
   emptyStateText: {
     type: String,

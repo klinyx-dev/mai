@@ -1,6 +1,12 @@
 export type WeekShift = -1 | 0 | 1;
 
-export type TimeLabelFormat = "24h" | "12h";
+export const MAI_TIME_LABEL_FORMATS = {
+  TWENTY_FOUR_HOUR: "24h",
+  TWELVE_HOUR: "12h",
+} as const;
+
+export type TimeLabelFormat =
+  (typeof MAI_TIME_LABEL_FORMATS)[keyof typeof MAI_TIME_LABEL_FORMATS];
 
 export interface InteractionAnchorRect {
   left: number;

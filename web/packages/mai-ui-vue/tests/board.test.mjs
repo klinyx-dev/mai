@@ -26,6 +26,7 @@ import {
   eventVisualSpanMinutes,
 } from "../dist/features/board/internal/model/event-geometry.js";
 import {
+  MAI_EVENT_TIME_DENSITIES,
   eventTimeText,
 } from "../dist/features/board/internal/model/event-display.js";
 
@@ -260,10 +261,22 @@ test("event visual height preserves normal spans and floors tiny events", () => 
 test("event time text only shows start time for small cards", () => {
   const label = (minute) => `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
 
-  assert.equal(eventTimeText(label, 540, 570, "compact"), "09:00");
-  assert.equal(eventTimeText(label, 540, 555, "tight"), "09:00");
-  assert.equal(eventTimeText(label, 540, 545, "micro"), "09:00");
-  assert.equal(eventTimeText(label, 540, 600, "comfortable"), "09:00-10:00");
+  assert.equal(
+    eventTimeText(label, 540, 570, MAI_EVENT_TIME_DENSITIES.COMPACT),
+    "09:00"
+  );
+  assert.equal(
+    eventTimeText(label, 540, 555, MAI_EVENT_TIME_DENSITIES.TIGHT),
+    "09:00"
+  );
+  assert.equal(
+    eventTimeText(label, 540, 545, MAI_EVENT_TIME_DENSITIES.MICRO),
+    "09:00"
+  );
+  assert.equal(
+    eventTimeText(label, 540, 600, MAI_EVENT_TIME_DENSITIES.COMFORTABLE),
+    "09:00-10:00"
+  );
 });
 
 test("maps blackout windows and groups them by day", () => {

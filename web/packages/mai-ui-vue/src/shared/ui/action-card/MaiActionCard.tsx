@@ -1,6 +1,13 @@
 import { defineComponent, h, type PropType } from "vue";
 
-export type ActionButtonTone = "default" | "primary" | "danger";
+export const MAI_ACTION_BUTTON_TONES = {
+  DEFAULT: "default",
+  PRIMARY: "primary",
+  DANGER: "danger",
+} as const;
+
+export type ActionButtonTone =
+  (typeof MAI_ACTION_BUTTON_TONES)[keyof typeof MAI_ACTION_BUTTON_TONES];
 
 export interface ActionButtonModel {
   key: string;

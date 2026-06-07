@@ -1,14 +1,21 @@
 import { defineComponent, h, type PropType } from "vue";
 import {
-  DAY_LABELS,
+  MAI_DAY_LABELS,
   formatMinuteLabel,
 } from "../../board/internal/model/view-model.js";
-import type { TimeLabelFormat, WeekShift } from "../../../types";
+import {
+  MAI_TIME_LABEL_FORMATS,
+  type TimeLabelFormat,
+  type WeekShift,
+} from "../../../types/board.js";
+import {
+  MAI_BOOKING_SLOT_VISIBILITIES,
+} from "../../../types/booking.js";
 import type {
   MaiBookingAvailabilitySlot,
   MaiBookingCopy,
   MaiBookingSlotVisibility,
-} from "../../../types/booking";
+} from "../../../types/booking.js";
 import {
   availabilitySlotsForDay,
   filterAvailabilitySlotsByVisibility,
@@ -33,11 +40,11 @@ export const MaiAvailabilityPicker = defineComponent({
     },
     timeLabelFormat: {
       type: String as PropType<TimeLabelFormat>,
-      default: "24h",
+      default: MAI_TIME_LABEL_FORMATS.TWENTY_FOUR_HOUR,
     },
     slotVisibility: {
       type: String as PropType<MaiBookingSlotVisibility>,
-      default: "available-only",
+      default: MAI_BOOKING_SLOT_VISIBILITIES.AVAILABLE_ONLY,
     },
     isLoading: {
       type: Boolean,
@@ -111,7 +118,7 @@ export const MaiAvailabilityPicker = defineComponent({
               </p>
             ) : (
               <div class="mai-booking-days">
-                {DAY_LABELS.map((label, dayIndex) => {
+                {MAI_DAY_LABELS.map((label, dayIndex) => {
                   const daySlots = availabilitySlotsForDay(visibleSlots, dayIndex);
                   return (
                     <section class="mai-booking-day" key={label}>

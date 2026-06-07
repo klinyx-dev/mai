@@ -7,6 +7,7 @@ import type {
   MaiViewFilter,
   WeekShift,
 } from "../types";
+import { WEEKLY_VIEW_FILTER_MODES } from "@mai/mai-web-core";
 import {
   isAppointmentActionPayload,
   isAppointmentClickPayload,
@@ -93,10 +94,16 @@ export function isMaiViewFilter(value: unknown): value is MaiViewFilter {
     return false;
   }
   const payload = value as Record<string, unknown>;
-  if (payload.mode === "all" || payload.mode === "none") {
+  if (
+    payload.mode === WEEKLY_VIEW_FILTER_MODES.ALL ||
+    payload.mode === WEEKLY_VIEW_FILTER_MODES.NONE
+  ) {
     return true;
   }
-  if (payload.mode === "owners" || payload.mode === "group") {
+  if (
+    payload.mode === WEEKLY_VIEW_FILTER_MODES.OWNERS ||
+    payload.mode === WEEKLY_VIEW_FILTER_MODES.GROUP
+  ) {
     return (
       Array.isArray(payload.ids) &&
       payload.ids.every((id) => typeof id === "string")

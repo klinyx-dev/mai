@@ -12,8 +12,14 @@ const distTypes = readFileSync(
 );
 
 test("exports documented command and query constants", () => {
-  assert.match(distEntry, /export \{ COMMANDS, QUERIES \} from "\.\/types\.js";/);
-  assert.match(distTypes, /export \{ COMMANDS, QUERIES \} from "\.\/types\.js";/);
+  assert.match(
+    distEntry,
+    /export \{[^}]*COMMANDS,[^}]*QUERIES,[^}]*WEEKLY_VIEW_FILTER_MODES,[^}]*\} from "\.\/types\.js";/
+  );
+  assert.match(
+    distTypes,
+    /export \{[^}]*COMMANDS,[^}]*QUERIES,[^}]*WEEKLY_VIEW_FILTER_MODES,[^}]*\} from "\.\/types\.js";/
+  );
 });
 
 test("exports documented runtime client helpers", () => {

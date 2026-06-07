@@ -1,7 +1,10 @@
 import { buildAppointmentTitle } from "@mai/mai-web-core";
 import { computed, defineComponent, h, type PropType } from "vue";
 import { formatMinuteLabel } from "../../board/internal/model/view-model.js";
-import type { TimeLabelFormat } from "../../../types";
+import {
+  MAI_TIME_LABEL_FORMATS,
+  type TimeLabelFormat,
+} from "../../../types/board.js";
 import type {
   MaiBookingCopy,
   MaiBookingLocation,
@@ -38,7 +41,7 @@ export const MaiBookingConfirmCard = defineComponent({
     },
     timeLabelFormat: {
       type: String as PropType<TimeLabelFormat>,
-      default: "24h",
+      default: MAI_TIME_LABEL_FORMATS.TWENTY_FOUR_HOUR,
     },
     isBusy: {
       type: Boolean,
